@@ -9,6 +9,7 @@ import { ImageConstant } from '../../../Constants/ImageConstant';
 import SimpleModal from './../../../Component/UI/SimpleModal';
 import { OtpInput } from 'react-native-otp-entry';
 import LocalizedStrings from '../../../Constants/localization';
+import SimpleToast from 'react-native-simple-toast';
 import { POST_FORM_DATA, POST_WITH_TOKEN } from '../../../Backend/Backend';
 import { AADHAR_SAVE, AADHAR_VERFIY, ApplicantsStatus } from '../../../Backend/api_routes';
 
@@ -231,8 +232,17 @@ const StaffVerifection = ({ navigation, route }) => {
             `${ApplicantsStatus}/${applicationId}/status`,
             { application_status: 'accepted' },
             () => goToNewStaff(),
-            () => goToNewStaff(),
-            () => goToNewStaff(),
+            error => {
+              SimpleToast.show(
+                error?.data?.message || 'Failed to approve. Please try again from applications.',
+                SimpleToast.LONG,
+              );
+              navigation.goBack();
+            },
+            () => {
+              SimpleToast.show('Network error. Please try again.', SimpleToast.LONG);
+              navigation.goBack();
+            },
           );
         } else {
           goToNewStaff();
