@@ -36,7 +36,7 @@ const IntroScreen = () => {
     },
     {
       id: 2,
-      image: ImageConstant?.profile || ImageConstant?.logo,
+      image: ImageConstant?.slide_hire_staff,
       title: 'Hire Verified Staff with AI',
       subtitle: '',
       bullets: [
@@ -47,7 +47,7 @@ const IntroScreen = () => {
     },
     {
       id: 3,
-      image: ImageConstant?.Dashboard || ImageConstant?.logo,
+      image: ImageConstant?.slide_manage_app,
       title: 'Manage Everything in One App',
       subtitle: '',
       bullets: [
@@ -173,7 +173,7 @@ const IntroScreen = () => {
                     styles.image,
                     index === 0 && styles.logoImage,
                   ]}
-                  resizeMode="contain"
+                  resizeMode={index === 0 ? 'contain' : 'cover'}
                 />
               </View>
               <View style={styles.textContainer}>
@@ -273,12 +273,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   image: {
-    width: '85%',
-    height: '85%',
+    width: '90%',
+    height: '90%',
+    borderRadius: 20,
   },
   logoImage: {
     width: width * 0.65,
     height: '75%',
+    borderRadius: 0,
     alignSelf: 'center',
   },
   textContainer: {

@@ -65,4 +65,6 @@ export const ImageConstant = {
   check: require('../../assets/Images/check.png'),
   close: require('../../assets/Images/close.png'),
   delete: require('../../assets/Images/delete.png'),
+  slide_hire_staff: require('../../assets/Images/slide_hire_staff.jpg'),
+  slide_manage_app: require('../../assets/Images/slide_manage_app.jpg'),
 };
