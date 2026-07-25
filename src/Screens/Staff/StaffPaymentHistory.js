@@ -102,6 +102,8 @@ const StaffPaymentHistory = ({ navigation }) => {
                       total_days: ed.attendance_summary?.total_working_days || 0,
                       salary_breakdown: ed.earnings_breakdown || {},
                       advance_payment: ed.deductions?.advance_repayment?.amount || 0,
+                      payment_id: ed.payment_id || `SAL-${ed.job_id || '--'}-${month}`,
+                      payment_mode: ed.payment_mode || 'Cash',
                     },
                   });
                 }

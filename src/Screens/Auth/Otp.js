@@ -477,7 +477,7 @@ const Otp = ({ navigation, route }) => {
             </Typography>
             <TouchableOpacity
               onPress={() =>
-                navigation.navigate('Policy', { slug: 'terms-condition' })
+                navigation.navigate('Policy', { slug: 'terms-of-service' })
               }
             >
               <Typography

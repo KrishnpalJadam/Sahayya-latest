@@ -206,9 +206,14 @@ const PolicyScreen = ({ route, navigation }) => {
     handlePolicy();
   }, []);
 
-  const formattedSlug = slug
-    ? slug.charAt(0).toUpperCase() + slug.slice(1)
-    : '';
+  const SLUG_TITLES = {
+    'help-support': 'Help & Support',
+    'privacy-policy': 'Privacy Policy',
+    'terms-of-service': 'Terms of Service',
+    'about-us': 'About Us',
+  };
+  const formattedSlug = SLUG_TITLES[slug]
+    || (slug ? slug.charAt(0).toUpperCase() + slug.slice(1).replace(/-/g, ' ') : '');
 
   const startFadeIn = () => {
     Animated.timing(fadeAnim, {

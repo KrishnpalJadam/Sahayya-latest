@@ -49,11 +49,12 @@ const Aadhar = () => {
   const navigation = useNavigation();
   const [adharNumber, setAdharNumber] = useState('');
   const [error, setError] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
 
   const submit = () => {
-    //  return
+    if (isLoading) return;
     let error = {
-      add_error: validators?.checkRequire('Aahhaar Number', adharNumber),
+      add_error: validators?.checkRequire('Aadhaar Number', adharNumber),
     };
     if (!adharNumber || !/^[0-9]{12}$/.test(adharNumber)) {
       const errMsg = 'Aadhaar number must be 12 digits';
@@ -61,18 +62,18 @@ const Aadhar = () => {
       return errMsg;
     }
     setError(error);
+    setIsLoading(true);
 
     const body = {
       aadhar_number: adharNumber,
       is_staff_add: 1,
     };
-    console.log('body---', body);
 
     POST_FORM_DATA(
       AADHAR_SAVE,
       body,
       sucess => {
-        console.log('sucess=------', sucess);
+        setIsLoading(false);
         SimpleToast.show(sucess?.message, SimpleToast.SHORT);
         navigation?.navigate('StaffVerifection', {
           adharNumber: adharNumber,
@@ -81,13 +82,14 @@ const Aadhar = () => {
         });
       },
       error => {
-        console.log('error----', error);
+        setIsLoading(false);
         setError({
           add_error: error?.data?.errors?.aadhar_number?.[0] || error?.data?.message || error?.message || 'Something went wrong',
         });
       },
       fail => {
-        console.log(fail);
+        setIsLoading(false);
+        SimpleToast.show('Network error. Please try again.', SimpleToast.SHORT);
       },
     );
   };
@@ -126,6 +128,8 @@ const Aadhar = () => {
             title={LocalizedStrings.AddStaff.Submit}
             main_style={styles.buttonStyle}
             icon={ImageConstant?.Arrow}
+            disabled={isLoading}
+            loader={isLoading}
           />
         </View>
         <Typography type={Font?.Poppins_Regular} style={styles.noteText}>

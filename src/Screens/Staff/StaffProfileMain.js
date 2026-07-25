@@ -281,9 +281,9 @@ const StaffProfileMain = ({ navigation }) => {
                     <View style={styles.flexRow}>
                         <Image source={ImageConstant.Location} style={styles.icon} />
                         <Typography style={styles.info}>
-                            {city !== 'Not Found' && state !== 'Not Found'
-                                ? `${city}, ${state}`
-                                : city !== 'Not Found' ? city : state !== 'Not Found' ? state : 'Not Found'}
+                            {presentCity !== 'Not Found' && presentState !== 'Not Found'
+                                ? `${presentCity}, ${presentState}`
+                                : presentCity !== 'Not Found' ? presentCity : presentState !== 'Not Found' ? presentState : 'Not Found'}
                         </Typography>
                     </View>
                     {userEmail !== 'Not Found' && (

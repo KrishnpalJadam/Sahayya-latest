@@ -126,6 +126,10 @@ const ManageAddresses = ({ navigation }) => {
         setLoading(false);
         SimpleToast.show('Failed to load addresses', SimpleToast.SHORT);
       },
+      () => {
+        setLoading(false);
+        SimpleToast.show('Network error. Please try again.', SimpleToast.SHORT);
+      },
     );
   };
 

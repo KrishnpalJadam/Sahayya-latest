@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   ScrollView,
@@ -36,19 +36,10 @@ const LegalConsentModal = ({
   const [checkedState, setCheckedState] = useState(
     checkboxes.map(() => false)
   );
-  const [hasScrolledToBottom, setHasScrolledToBottom] = useState(false);
+  const [hasRead, setHasRead] = useState(false);
 
   const hasCheckboxes = checkboxes && checkboxes.length > 0;
   const allChecked = hasCheckboxes ? checkedState.every(Boolean) : true;
-
-  const handleScroll = useCallback((event) => {
-    const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
-    const isNearBottom =
-      contentOffset.y + layoutMeasurement.height >= contentSize.height - 40;
-    if (isNearBottom) {
-      setHasScrolledToBottom(true);
-    }
-  }, []);
 
   const toggleCheckbox = (index) => {
     const newState = [...checkedState];
@@ -57,19 +48,19 @@ const LegalConsentModal = ({
   };
 
   const handleAccept = () => {
-    if (!allChecked || !hasScrolledToBottom) return;
+    if (!allChecked || !hasRead) return;
     onAccept && onAccept();
     if (hasCheckboxes) {
       setCheckedState(checkboxes.map(() => false));
     }
-    setHasScrolledToBottom(false);
+    setHasRead(false);
   };
 
   const handleClose = () => {
     if (hasCheckboxes) {
       setCheckedState(checkboxes.map(() => false));
     }
-    setHasScrolledToBottom(false);
+    setHasRead(false);
     onClose && onClose();
   };
 
@@ -101,14 +92,7 @@ const LegalConsentModal = ({
           <ScrollView
             style={styles.scrollArea}
             showsVerticalScrollIndicator={true}
-            onScroll={handleScroll}
-            scrollEventThrottle={16}
             bounces={false}
-            onContentSizeChange={(w, h) => {
-              if (h <= 400) {
-                setHasScrolledToBottom(true);
-              }
-            }}
           >
             {contentSections.map((section, idx) => (
               <View key={idx} style={styles.section}>
@@ -160,21 +144,28 @@ const LegalConsentModal = ({
             </View>
           )}
 
-          {/* Scroll hint */}
-          {!hasScrolledToBottom && (
-            <Typography size={10} style={styles.scrollHint}>
-              Please scroll through the entire document to continue
+          {/* I have read checkbox */}
+          <TouchableOpacity
+            style={styles.checkboxRow}
+            onPress={() => setHasRead(!hasRead)}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.checkbox, hasRead && styles.checkboxChecked]}>
+              {hasRead && <Typography style={styles.checkmark}>✓</Typography>}
+            </View>
+            <Typography size={12} style={styles.checkboxLabel}>
+              I have read the {title || 'document'} and agree to its terms
             </Typography>
-          )}
+          </TouchableOpacity>
 
           {/* Accept Button */}
           <TouchableOpacity
             style={[
               styles.acceptBtn,
-              (!allChecked || !hasScrolledToBottom) && styles.acceptBtnDisabled,
+              (!allChecked || !hasRead) && styles.acceptBtnDisabled,
             ]}
             onPress={handleAccept}
-            disabled={!allChecked || !hasScrolledToBottom}
+            disabled={!allChecked || !hasRead}
             activeOpacity={0.8}
           >
             <Typography
@@ -182,7 +173,7 @@ const LegalConsentModal = ({
               type={Font.Poppins_SemiBold}
               style={[
                 styles.acceptBtnText,
-                (!allChecked || !hasScrolledToBottom) &&
+                (!allChecked || !hasRead) &&
                   styles.acceptBtnTextDisabled,
               ]}
             >

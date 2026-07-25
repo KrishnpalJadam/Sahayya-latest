@@ -371,6 +371,7 @@ const StaffVerifection = ({ navigation, route }) => {
           main_style={styles.buttonStyle}
           icon={ImageConstant?.Arrow}
           loader={loading}
+          disabled={loading}
         />
       </View>
       <SimpleModal visible={Verify}>

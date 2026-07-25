@@ -162,7 +162,8 @@ const StaffManagement = ({ navigation, route }) => {
     const bonusAmount = Number(bonus) || 0;
     const overtimeAmount = Number(overtime) || 0;
     const advanceVal = Number(advance) || 0;
-    const netSalary = Math.max(0, base + bonusAmount + overtimeAmount - advanceVal);
+    const deductionVal = Number(deduction) || 0;
+    const netSalary = Math.max(0, base + bonusAmount + overtimeAmount - advanceVal - deductionVal);
     setTotalNet(netSalary);
     
     // Auto-calculate custom amount whenever net salary components change

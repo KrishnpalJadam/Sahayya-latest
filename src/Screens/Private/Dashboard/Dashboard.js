@@ -202,7 +202,7 @@ const Dashboard = ({ navigation }) => {
           activeOpacity={0.8}
           onPress={() => navigation.navigate('StaffActionScreen', { staff: item })}
         >
-          <Image source={{ uri: item.image }} style={styles.avatar} />
+          <Image source={{ uri: getProfileImage ? getProfileImage(item.image) : item.image }} style={styles.avatar} />
           <View>
             <Typography type={Font?.Poppins_SemiBold} size={16}>
               {`${item?.first_name || ''} ${item?.last_name || ''}`.trim() || item.name}
@@ -369,8 +369,8 @@ const Dashboard = ({ navigation }) => {
               <View style={styles.staffInfo}>
                 <Image source={{ uri: leaveModal.staff.image }} style={styles.staffAvatar} />
                 <View>
-                  <Typography size={16} type={Font?.Poppins_SemiBold}>{leaveModal.staff.name}</Typography>
-                  <Typography size={14} type={Font?.Poppins_Regular}>{leaveModal.staff.role}</Typography>
+                  <Typography size={16} type={Font?.Poppins_SemiBold}>{`${leaveModal.staff?.first_name || ''} ${leaveModal.staff?.last_name || ''}`.trim() || leaveModal.staff?.name || 'Staff'}</Typography>
+                  <Typography size={14} type={Font?.Poppins_Regular}>{leaveModal.staff?.user_work_info?.primary_role || leaveModal.staff?.role || ''}</Typography>
                 </View>
               </View>
             )}

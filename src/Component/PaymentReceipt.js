@@ -63,12 +63,17 @@ const PaymentReceipt = ({ visible, onClose, paymentData, userDetails, employerNa
       : null) ||
     'Employer';
 
-  const paymentDate = (paymentData?.created_at || paymentData?.date)
-    ? moment(paymentData.created_at || paymentData.date).format('DD MMM YYYY')
-    : moment().format('DD MMM YYYY');
+  const parsePaymentDate = (dateStr) => {
+    if (!dateStr) return moment();
+    const formats = ['DD/MM/YYYY', 'DD-MM-YYYY', 'YYYY-MM-DD HH:mm:ss', 'YYYY-MM-DDTHH:mm:ss', 'YYYY-MM-DD', moment.ISO_8601];
+    const parsed = moment(dateStr, formats, true);
+    return parsed.isValid() ? parsed : moment(dateStr);
+  };
+
+  const paymentDate = parsePaymentDate(paymentData?.created_at || paymentData?.date).format('DD MMM YYYY');
 
   const salaryPeriod = paymentData?.salary_period ||
-    moment(paymentData?.created_at || paymentData?.date || new Date()).format('MMMM YYYY');
+    parsePaymentDate(paymentData?.created_at || paymentData?.date).format('MMMM YYYY');
 
   const paymentId =
     paymentData?.payment_id ?? paymentData?.id ?? paymentData?.salary_id ?? '--';
