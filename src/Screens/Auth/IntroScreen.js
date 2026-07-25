@@ -9,7 +9,6 @@ import {
   Dimensions,
   ScrollView,
   StatusBar,
-  Platform,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
@@ -26,27 +25,38 @@ const IntroScreen = () => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
 
-  // Intro slides data
+  // Updated Intro slides data according to requirements
   const introSlides = [
     {
       id: 1,
-      image: ImageConstant?.user || ImageConstant?.logo,
+      image: ImageConstant?.logo,
       title: 'Welcome to Sahayya',
-      subtitle:
-        'Your trusted companion for managing household and staff services',
+      subtitle: 'Trusted Household Staffing Platform',
+      bullets: [],
     },
     {
       id: 2,
-      image: ImageConstant?.logo || ImageConstant?.user,
-      title: 'Manage Your Staff',
-      subtitle: 'Easily add, manage and track your household staff members',
+      image: ImageConstant?.profile || ImageConstant?.logo,
+      title: 'Hire Verified Staff with AI',
+      subtitle: '',
+      bullets: [
+        { label: 'Background verified', icon: ImageConstant?.ic_usercheck || ImageConstant?.check },
+        { label: 'Ratings & Reviews', icon: ImageConstant?.win || ImageConstant?.check },
+        { label: 'Nearby candidates', icon: ImageConstant?.Location || ImageConstant?.check },
+      ],
     },
     {
       id: 3,
-      image: ImageConstant?.profile || ImageConstant?.logo,
-      title: 'Get Started',
-      subtitle:
-        'Start managing your household services efficiently and effectively',
+      image: ImageConstant?.Dashboard || ImageConstant?.logo,
+      title: 'Manage Everything in One App',
+      subtitle: '',
+      bullets: [
+        { label: 'Attendance', icon: ImageConstant?.Calendar || ImageConstant?.check },
+        { label: 'Salary', icon: ImageConstant?.Salary || ImageConstant?.check },
+        { label: 'Leave', icon: ImageConstant?.fileText || ImageConstant?.check },
+        { label: 'Tasks', icon: ImageConstant?.work || ImageConstant?.check },
+        { label: 'Reminders', icon: ImageConstant?.ic_bellring || ImageConstant?.check },
+      ],
     },
   ];
 
@@ -85,12 +95,13 @@ const IntroScreen = () => {
 
   const handleNext = async () => {
     if (currentIndex < introSlides.length - 1) {
-      // Go to next slide - let onMomentumScrollEnd handle state update
+      // Go to next slide
       const nextIndex = currentIndex + 1;
       scrollViewRef.current?.scrollTo({
         x: nextIndex * width,
         animated: true,
       });
+      setCurrentIndex(nextIndex);
     } else {
       // Last slide, navigate to Login
       try {
@@ -104,21 +115,13 @@ const IntroScreen = () => {
   };
 
   const handleScroll = event => {
-    // Only update during manual scroll, not programmatic scroll
     const slideIndex = Math.round(event.nativeEvent.contentOffset.x / width);
     if (
       slideIndex !== currentIndex &&
       slideIndex >= 0 &&
       slideIndex < introSlides.length
     ) {
-      // Check if this is a manual scroll (not programmatic)
-      const scrollPosition = event.nativeEvent.contentOffset.x;
-      const expectedPosition = currentIndex * width;
-      const isManualScroll = Math.abs(scrollPosition - expectedPosition) > 10;
-
-      if (isManualScroll) {
-        setCurrentIndex(slideIndex);
-      }
+      setCurrentIndex(slideIndex);
     }
   };
 
@@ -127,7 +130,6 @@ const IntroScreen = () => {
       await AsyncStorage.setItem('introShown', 'true');
       navigation.replace('Login');
     } catch (error) {
-      // Even if save fails, navigate to Login
       console.log('AsyncStorage save error:', error);
       navigation.replace('Login');
     }
@@ -154,7 +156,6 @@ const IntroScreen = () => {
           onScroll={handleScroll}
           scrollEventThrottle={16}
           onMomentumScrollEnd={event => {
-            // This handles both manual and programmatic scrolls
             const slideIndex = Math.round(
               event.nativeEvent.contentOffset.x / width,
             );
@@ -170,14 +171,32 @@ const IntroScreen = () => {
                   source={slide.image}
                   style={[
                     styles.image,
-                    index === 1 && styles.logoImage,
+                    index === 0 && styles.logoImage,
                   ]}
-                  resizeMode={index === 1 ? 'contain' : 'cover'}
+                  resizeMode="contain"
                 />
               </View>
               <View style={styles.textContainer}>
                 <Text style={styles.title}>{slide.title}</Text>
-                <Text style={styles.subtitle}>{slide.subtitle}</Text>
+                {!!slide.subtitle && (
+                  <Text style={styles.subtitle}>{slide.subtitle}</Text>
+                )}
+                {slide.bullets && slide.bullets.length > 0 && (
+                  <View style={styles.bulletsContainer}>
+                    {slide.bullets.map((bullet, bIdx) => (
+                      <View key={bIdx} style={styles.bulletChip}>
+                        <View style={styles.bulletIconContainer}>
+                          <Image
+                            source={bullet.icon || ImageConstant?.check}
+                            style={styles.bulletIcon}
+                            resizeMode="contain"
+                          />
+                        </View>
+                        <Text style={styles.bulletText}>{bullet.label}</Text>
+                      </View>
+                    ))}
+                  </View>
+                )}
               </View>
             </View>
           ))}
@@ -244,36 +263,38 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   imageContainer: {
-    height: height * 0.45,
+    height: height * 0.38,
     width: '100%',
     overflow: 'hidden',
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
+    backgroundColor: '#FEF9F9',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   image: {
-    width: '100%',
-    height: '100%',
+    width: '85%',
+    height: '85%',
   },
   logoImage: {
-    width: width * 0.6,
-    height: '70%',
+    width: width * 0.65,
+    height: '75%',
     alignSelf: 'center',
-    marginTop: '5%',
   },
   textContainer: {
     flex: 1,
     justifyContent: 'flex-start',
     alignItems: 'center',
     width: '100%',
-    paddingHorizontal: 24,
-    paddingTop: 30,
+    paddingHorizontal: 20,
+    paddingTop: 24,
   },
   title: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: 'bold',
     color: '#D98579',
     textAlign: 'center',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
@@ -281,6 +302,51 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 24,
     paddingHorizontal: 16,
+  },
+  bulletsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 12,
+    paddingHorizontal: 8,
+    maxWidth: width * 0.95,
+  },
+  bulletChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    paddingVertical: 9,
+    paddingHorizontal: 14,
+    borderRadius: 20,
+    borderWidth: 1.5,
+    borderColor: '#F5DCD8',
+    elevation: 2,
+    shadowColor: '#D98579',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    marginVertical: 5,
+    marginHorizontal: 4,
+  },
+  bulletIconContainer: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#FDECE9',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 8,
+  },
+  bulletIcon: {
+    width: 12,
+    height: 12,
+    tintColor: '#D98579',
+  },
+  bulletText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333333',
   },
   paginationContainer: {
     flexDirection: 'row',
@@ -338,3 +404,4 @@ const styles = StyleSheet.create({
 });
 
 export default IntroScreen;
+
