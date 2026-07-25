@@ -173,7 +173,7 @@ const IntroScreen = () => {
                     styles.image,
                     index === 0 && styles.logoImage,
                   ]}
-                  resizeMode={index === 0 ? 'contain' : 'cover'}
+                  resizeMode="contain"
                 />
               </View>
               <View style={styles.textContainer}>
