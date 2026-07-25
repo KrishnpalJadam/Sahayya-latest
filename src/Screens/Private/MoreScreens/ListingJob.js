@@ -525,26 +525,34 @@ export default function ListingJob({ navigation, route }) {
                   Work Expectations
                 </Typography>
                 <DetailRow label="Expected Role" value={
-                  detailItem?.user?.user_work_info?.primary_role
-                    ? (Array.isArray(detailItem.user.user_work_info.primary_role)
-                      ? detailItem.user.user_work_info.primary_role.join(', ')
-                      : detailItem.user.user_work_info.primary_role)
-                    : detailItem?.expected_role
-                } />
-                <DetailRow label="Expected Salary" value={
-                  detailItem?.user?.user_work_info?.salary
-                    ? `₹${Number(detailItem.user.user_work_info.salary).toLocaleString('en-IN')}`
-                    : detailItem?.expected_salary
-                      ? `₹${Number(detailItem.expected_salary).toLocaleString('en-IN')}`
+                  detailItem?.expected_role
+                    ? detailItem.expected_role
+                    : detailItem?.user?.user_work_info?.primary_role
+                      ? (Array.isArray(detailItem.user.user_work_info.primary_role)
+                        ? detailItem.user.user_work_info.primary_role.join(', ')
+                        : detailItem.user.user_work_info.primary_role)
                       : null
                 } />
-                <DetailRow label="Pay Frequency" value={detailItem?.user?.user_work_info?.pay_frequency} />
+                <DetailRow label="Expected Salary" value={
+                  detailItem?.expected_salary
+                    ? `₹${Number(detailItem.expected_salary).toLocaleString('en-IN')}`
+                    : detailItem?.user?.user_work_info?.salary
+                      ? `₹${Number(detailItem.user.user_work_info.salary).toLocaleString('en-IN')}`
+                      : null
+                } />
+                <DetailRow label="Pay Frequency" value={
+                  detailItem?.pay_frequency ||
+                  detailItem?.user?.user_work_info?.pay_frequency ||
+                  null
+                } />
                 <DetailRow label="Working Days" value={
-                  detailItem?.user?.user_work_info?.working_days
-                    ? (Array.isArray(detailItem.user.user_work_info.working_days)
-                      ? detailItem.user.user_work_info.working_days.join(', ')
-                      : detailItem.user.user_work_info.working_days)
-                    : null
+                  (() => {
+                    const wd = detailItem?.working_days ||
+                      detailItem?.user?.user_work_info?.working_days;
+                    if (!wd) return null;
+                    if (Array.isArray(wd)) return wd.join(', ');
+                    return wd;
+                  })()
                 } />
                 <DetailRow label="Experience" value={
                   (() => {
