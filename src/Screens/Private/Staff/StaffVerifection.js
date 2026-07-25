@@ -9,8 +9,8 @@ import { ImageConstant } from '../../../Constants/ImageConstant';
 import SimpleModal from './../../../Component/UI/SimpleModal';
 import { OtpInput } from 'react-native-otp-entry';
 import LocalizedStrings from '../../../Constants/localization';
-import { POST_FORM_DATA } from '../../../Backend/Backend';
-import { AADHAR_SAVE, AADHAR_VERFIY } from '../../../Backend/api_routes';
+import { POST_FORM_DATA, POST_WITH_TOKEN } from '../../../Backend/Backend';
+import { AADHAR_SAVE, AADHAR_VERFIY, ApplicantsStatus } from '../../../Backend/api_routes';
 
 const buildSafeStaffPayload = (baseUser = {}, verifiedUser = {}) => {
   const nextUser = verifiedUser && typeof verifiedUser === 'object' ? verifiedUser : {};
@@ -86,6 +86,8 @@ const StaffVerifection = ({ navigation, route }) => {
   const userData = route?.params?.userData;
   const adharNumber = route?.params?.adharNumber;
   const otpAlreadySent = route?.params?.otpAlreadySent || false;
+  const pendingApproval = route?.params?.pendingApproval || false;
+  const applicationId = route?.params?.applicationId || null;
 
   const [otp, setOtp] = useState('');
   const [Verify, setVerify] = useState(false);
@@ -208,17 +210,33 @@ const StaffVerifection = ({ navigation, route }) => {
     data.append('aadhar_number', String(adharNumber));
     data.append('is_staff_add', '1');
 
-    POST_FORM_DATA(
+      POST_FORM_DATA(
       AADHAR_VERFIY,
       data,
       success => {
         setLoading(false);
         const verifiedUser = success?.data?.user || success?.user || null;
         const mergedUserData = buildSafeStaffPayload(userData, verifiedUser);
-        navigation.navigate('NewStaffFrom', {
-          adharNumber: adharNumber,
-          userData: mergedUserData,
-        });
+
+        const goToNewStaff = () => {
+          navigation.navigate('NewStaffFrom', {
+            adharNumber: adharNumber,
+            userData: mergedUserData,
+          });
+        };
+
+        // If this came from job approval flow, approve the application AFTER OTP verified
+        if (pendingApproval && applicationId) {
+          POST_WITH_TOKEN(
+            `${ApplicantsStatus}/${applicationId}/status`,
+            { application_status: 'accepted' },
+            () => goToNewStaff(),
+            () => goToNewStaff(),
+            () => goToNewStaff(),
+          );
+        } else {
+          goToNewStaff();
+        }
       },
       error => {
         setLoading(false);

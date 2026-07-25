@@ -152,35 +152,37 @@ export default function ListingJob({ navigation, route }) {
 
   // API call for approve/reject
   const handelapplication = (status, jobID, item) => {
-    const body = {
-      application_status: status,
-    };
+    if (status === 'rejected') {
+      // Reject immediately — no OTP needed
+      POST_WITH_TOKEN(
+        `${ApplicantsStatus}/${jobID}/status`,
+        { application_status: status },
+        success => {
+          SimpleToast.show(success?.message || 'Success', SimpleToast.SHORT);
+          JobList();
+        },
+        error => {
+          SimpleToast.show(
+            error?.data?.message || error?.message || 'Something went wrong',
+            SimpleToast.SHORT,
+          );
+        },
+        fail => {
+          SimpleToast.show('Network error. Please try again.', SimpleToast.SHORT);
+        },
+      );
+      return;
+    }
 
-    POST_WITH_TOKEN(
-      `${ApplicantsStatus}/${jobID}/status`,
-      body,
-      success => {
-        SimpleToast.show(success?.message || 'Success', SimpleToast.SHORT);
-        if (status === 'accepted' && item?.user) {
-          // Always require Aadhaar OTP verification before adding staff
-          navigation.navigate('StaffVerifection', {
-            adharNumber: item?.user?.aadhar_number || item?.user?.aadhaar_number,
-            userData: item?.user,
-          });
-        }
-        // Always refresh the list after any action
-        JobList();
-      },
-      error => {
-        SimpleToast.show(
-          error?.data?.message || error?.message || 'Something went wrong',
-          SimpleToast.SHORT,
-        );
-      },
-      fail => {
-        SimpleToast.show('Network error. Please try again.', SimpleToast.SHORT);
-      },
-    );
+    if (status === 'accepted' && item?.user) {
+      // Do NOT approve yet — verify Aadhaar OTP FIRST, then approve
+      navigation.navigate('StaffVerifection', {
+        adharNumber: item?.user?.aadhar_number || item?.user?.aadhaar_number,
+        userData: item?.user,
+        pendingApproval: true,
+        applicationId: jobID,
+      });
+    }
   };
 
   return (
