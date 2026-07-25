@@ -232,20 +232,22 @@ const HouseholdSection = ({ index, data, updateField, updatePet, addPet, removeP
               error={errors?.[`petType${petIndex}`]}
             />
           </View>
-          <View style={styles.petCountContainer}>
-            <Input
-              title={
-                LocalizedStrings.EditProfile?.Count ||
-                LocalizedStrings.CompleteProfile?.count ||
-                'Count'
-              }
-              placeholder=""
-              keyboardType="numeric"
-              value={pet.count}
-              onChange={value => updatePetField(petIndex, 'count', value)}
-              error={errors?.[`petCount${petIndex}`]}
-            />
-          </View>
+          {pet.type?.toLowerCase() !== 'other' && (
+            <View style={styles.petCountContainer}>
+              <Input
+                title={
+                  LocalizedStrings.EditProfile?.Count ||
+                  LocalizedStrings.CompleteProfile?.count ||
+                  'Count'
+                }
+                placeholder=""
+                keyboardType="numeric"
+                value={pet.count}
+                onChange={value => updatePetField(petIndex, 'count', value)}
+                error={errors?.[`petCount${petIndex}`]}
+              />
+            </View>
+          )}
           {data.pets.length > 1 && (
             <TouchableOpacity
               style={styles.removePetButton}
@@ -386,10 +388,14 @@ const StepHousehold = React.forwardRef((props, ref) => {
             prefix + (LocalizedStrings.EditProfile?.Pet_Type || 'Pet Type'),
             pet.type,
           );
-          allErrors[`${idx}_petCount${petIdx}`] = validators.checkRequire(
-            prefix + (LocalizedStrings.EditProfile?.Count || 'Pet Count'),
-            pet.count,
-          );
+          if (pet.type?.toLowerCase() !== 'other') {
+            allErrors[`${idx}_petCount${petIdx}`] = validators.checkRequire(
+              prefix + (LocalizedStrings.EditProfile?.Count || 'Pet Count'),
+              pet.count,
+            );
+          } else {
+            allErrors[`${idx}_petCount${petIdx}`] = null;
+          }
         }
       });
     });
@@ -401,10 +407,14 @@ const StepHousehold = React.forwardRef((props, ref) => {
   const getHouseholdData = () => {
     return households.map(h => {
       const petDetails = h.pets
-        .filter(pet => pet.type && pet.count)
+        .filter(pet => {
+          if (!pet.type) return false;
+          if (pet.type.toLowerCase() === 'other') return true;
+          return !!pet.count;
+        })
         .map(pet => ({
           pet_type: pet.type,
-          pet_count: pet.count,
+          pet_count: pet.type?.toLowerCase() === 'other' ? null : pet.count,
         }));
 
       return {

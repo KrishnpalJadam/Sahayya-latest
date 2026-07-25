@@ -604,10 +604,15 @@ const HouseholdProfile = ({ navigation, route }) => {
       formData.append(`addresses[${index}][household]`, JSON.stringify(householdPayload));
 
       // Pets — send as JSON string so Laravel can json_decode it reliably
-      const validPets = (address.pets || []).filter(p => p.pet_type?.trim() !== '' && (p.count?.trim() !== '' || p.pet_count?.trim() !== ''));
+      const validPets = (address.pets || []).filter(p => {
+        const petType = (p.pet_type || '').trim();
+        if (petType === '') return false;
+        if (petType.toLowerCase() === 'other') return true;
+        return (p.count?.trim() !== '' || p.pet_count?.trim() !== '');
+      });
       const petsPayload = validPets.map(pet => ({
         pet_type: pet.pet_type,
-        pet_count: pet.count || pet.pet_count,
+        pet_count: pet.pet_type?.toLowerCase() === 'other' ? null : (pet.count || pet.pet_count || null),
       }));
       formData.append(`addresses[${index}][pets]`, JSON.stringify(petsPayload));
     });
@@ -630,8 +635,10 @@ const HouseholdProfile = ({ navigation, route }) => {
             : hh.residence_type || null;
         const validPets = (address.pets || []).filter(p => {
           const petType = String(p.pet_type || p.type || '').trim();
+          if (petType === '') return false;
+          if (petType.toLowerCase() === 'other') return true;
           const petCount = String(p.count || p.pet_count || '').trim();
-          return petType !== '' && petCount !== '';
+          return petCount !== '';
         });
 
         return {
@@ -656,7 +663,7 @@ const HouseholdProfile = ({ navigation, route }) => {
           },
           pets: validPets.map(pet => ({
             pet_type: pet.pet_type || pet.type,
-            pet_count: pet.count || pet.pet_count,
+            pet_count: (pet.pet_type || pet.type || '').toLowerCase() === 'other' ? null : (pet.count || pet.pet_count || null),
           })),
         };
       }),
@@ -1123,14 +1130,16 @@ const HouseholdProfile = ({ navigation, route }) => {
                       ]}
                     />
                   </View>
-                  <View style={styles.petCountField}>
-                    <Input
-                      title={LocalizedStrings.EditProfile.Count || 'Count'}
-                      keyboardType="numeric"
-                      value={pet.count || pet.pet_count || ''}
-                      onChange={value => updateAddressPet(index, pi, 'count', value)}
-                    />
-                  </View>
+                  {(pet.pet_type || pet.type || '').toLowerCase() !== 'other' && (
+                    <View style={styles.petCountField}>
+                      <Input
+                        title={LocalizedStrings.EditProfile.Count || 'Count'}
+                        keyboardType="numeric"
+                        value={pet.count || pet.pet_count || ''}
+                        onChange={value => updateAddressPet(index, pi, 'count', value)}
+                      />
+                    </View>
+                  )}
                   {(address.pets.length > 1 || pet.pet_type || pet.type || pet.count) && (
                     <TouchableOpacity
                       style={styles.removePetButton}

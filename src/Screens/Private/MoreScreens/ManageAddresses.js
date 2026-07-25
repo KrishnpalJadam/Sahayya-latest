@@ -268,10 +268,17 @@ const ManageAddresses = ({ navigation }) => {
       if (hh.elderly_count) formData.append(`addresses[${index}][household][elderly_count]`, hh.elderly_count);
       if (hh.special_requirements) formData.append(`addresses[${index}][household][special_requirements]`, hh.special_requirements);
 
-      const validPets = (addr.pets || []).filter(p => p.pet_type?.trim() && p.pet_count?.trim());
+      const validPets = (addr.pets || []).filter(p => {
+        const petType = (p.pet_type || '').trim();
+        if (petType === '') return false;
+        if (petType.toLowerCase() === 'other') return true;
+        return (p.pet_count || '').trim() !== '';
+      });
       validPets.forEach((pet, pi) => {
         formData.append(`addresses[${index}][pets][${pi}][pet_type]`, pet.pet_type);
-        formData.append(`addresses[${index}][pets][${pi}][pet_count]`, pet.pet_count);
+        if ((pet.pet_type || '').toLowerCase() !== 'other') {
+          formData.append(`addresses[${index}][pets][${pi}][pet_count]`, pet.pet_count);
+        }
       });
     });
 
@@ -441,9 +448,11 @@ const ManageAddresses = ({ navigation }) => {
                     <View style={{ flex: 1, marginRight: 8 }}>
                       <Input title="Type" value={pet.pet_type} onChange={val => updatePet(addrIndex, petIndex, 'pet_type', val)} />
                     </View>
-                    <View style={{ width: 80 }}>
-                      <Input title="Count" keyboardType="numeric" value={pet.pet_count} onChange={val => updatePet(addrIndex, petIndex, 'pet_count', val)} />
-                    </View>
+                    {(pet.pet_type || '').toLowerCase() !== 'other' && (
+                      <View style={{ width: 80 }}>
+                        <Input title="Count" keyboardType="numeric" value={pet.pet_count} onChange={val => updatePet(addrIndex, petIndex, 'pet_count', val)} />
+                      </View>
+                    )}
                     {(address.pets.length > 1 || pet.pet_type || pet.pet_count) && (
                       <TouchableOpacity style={styles.removeBtn} onPress={() => removePet(addrIndex, petIndex)}>
                         <Typography size={12} color="red">Remove</Typography>
