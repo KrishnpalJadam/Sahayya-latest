@@ -42,6 +42,8 @@ const EarningSummary = ({ route }) => {
   const [errorMessage, setErrorMessage] = useState('');
   const [attendanceSummary, setAttendanceSummary] = useState({ totalWorked: 0, daysInMonth: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate() });
   const [advanceBalance, setAdvanceBalance] = useState(0);
+  const [advanceTotalGiven, setAdvanceTotalGiven] = useState(0);
+  const [projectedAdvanceDeduction, setProjectedAdvanceDeduction] = useState(0);
 
   const retryCountRef = useRef(0);
   const retriedJobIdRef = useRef(false);
@@ -93,7 +95,11 @@ const EarningSummary = ({ route }) => {
       success => {
         if (!mountedRef.current) return;
         const totalRemaining = success?.summary?.total_remaining || 0;
+        const totalGiven = success?.summary?.total_given || 0;
+        const projectedDeduction = success?.summary?.projected_deduction || 0;
         setAdvanceBalance(totalRemaining);
+        setAdvanceTotalGiven(totalGiven);
+        setProjectedAdvanceDeduction(projectedDeduction);
       },
       () => {},
       () => {},
@@ -273,7 +279,7 @@ const EarningSummary = ({ route }) => {
     displayedBaseSalary = (monthlySalary / attendanceSummary.daysInMonth) * attendanceSummary.totalWorked;
   }
 
-  const pendingAdvanceDeduction = isPending ? advanceBalance : advanceRepayment;
+  const pendingAdvanceDeduction = isPending ? projectedAdvanceDeduction : advanceRepayment;
 
   const totalPayableAmount = isPending 
     ? Math.max(0, displayedBaseSalary + bonusAmount + overtimeAmount - pendingAdvanceDeduction)
@@ -356,19 +362,21 @@ const EarningSummary = ({ route }) => {
       </View>
 
       {/* Advance Balance (if any) */}
-      {advanceBalance > 0 && (
+      {advanceTotalGiven > 0 && (
         <View style={[styles.sectionCard, { backgroundColor: '#FFF7ED', borderColor: '#FED7AA' }]}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
             <View>
               <Typography type={Font.Poppins_SemiBold} size={13} color="#9A3412">
                 Advance Taken
               </Typography>
-              <Typography size={11} color="#B45309" style={{ marginTop: 2 }}>
-                Will be deducted from salary
-              </Typography>
+              {advanceBalance > 0 && (
+                <Typography size={11} color="#B45309" style={{ marginTop: 2 }}>
+                  ₹{Number(advanceBalance).toLocaleString('en-IN')} remaining to deduct
+                </Typography>
+              )}
             </View>
             <Typography type={Font.Poppins_Bold} size={18} color="#9A3412">
-              {formatCurrency(advanceBalance)}
+              {formatCurrency(advanceTotalGiven)}
             </Typography>
           </View>
         </View>
