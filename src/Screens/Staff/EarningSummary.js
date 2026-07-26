@@ -475,7 +475,7 @@ const EarningSummary = ({ route }) => {
                   worked_days: entry?.worked_days ?? summary2?.attendance_summary?.present_days,
                   total_days: entry?.total_days ?? summary2?.attendance_summary?.total_working_days,
                   salary_breakdown: entry?.salary_breakdown || summary2?.earnings_breakdown || {},
-                  advance_payment: entry?.advance_payment ?? summary2?.deductions?.advance_repayment?.amount || 0,
+                  advance_payment: entry?.advance_payment ?? (summary2?.deductions?.advance_repayment?.amount || 0),
                   payment_mode: entry?.payment_mode || 'cash',
                   payment_id: entry?.payment_id || entry?.id,
                   status: entry?.status || summary2?.payment_status || 'Paid',

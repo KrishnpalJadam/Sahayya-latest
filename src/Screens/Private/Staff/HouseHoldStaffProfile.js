@@ -849,7 +849,8 @@ const HouseHoldStaffProfile = ({ navigation, route }) => {
               <Typography style={styles.label}>
                 {LocalizedStrings.StaffProfile.Date_of_Birth}
               </Typography>
-              <Typography style={styles.value}>{data?.dob || 'Not Available'}</Typography>
+              <Typography style={styles.value}>
+                {displayDob || 'Not Available'}
             </View>
           </View>
           <View style={styles.row}>
@@ -1033,7 +1034,7 @@ const HouseHoldStaffProfile = ({ navigation, route }) => {
               </View>
             )}
             {data?.user_work_info?.joining_date && (
-              <View style={styles.rowNoBorder}>
+              <View style={styles.row}>
                 <Image source={ImageConstant.Calendar} style={styles.icon} />
                 <View style={styles.textBox}>
                   <Typography style={styles.label}>Joining Date</Typography>
@@ -1043,8 +1044,54 @@ const HouseHoldStaffProfile = ({ navigation, route }) => {
                 </View>
               </View>
             )}
+            {data?.user_work_info?.education && (
+              <View style={styles.row}>
+                <Image source={ImageConstant.Briefcase} style={styles.icon} />
+                <View style={styles.textBox}>
+                  <Typography style={styles.label}>Education</Typography>
+                  <Typography style={styles.value}>
+                    {data.user_work_info.education}
+                  </Typography>
+                </View>
+              </View>
+            )}
+            {Array.isArray(data?.user_work_info?.skills) && data.user_work_info.skills.length > 0 && (
+              <View style={styles.row}>
+                <Image source={ImageConstant.Briefcase} style={styles.icon} />
+                <View style={styles.textBox}>
+                  <Typography style={styles.label}>Skills</Typography>
+                  <Typography style={styles.value}>
+                    {data.user_work_info.skills.join(', ')}
+                  </Typography>
+                </View>
+              </View>
+            )}
+            {Array.isArray(data?.user_work_info?.languages_spoken) && data.user_work_info.languages_spoken.length > 0 && (
+              <View style={styles.rowNoBorder}>
+                <Image source={ImageConstant.Briefcase} style={styles.icon} />
+                <View style={styles.textBox}>
+                  <Typography style={styles.label}>Languages Spoken</Typography>
+                  <Typography style={styles.value}>
+                    {data.user_work_info.languages_spoken.join(', ')}
+                  </Typography>
+                </View>
+              </View>
+            )}
           </View>
         ))}
+
+        {!fromFindStaffAI && data?.about_me && (
+          <View style={styles.card}>
+            <Typography style={styles.cardTitle}>
+              About Me
+            </Typography>
+            <View style={styles.rowNoBorder}>
+              <Typography style={[styles.value, { lineHeight: 22 }]}>
+                {data.about_me}
+              </Typography>
+            </View>
+          </View>
+        )}
 
         {!fromFindStaffAI && (
         <View style={styles.card}>
@@ -1058,7 +1105,7 @@ const HouseHoldStaffProfile = ({ navigation, route }) => {
                 {LocalizedStrings.StaffProfile.Aadhaar_Number}
               </Typography>
               <Typography style={styles.value}>
-                {maskAadhar(data?.aadhar_number)}
+                {maskAadhar(displayAadharNumber)}
               </Typography>
             </View>
           </View>
@@ -1204,7 +1251,9 @@ const HouseHoldStaffProfile = ({ navigation, route }) => {
                   styles.kycBadge,
                   {
                     backgroundColor:
-                      data?.aadhar__verify == 1 ? '#E6F7EC' : '#FEF9C3',
+                      (data?.aadhar__verify == 1 || kycInfo?.status === 'verified')
+                        ? '#E6F7EC'
+                        : '#FEF9C3',
                   },
                 ]}
               >
@@ -1212,11 +1261,14 @@ const HouseHoldStaffProfile = ({ navigation, route }) => {
                   style={[
                     styles.kycText,
                     {
-                      color: data?.aadhar__verify == 1 ? '#28A745' : '#854D0E',
+                      color:
+                        (data?.aadhar__verify == 1 || kycInfo?.status === 'verified')
+                          ? '#28A745'
+                          : '#854D0E',
                     },
                   ]}
                 >
-                  {data?.aadhar__verify == 1
+                  {(data?.aadhar__verify == 1 || kycInfo?.status === 'verified')
                     ? LocalizedStrings.FindStaff.Verified || 'Verified'
                     : LocalizedStrings.LeaveApplications.Pending || 'Pending'}
                 </Typography>
@@ -1248,7 +1300,9 @@ const HouseHoldStaffProfile = ({ navigation, route }) => {
                   styles.kycBadge,
                   {
                     backgroundColor:
-                      data?.aadhar__verify == 1 ? '#E6F7EC' : '#FEF9C3',
+                      (kycInfo?.police_verification_path || data?.police_verification_path || data?.employer_police_verification)
+                        ? '#E6F7EC'
+                        : '#FEF9C3',
                   },
                 ]}
               >
@@ -1256,11 +1310,16 @@ const HouseHoldStaffProfile = ({ navigation, route }) => {
                   style={[
                     styles.kycText,
                     {
-                      color: data?.aadhar__verify == 1 ? '#28A745' : '#854D0E',
+                      color:
+                        (kycInfo?.police_verification_path || data?.police_verification_path || data?.employer_police_verification)
+                          ? '#28A745'
+                          : '#854D0E',
                     },
                   ]}
                 >
-                  {LocalizedStrings.LeaveApplications.Pending || 'Pending'}
+                  {(kycInfo?.police_verification_path || data?.police_verification_path || data?.employer_police_verification)
+                    ? LocalizedStrings.FindStaff.Verified || 'Verified'
+                    : LocalizedStrings.LeaveApplications.Pending || 'Pending'}
                 </Typography>
               </View>
             </View>
