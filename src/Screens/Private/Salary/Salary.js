@@ -35,6 +35,7 @@ import {
 import SimpleToast from 'react-native-simple-toast';
 import moment from 'moment';
 import PaymentReceipt from '../../../Component/PaymentReceipt';
+import AdvanceReceipt from '../../../Component/AdvanceReceipt';
 import { setAsyncStorage, getAsyncStorage } from '../../../Utils/AsyncStorage';
 // import { processSalaryPayment } from '../../../Services/RazorpayService';
 
@@ -77,6 +78,8 @@ const StaffManagement = ({ navigation, route }) => {
   const [deductionMethod, setDeductionMethod] = useState(null);
   const [numInstallments, setNumInstallments] = useState('');
   const [advancePaymentMethod, setAdvancePaymentMethod] = useState('Cash');
+  const [advanceReceiptData, setAdvanceReceiptData] = useState(null);
+  const [showAdvanceReceipt, setShowAdvanceReceipt] = useState(false);
   const [workedDays, setWorkedDays] = useState(0);
   const [totalDaysInMonth, setTotalDaysInMonth] = useState(30);
   const paymentTypeData = [
@@ -546,6 +549,20 @@ const StaffManagement = ({ navigation, route }) => {
         savePaymentToLocal(advanceRecord).then(() => {
           loadAdvanceHistory(leaveType?.value);
         });
+
+        // Build receipt data from backend response
+        const receiptPayload = {
+          ...advanceRecord,
+          ...(success?.data || {}),
+          advance_id: success?.data?.advance_id,
+          receipt_id: success?.data?.receipt_id,
+          given_date: success?.data?.given_date || new Date().toISOString(),
+          staff_name: success?.data?.staff_name || staffName,
+          employer_name: success?.data?.employer_name,
+          status: success?.data?.should_deduct ? 'Active' : 'Paid',
+        };
+        setAdvanceReceiptData(receiptPayload);
+        setShowAdvanceReceipt(true);
         
         SimpleToast.show(
           success?.message || 'Advance payment processed successfully!',
@@ -1810,6 +1827,15 @@ const StaffManagement = ({ navigation, route }) => {
         onClose={() => setReceiptPayment(null)}
         paymentData={receiptPayment}
         userDetails={userDetails}
+      />
+
+      {/* Advance Receipt Modal */}
+      <AdvanceReceipt
+        visible={showAdvanceReceipt}
+        onClose={() => { setShowAdvanceReceipt(false); setAdvanceReceiptData(null); }}
+        advanceData={advanceReceiptData}
+        staffName={advanceReceiptData?.staff_name}
+        employerName={advanceReceiptData?.employer_name}
       />
 
       {/* Advance Payment Modal */}
