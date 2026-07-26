@@ -851,6 +851,7 @@ const HouseHoldStaffProfile = ({ navigation, route }) => {
               </Typography>
               <Typography style={styles.value}>
                 {displayDob || 'Not Available'}
+              </Typography>
             </View>
           </View>
           <View style={styles.row}>
