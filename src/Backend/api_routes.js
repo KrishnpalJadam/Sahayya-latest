@@ -216,6 +216,12 @@ export const LEGAL_CONSENT = 'legal-consent';
 export const LEGAL_CONSENT_BULK = 'legal-consent/bulk';
 
 // ===========================================
+// POLICY VERSION MANAGEMENT
+// ===========================================
+export const PolicyStatus = 'policy/status';
+export const PolicyAccept = 'policy/accept';
+
+// ===========================================
 // MULTI-LANGUAGE
 // ===========================================
 export const LanguageList = 'languages';

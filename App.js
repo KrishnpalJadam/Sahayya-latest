@@ -8,6 +8,7 @@ import { persistor, store } from './src/Redux/store';
 import { PersistGate } from 'redux-persist/integration/react';
 import RootStack from './src/Navigation/RootStack';
 import StaffStacks from './src/Navigation/StaffStacks';
+import PolicyGate from './src/Component/PolicyGate';
 import { getLanguage, setLanguage } from './src/Constants/AsyncStorage';
 import localization from './src/Constants/localization';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -123,7 +124,13 @@ const MainNavigation = () => {
     <NavigationContainer ref={navigationRef} key={languageCode}>
       <SafeAreaView style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
         <FocusAwareStatusBar />
-        {isAuth ? userTypes == 2 ? <StaffStacks /> : <RootStack /> : <AuthStack />}
+        {isAuth ? (
+          <PolicyGate>
+            {userTypes == 2 ? <StaffStacks /> : <RootStack />}
+          </PolicyGate>
+        ) : (
+          <AuthStack />
+        )}
       </SafeAreaView>
     </NavigationContainer>
   );
