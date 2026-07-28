@@ -14,7 +14,7 @@ import { Font } from '../../Constants/Font';
 import Typography from '../../Component/UI/Typography';
 import Button from '../../Component/Button';
 import { POST_WITH_TOKEN, GET_WITH_TOKEN } from '../../Backend/Backend';
-import { SUBSCRIPTIONS_BY_ROLE, SUBSCRIPTIONS, SUBSCRIBE_PLAN, SUBSCRIPTION_USER_VERIFY, SUBSCRIPTION_USER_SUBSCRIBE } from '../../Backend/api_routes';
+import { SUBSCRIPTIONS_BY_ROLE, SUBSCRIPTIONS, SUBSCRIBE_PLAN, SUBSCRIPTION_USER_VERIFY, SUBSCRIPTION_USER_SUBSCRIBE, SUBSCRIPTION_USER_CREATE_ORDER } from '../../Backend/api_routes';
 import { useSelector } from 'react-redux';
 import SimpleToast from 'react-native-simple-toast';
 import LocalizedStrings from '../../Constants/localization';
@@ -166,6 +166,14 @@ const ChoosePlan = ({ navigation, route }) => {
     }
   };
 
+  const GST_RATE = 18;
+
+  const calculateGst = (price) => {
+    const baseAmount = Math.round((price / 1.18) * 100) / 100;
+    const gstAmount = Math.round((price - baseAmount) * 100) / 100;
+    return { baseAmount, gstAmount, totalAmount: price };
+  };
+
   const formatPrice = price => {
     if (!price || price === '0' || price === '0.00') return 'FREE';
     return `₹${price}`;
@@ -181,10 +189,6 @@ const ChoosePlan = ({ navigation, route }) => {
   };
 
   const proceedToApp = () => {
-    // After plan selection, check if profile is complete
-    // If not, go to EditProfile first, then ApplyReferral, then Dashboard
-    // For new signups, always go to ApplyReferral first to collect referral data
-    // ApplyReferral will then dispatch isAuth(true), and StaffStacks will handle next steps
     navigation.navigate('ApplyReferral', { isFirstTime: true });
   };
 
@@ -196,10 +200,13 @@ const ChoosePlan = ({ navigation, route }) => {
       subscribeToPlan(subscription);
       return;
     }
-    // Paid plan - try Razorpay
+
+    const price = parseFloat(subscription.price);
+    const { baseAmount, gstAmount, totalAmount } = calculateGst(price);
+
     Alert.alert(
       'Confirm Payment',
-      `You are about to purchase ${subscription.subscription_name} for ₹${subscription.price}. Do you want to proceed?`,
+      `${subscription.subscription_name}\n\nBase Price: ₹${baseAmount.toFixed(2)}\nGST (18%): ₹${gstAmount.toFixed(2)}\nTotal: ₹${totalAmount.toFixed(2)}\n\nDo you want to proceed?`,
       [
         { text: 'Cancel', style: 'cancel' },
         { text: 'Pay Now', onPress: () => processPayment(subscription) },
@@ -207,92 +214,80 @@ const ChoosePlan = ({ navigation, route }) => {
     );
   };
 
-  // Backend only exposes POST /subscription/subscribe — there is no create-order /
-  // verify-payment endpoint. We open Razorpay directly with a client-side amount
-  // and, on payment success, activate the plan by calling /subscription/subscribe
-  // with { subscriptionId, paymentId }.
   const processPayment = async subscription => {
     setPaymentLoading(true);
     setSelectedPlanId(subscription.id);
 
     try {
-      const amountInPaise = Math.round(parseFloat(subscription.price) * 100);
-      let result;
-      try {
-        result = await initiatePayment({
-          amount: amountInPaise,
-          currency: 'INR',
-          description: `${subscription.subscription_name} Membership`,
-          prefill: {
-            name: userDetail?.first_name
-              ? `${userDetail.first_name} ${userDetail.last_name || ''}`
-              : userDetail?.name || '',
-            email: userDetail?.email || '',
-            contact: userDetail?.phone || userDetail?.mobile || userDetail?.phone_number || '',
-          },
-        });
-      } catch (razorpayErr) {
-        // Razorpay SDK not available or crashed - fallback to direct subscribe
-        console.log('[ChoosePlan] Razorpay unavailable, fallback:', razorpayErr);
-        result = { success: false, code: -99, description: 'Razorpay unavailable' };
-      }
+      const price = parseFloat(subscription.price);
+      const { totalAmount } = calculateGst(price);
 
-      console.log('[ChoosePlan] Razorpay result:', JSON.stringify(result));
+      POST_WITH_TOKEN(
+        SUBSCRIPTION_USER_CREATE_ORDER,
+        { subscription_id: subscription.id },
+        async (orderSuccess) => {
+          if (orderSuccess?.status && orderSuccess?.order_id) {
+            try {
+              let result;
+              try {
+                result = await initiatePayment({
+                  amount: Math.round(totalAmount * 100),
+                  currency: 'INR',
+                  orderId: orderSuccess.order_id,
+                  description: `${subscription.subscription_name} Membership (incl. GST)`,
+                  prefill: {
+                    name: userDetail?.first_name
+                      ? `${userDetail.first_name} ${userDetail.last_name || ''}`
+                      : userDetail?.name || '',
+                    email: userDetail?.email || '',
+                    contact: userDetail?.phone || userDetail?.mobile || userDetail?.phone_number || '',
+                  },
+                });
+              } catch (razorpayErr) {
+                result = { success: false, code: -99, description: 'Razorpay unavailable' };
+              }
 
-      if (result.success) {
-        activateAfterPayment(subscription, result);
-      } else {
-        setPaymentLoading(false);
-        setSelectedPlanId(null);
-        if (result.code === 0 || result.code === 2) {
-          SimpleToast.show('Payment cancelled', SimpleToast.SHORT);
-        } else {
-          SimpleToast.show(
-            result.description || 'Payment failed. Please try again.',
-            SimpleToast.SHORT,
-          );
+              if (result.success) {
+                verifyAndActivate(result, orderSuccess.subscription_user_id);
+              } else {
+                setPaymentLoading(false);
+                setSelectedPlanId(null);
+                if (result.code === 0 || result.code === 2) {
+                  SimpleToast.show('Payment cancelled', SimpleToast.SHORT);
+                } else {
+                  SimpleToast.show(result.description || 'Payment failed.', SimpleToast.SHORT);
+                }
+              }
+            } catch (paymentErr) {
+              setPaymentLoading(false);
+              setSelectedPlanId(null);
+              SimpleToast.show('Payment failed. Please try again.', SimpleToast.SHORT);
+            }
+          } else {
+            setPaymentLoading(false);
+            setSelectedPlanId(null);
+            SimpleToast.show(orderSuccess?.message || 'Failed to create order.', SimpleToast.SHORT);
+          }
+        },
+        (orderError) => {
+          setPaymentLoading(false);
+          setSelectedPlanId(null);
+          SimpleToast.show(orderError?.message || 'Failed to create order.', SimpleToast.SHORT);
+        },
+        () => {
+          setPaymentLoading(false);
+          setSelectedPlanId(null);
+          SimpleToast.show('Network error. Please try again.', SimpleToast.SHORT);
         }
-      }
+      );
     } catch (error) {
-      console.log('[ChoosePlan] Payment error:', error);
       setPaymentLoading(false);
       setSelectedPlanId(null);
       SimpleToast.show('Payment failed. Please try again.', SimpleToast.SHORT);
     }
   };
 
-  const activateAfterPayment = (subscription, paymentResult) => {
-    POST_WITH_TOKEN(
-      SUBSCRIPTION_USER_SUBSCRIBE,
-      { subscriptionId: subscription.id, paymentId: paymentResult?.paymentId || null },
-      success => {
-        console.log('[ChoosePlan] Activate success:', JSON.stringify(success));
-        setPaymentLoading(false);
-        setSelectedPlanId(null);
-        SimpleToast.show(
-          success?.message || 'Subscription activated successfully!',
-          SimpleToast.LONG,
-        );
-        proceedToApp();
-      },
-      error => {
-        console.log('[ChoosePlan] Activate error:', JSON.stringify(error));
-        setPaymentLoading(false);
-        setSelectedPlanId(null);
-        SimpleToast.show(
-          error?.data?.message || 'Payment received but activation failed. Please contact support.',
-          SimpleToast.LONG,
-        );
-      },
-      () => {
-        setPaymentLoading(false);
-        setSelectedPlanId(null);
-        SimpleToast.show('Network error. Please try again.', SimpleToast.SHORT);
-      },
-    );
-  };
-
-  const verifyAndActivate = (subscription, paymentResult, subscriptionUserId) => {
+  const verifyAndActivate = (paymentResult, subscriptionUserId) => {
     POST_WITH_TOKEN(
       SUBSCRIPTION_USER_VERIFY,
       {
@@ -308,43 +303,21 @@ const ChoosePlan = ({ navigation, route }) => {
         proceedToApp();
       },
       (error) => {
-        console.log('[ChoosePlan] Verify error, falling back:', JSON.stringify(error));
-        activateViaSubscribePlan(subscription, paymentResult);
+        setPaymentLoading(false);
+        setSelectedPlanId(null);
+        SimpleToast.show(
+          error?.message || 'Payment received but activation failed. Please contact support.',
+          SimpleToast.LONG,
+        );
       },
       () => {
-        activateViaSubscribePlan(subscription, paymentResult);
+        setPaymentLoading(false);
+        setSelectedPlanId(null);
+        SimpleToast.show('Network error. Please try again.', SimpleToast.SHORT);
       }
     );
   };
 
-  const activateViaSubscribePlan = (subscription, paymentResult) => {
-    POST_WITH_TOKEN(
-      SUBSCRIBE_PLAN,
-      {
-        subscription_id: subscription.id,
-        payment_id: paymentResult?.paymentId || null,
-        payment_status: 'success',
-        amount: subscription.price || '0',
-      },
-      success => {
-        setPaymentLoading(false);
-        setSelectedPlanId(null);
-        SimpleToast.show('Subscription activated successfully!', SimpleToast.LONG);
-        proceedToApp();
-      },
-      error => {
-        setPaymentLoading(false);
-        setSelectedPlanId(null);
-        SimpleToast.show('Payment received!', SimpleToast.SHORT);
-        proceedToApp();
-      },
-      fail => {
-        setPaymentLoading(false);
-        setSelectedPlanId(null);
-        proceedToApp();
-      },
-    );
-  };
 
   const subscribeToPlan = async (subscription, isAuto = false) => {
     if (paymentLoading) return;
@@ -468,6 +441,11 @@ const ChoosePlan = ({ navigation, route }) => {
                       {(subscription.type || subscription.validity) &&
                         ` / ${formatValidity(subscription.validity, subscription.type)}`}
                     </Typography>
+                    {subscription.price > 0 && (
+                      <Typography type={Font.Poppins_Regular} style={{ fontSize: 11, color: '#999' }}>
+                        Incl. 18% GST (₹{calculateGst(parseFloat(subscription.price)).baseAmount.toFixed(2)} + ₹{calculateGst(parseFloat(subscription.price)).gstAmount.toFixed(2)} GST)
+                      </Typography>
+                    )}
                   </View>
                   {subscription.extra?.key_word === 'best' && (
                     <Image

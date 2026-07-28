@@ -121,6 +121,15 @@ const MemberShip = ({ navigation }) => {
         );
     };
 
+    const GST_RATE = 18;
+
+    const calculateGst = (price) => {
+        const baseAmount = Math.round((price / 1.18) * 100) / 100;
+        const gstAmount = Math.round((price - baseAmount) * 100) / 100;
+        const totalAmount = price;
+        return { baseAmount, gstAmount, totalAmount };
+    };
+
     const formatPrice = (price) => {
         if (!price || price === '0' || price === '0.00') return 'FREE';
         return `₹${price}`;
@@ -134,17 +143,17 @@ const MemberShip = ({ navigation }) => {
     };
 
     const handleSelectPlan = async (subscription) => {
-        // Check if plan is free
         if (!subscription.price || subscription.price === '0' || subscription.price === '0.00') {
-            // Free plan - directly subscribe
             subscribeToPlan(subscription, null);
             return;
         }
 
-        // Show confirmation alert
+        const price = parseFloat(subscription.price);
+        const { baseAmount, gstAmount, totalAmount } = calculateGst(price);
+
         Alert.alert(
             'Confirm Payment',
-            `You are about to purchase ${subscription.subscription_name} for ₹${subscription.price}. Do you want to proceed?`,
+            `${subscription.subscription_name}\n\nBase Price: ₹${baseAmount.toFixed(2)}\nGST (18%): ₹${gstAmount.toFixed(2)}\nTotal: ₹${totalAmount.toFixed(2)}\n\nDo you want to proceed?`,
             [
                 { text: 'Cancel', style: 'cancel' },
                 { text: 'Pay Now', onPress: () => processPayment(subscription) }
@@ -152,83 +161,75 @@ const MemberShip = ({ navigation }) => {
         );
     };
 
-    // Backend only exposes POST /subscription/subscribe. Open Razorpay directly and
-    // activate via /subscription/subscribe on success.
     const processPayment = async (subscription) => {
         setPaymentLoading(true);
         setSelectedPlanId(subscription.id);
 
         try {
-            const amountInPaise = Math.round(parseFloat(subscription.price) * 100);
-            const result = await initiatePayment({
-                amount: amountInPaise,
-                currency: 'INR',
-                description: `${subscription.subscription_name} Membership`,
-                prefill: {
-                    name: userDetail?.first_name
-                        ? `${userDetail.first_name} ${userDetail.last_name || ''}`
-                        : userDetail?.name || '',
-                    email: userDetail?.email || '',
-                    contact: userDetail?.phone || userDetail?.mobile || '',
+            const price = parseFloat(subscription.price);
+            const { baseAmount, gstAmount, totalAmount } = calculateGst(price);
+
+            POST_WITH_TOKEN(
+                SUBSCRIPTION_USER_CREATE_ORDER,
+                { subscription_id: subscription.id },
+                async (orderSuccess) => {
+                    if (orderSuccess?.status && orderSuccess?.order_id) {
+                        try {
+                            const result = await initiatePayment({
+                                amount: Math.round(totalAmount * 100),
+                                currency: 'INR',
+                                orderId: orderSuccess.order_id,
+                                description: `${subscription.subscription_name} Membership (incl. GST)`,
+                                prefill: {
+                                    name: userDetail?.first_name
+                                        ? `${userDetail.first_name} ${userDetail.last_name || ''}`
+                                        : userDetail?.name || '',
+                                    email: userDetail?.email || '',
+                                    contact: userDetail?.phone || userDetail?.mobile || '',
+                                },
+                            });
+
+                            if (result.success) {
+                                verifyAndActivate(result, orderSuccess.subscription_user_id);
+                            } else {
+                                setPaymentLoading(false);
+                                setSelectedPlanId(null);
+                                if (result.code === 0 || result.code === 2) {
+                                    SimpleToast.show('Payment cancelled', SimpleToast.SHORT);
+                                } else {
+                                    SimpleToast.show(result.description || 'Payment failed.', SimpleToast.SHORT);
+                                }
+                            }
+                        } catch (paymentErr) {
+                            setPaymentLoading(false);
+                            setSelectedPlanId(null);
+                            SimpleToast.show('Payment failed. Please try again.', SimpleToast.SHORT);
+                        }
+                    } else {
+                        setPaymentLoading(false);
+                        setSelectedPlanId(null);
+                        SimpleToast.show(orderSuccess?.message || 'Failed to create order.', SimpleToast.SHORT);
+                    }
                 },
-            });
-
-            console.log('[MemberShip] Razorpay result:', JSON.stringify(result));
-
-            if (result.success) {
-                activateAfterPayment(subscription, result);
-            } else {
-                setPaymentLoading(false);
-                setSelectedPlanId(null);
-                if (result.code === 0 || result.code === 2) {
-                    SimpleToast.show('Payment cancelled', SimpleToast.SHORT);
-                } else {
-                    SimpleToast.show(result.description || 'Payment failed. Please try again.', SimpleToast.SHORT);
+                (orderError) => {
+                    setPaymentLoading(false);
+                    setSelectedPlanId(null);
+                    SimpleToast.show(orderError?.message || 'Failed to create order.', SimpleToast.SHORT);
+                },
+                () => {
+                    setPaymentLoading(false);
+                    setSelectedPlanId(null);
+                    SimpleToast.show('Network error. Please try again.', SimpleToast.SHORT);
                 }
-            }
+            );
         } catch (error) {
-            console.log('[MemberShip] Payment error:', error);
             setPaymentLoading(false);
             setSelectedPlanId(null);
             SimpleToast.show('Payment failed. Please try again.', SimpleToast.SHORT);
         }
     };
 
-    const activateAfterPayment = (subscription, paymentResult) => {
-        POST_WITH_TOKEN(
-            SUBSCRIPTION_USER_SUBSCRIBE,
-            { subscriptionId: subscription.id, paymentId: paymentResult?.paymentId || null },
-            success => {
-                console.log('[MemberShip] Activate success:', JSON.stringify(success));
-                setPaymentLoading(false);
-                setSelectedPlanId(null);
-                SimpleToast.show(
-                    success?.message || 'Subscription activated successfully!',
-                    SimpleToast.LONG,
-                );
-                fetchCurrentSubscription();
-            },
-            error => {
-                console.log('[MemberShip] Activate error:', JSON.stringify(error));
-                setPaymentLoading(false);
-                setSelectedPlanId(null);
-                SimpleToast.show(
-                    error?.data?.message || 'Payment received but activation failed. Please contact support.',
-                    SimpleToast.LONG,
-                );
-            },
-            () => {
-                setPaymentLoading(false);
-                setSelectedPlanId(null);
-                SimpleToast.show('Network error. Please try again.', SimpleToast.SHORT);
-            },
-        );
-    };
-
-    const verifyAndActivate = (subscription, paymentResult, subscriptionUserId) => {
-        console.log('[MemberShip] Verifying payment - paymentId:', paymentResult.paymentId, 'sub_user_id:', subscriptionUserId);
-
-        // Try verify endpoint first
+    const verifyAndActivate = (paymentResult, subscriptionUserId) => {
         POST_WITH_TOKEN(
             SUBSCRIPTION_USER_VERIFY,
             {
@@ -238,57 +239,23 @@ const MemberShip = ({ navigation }) => {
                 subscription_user_id: subscriptionUserId,
             },
             (success) => {
-                console.log('[MemberShip] Verify success:', JSON.stringify(success));
                 setPaymentLoading(false);
                 setSelectedPlanId(null);
                 SimpleToast.show('Subscription activated successfully!', SimpleToast.LONG);
                 fetchCurrentSubscription();
             },
             (error) => {
-                console.log('[MemberShip] Verify error, falling back to subscribe_plan:', JSON.stringify(error));
-                // Fallback: try SUBSCRIBE_PLAN endpoint to activate
-                activateViaSubscribePlan(subscription, paymentResult);
+                setPaymentLoading(false);
+                setSelectedPlanId(null);
+                SimpleToast.show(
+                    error?.message || 'Payment received but activation failed. Please contact support.',
+                    SimpleToast.LONG,
+                );
             },
             () => {
-                console.log('[MemberShip] Verify network fail, falling back to subscribe_plan');
-                // Fallback: try SUBSCRIBE_PLAN endpoint to activate
-                activateViaSubscribePlan(subscription, paymentResult);
-            }
-        );
-    };
-
-    const activateViaSubscribePlan = (subscription, paymentResult) => {
-        const payload = {
-            subscription_id: subscription.id,
-            payment_id: paymentResult?.paymentId || null,
-            payment_status: 'success',
-            amount: subscription.price || '0',
-        };
-        console.log('[MemberShip] Fallback SUBSCRIBE_PLAN payload:', JSON.stringify(payload));
-
-        POST_WITH_TOKEN(
-            SUBSCRIBE_PLAN,
-            payload,
-            success => {
-                console.log('[MemberShip] SUBSCRIBE_PLAN success:', JSON.stringify(success));
                 setPaymentLoading(false);
                 setSelectedPlanId(null);
-                SimpleToast.show('Subscription activated successfully!', SimpleToast.LONG);
-                fetchCurrentSubscription();
-            },
-            error => {
-                console.log('[MemberShip] SUBSCRIBE_PLAN error:', JSON.stringify(error));
-                setPaymentLoading(false);
-                setSelectedPlanId(null);
-                SimpleToast.show('Payment received! Please restart app to see your plan.', SimpleToast.LONG);
-                fetchCurrentSubscription();
-            },
-            fail => {
-                console.log('[MemberShip] SUBSCRIBE_PLAN network fail');
-                setPaymentLoading(false);
-                setSelectedPlanId(null);
-                SimpleToast.show('Payment received! Please restart app to see your plan.', SimpleToast.LONG);
-                fetchCurrentSubscription();
+                SimpleToast.show('Network error. Please try again.', SimpleToast.SHORT);
             }
         );
     };
@@ -433,6 +400,11 @@ const MemberShip = ({ navigation }) => {
                                             {formatPrice(subscription.price)}
                                             {(subscription.type || subscription.validity) && ` / ${formatValidity(subscription.validity, subscription.type)}`}
                                         </Typography>
+                                        {subscription.price > 0 && (
+                                            <Typography type={Font.Poppins_Regular} style={{ fontSize: 11, color: '#999' }}>
+                                                Incl. 18% GST (₹{calculateGst(parseFloat(subscription.price)).baseAmount.toFixed(2)} + ₹{calculateGst(parseFloat(subscription.price)).gstAmount.toFixed(2)} GST)
+                                            </Typography>
+                                        )}
                                     </View>
                                     {subscription.extra?.key_word === 'best' && (
                                         <Image source={ImageConstant.win} style={styles.iconSmall} />

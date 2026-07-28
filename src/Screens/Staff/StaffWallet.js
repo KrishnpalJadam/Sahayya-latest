@@ -134,6 +134,9 @@ const StaffWallet = ({ navigation }) => {
 
   const pricePerCredit = limitInfo?.credit_purchase_price || 10;
   const totalPrice = creditsToPurchase * pricePerCredit;
+  const GST_RATE = 18;
+  const baseAmount = Math.round((totalPrice / 1.18) * 100) / 100;
+  const gstAmount = Math.round((totalPrice - baseAmount) * 100) / 100;
 
   return (
     <CommanView>
@@ -210,12 +213,33 @@ const StaffWallet = ({ navigation }) => {
                       </Typography>
                     </View>
                     <View style={styles.divider} />
+                    {totalPrice > 0 && (
+                      <>
+                        <View style={styles.summaryRow}>
+                          <Typography type={Font.Poppins_Regular} style={styles.summaryLabel}>
+                            Base Amount
+                          </Typography>
+                          <Typography type={Font.Poppins_Medium} style={styles.summaryValue}>
+                            ₹{baseAmount.toFixed(2)}
+                          </Typography>
+                        </View>
+                        <View style={styles.summaryRow}>
+                          <Typography type={Font.Poppins_Regular} style={styles.summaryLabel}>
+                            GST (18%)
+                          </Typography>
+                          <Typography type={Font.Poppins_Medium} style={styles.summaryValue}>
+                            ₹{gstAmount.toFixed(2)}
+                          </Typography>
+                        </View>
+                        <View style={styles.divider} />
+                      </>
+                    )}
                     <View style={styles.summaryRow}>
                       <Typography type={Font.Poppins_SemiBold} style={styles.totalLabel}>
                         Total Amount
                       </Typography>
                       <Typography type={Font.Poppins_Bold} style={styles.totalValue}>
-                        ₹{totalPrice}
+                        ₹{totalPrice.toFixed(2)}
                       </Typography>
                     </View>
                   </View>
