@@ -41,7 +41,7 @@ const StaffProfile = ({ navigation }) => {
                     </View>
                     <View style={styles.flexRow}>
                         <Image source={ImageConstant.mail} style={styles.icon} />
-                        <Typography style={styles.info}>Support.Sahayya@easyapps360.com</Typography>
+                        <Typography style={styles.info}>Support@sahayya.co.in</Typography>
                     </View>
 
                     <View style={styles.actionRow}>

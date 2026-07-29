@@ -109,7 +109,7 @@ const ProfileManagement = ({ navigation }) => {
               />
             </View>
             <Typography style={styles.fieldValue}>
-              Support.Sahayya@easyapps360.com
+              Support@sahayya.co.in
             </Typography>
           </View>
         </View>

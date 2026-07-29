@@ -217,7 +217,7 @@ export const PRIVACY_POLICY_CONTENT = [
   },
   {
     heading: 'Contact Information',
-    text: 'For privacy-related concerns:\n\nSahayya Support\nEmail: Support.Sahayya@easyapps360.com\nWebsite: www.sahayya.com',
+    text: 'For privacy-related concerns:\n\nSahayya Support\nEmail: Support@sahayya.co.in\nWebsite: www.sahayya.com',
   },
 ];
 
