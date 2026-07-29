@@ -109,7 +109,7 @@ const ProfileManagement = ({ navigation }) => {
               />
             </View>
             <Typography style={styles.fieldValue}>
-              sarah.smith@gmail.com
+              Support.Sahayya@easyapps360.com
             </Typography>
           </View>
         </View>
