@@ -10,7 +10,7 @@ import DropdownComponent from '../../Component/DropdownComponent';
 import UploadBox from '../../Component/UploadBox';
 import ImageModal from '../../Component/Modals/ImageModal';
 import { ImageConstant } from '../../Constants/ImageConstant';
-import { POST_WITH_TOKEN, GET_WITH_TOKEN } from '../../Backend/Backend';
+import { POST_WITH_TOKEN, POST_FORM_DATA, GET_WITH_TOKEN } from '../../Backend/Backend';
 import { SupportTicketCreate, SupportCategories } from '../../Backend/api_routes';
 import SimpleToast from 'react-native-simple-toast';
 
@@ -118,7 +118,6 @@ const CreateTicket = ({ navigation }) => {
         name: image.name || 'ticket_image.jpg',
       });
 
-      const { POST_FORM_DATA } = require('../../Backend/Backend');
       POST_FORM_DATA(
         SupportTicketCreate,
         formData,

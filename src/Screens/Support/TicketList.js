@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { StyleSheet, View, FlatList, TouchableOpacity, RefreshControl } from 'react-native';
+import { StyleSheet, View, FlatList, TouchableOpacity, RefreshControl, ActivityIndicator } from 'react-native';
 import CommanView from '../../Component/CommanView';
 import HeaderForUser from '../../Component/HeaderForUser';
 import Typography from '../../Component/UI/Typography';
@@ -145,7 +145,14 @@ const TicketList = ({ navigation }) => {
         contentContainerStyle={styles.listContent}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         ListEmptyComponent={
-          !loading ? (
+          loading ? (
+            <View style={styles.emptyContainer}>
+              <ActivityIndicator size="large" color="#D98579" />
+              <Typography type={Font.Poppins_Regular} size={12} color="#999" style={{ marginTop: 10 }}>
+                Loading tickets...
+              </Typography>
+            </View>
+          ) : (
             <View style={styles.emptyContainer}>
               <Typography type={Font.Poppins_Medium} size={15} color="#999" textAlign="center">
                 No tickets found
@@ -154,7 +161,7 @@ const TicketList = ({ navigation }) => {
                 Tap + to create a new support ticket
               </Typography>
             </View>
-          ) : null
+          )
         }
       />
     </CommanView>

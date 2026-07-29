@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, ScrollView, FlatList, KeyboardAvoidingView, Platform } from 'react-native';
+import { StyleSheet, View, ScrollView, ActivityIndicator } from 'react-native';
 import CommanView from '../../Component/CommanView';
 import HeaderForUser from '../../Component/HeaderForUser';
 import Typography from '../../Component/UI/Typography';
@@ -85,7 +85,7 @@ const TicketDetail = ({ navigation, route }) => {
           onPressLeftIcon={() => navigation.goBack()}
         />
         <View style={styles.emptyContainer}>
-          <Typography type={Font.Poppins_Regular} size={14} color="#999">Loading...</Typography>
+          <ActivityIndicator size="large" color="#D98579" />
         </View>
       </CommanView>
     );
@@ -108,22 +108,22 @@ const TicketDetail = ({ navigation, route }) => {
   }
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <CommanView>
-        <HeaderForUser
-          title="Ticket Details"
-          style_title={{ fontSize: 18 }}
-          source_arrow={ImageConstant?.BackArrow}
-          onPressLeftIcon={() => navigation.goBack()}
-        />
+    <View style={{ flex: 1, backgroundColor: '#fff' }}>
+      <HeaderForUser
+        title="Ticket Details"
+        style_title={{ fontSize: 18 }}
+        source_arrow={ImageConstant?.BackArrow}
+        onPressLeftIcon={() => navigation.goBack()}
+      />
 
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="always"
-        >
-          {/* Ticket Info Card */}
-          <View style={styles.ticketCard}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="always"
+        style={{ flex: 1 }}
+      >
+        {/* Ticket Info Card */}
+        <View style={styles.ticketCard}>
             <View style={styles.ticketHeader}>
               <Typography type={Font.Poppins_SemiBold} size={16} color="#1A1A1A">
                 {ticket.subject}
@@ -213,8 +213,7 @@ const TicketDetail = ({ navigation, route }) => {
             loader={sending}
           />
         </View>
-      </CommanView>
-    </KeyboardAvoidingView>
+      </View>
   );
 };
 
