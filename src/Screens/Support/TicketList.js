@@ -115,8 +115,8 @@ const TicketList = ({ navigation }) => {
         style_title={{ fontSize: 18 }}
         source_arrow={ImageConstant?.BackArrow}
         onPressLeftIcon={() => navigation.goBack()}
-        Profile_icon={ImageConstant?.plus}
-        onPressProfileIcon={() => navigation.navigate('CreateTicket')}
+        source_logo={ImageConstant?.ic_plus}
+        onPressRightIcon={() => navigation.navigate('CreateTicket')}
       />
 
       {/* Filter Tabs */}
