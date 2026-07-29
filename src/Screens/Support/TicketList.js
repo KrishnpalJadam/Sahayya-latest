@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { StyleSheet, View, FlatList, TouchableOpacity, RefreshControl, ActivityIndicator } from 'react-native';
+import { StyleSheet, View, FlatList, TouchableOpacity, RefreshControl, ActivityIndicator, ScrollView } from 'react-native';
 import CommanView from '../../Component/CommanView';
 import HeaderForUser from '../../Component/HeaderForUser';
 import Typography from '../../Component/UI/Typography';
@@ -120,22 +120,28 @@ const TicketList = ({ navigation }) => {
       />
 
       {/* Filter Tabs */}
-      <View style={styles.filterContainer}>
-        {FILTER_OPTIONS.map(filter => (
-          <TouchableOpacity
-            key={filter}
-            style={[styles.filterTab, activeFilter === filter && styles.filterTabActive]}
-            onPress={() => setActiveFilter(filter)}
-          >
-            <Typography
-              type={Font.Poppins_Medium}
-              size={12}
-              color={activeFilter === filter ? '#fff' : '#666'}
+      <View>
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filterContainer}
+        >
+          {FILTER_OPTIONS.map(filter => (
+            <TouchableOpacity
+              key={filter}
+              style={[styles.filterTab, activeFilter === filter && styles.filterTabActive]}
+              onPress={() => setActiveFilter(filter)}
             >
-              {filter}
-            </Typography>
-          </TouchableOpacity>
-        ))}
+              <Typography
+                type={Font.Poppins_Medium}
+                size={12}
+                color={activeFilter === filter ? '#fff' : '#666'}
+              >
+                {filter}
+              </Typography>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
       </View>
 
       <FlatList
@@ -164,6 +170,17 @@ const TicketList = ({ navigation }) => {
           )
         }
       />
+
+      {/* Floating Action Button */}
+      <TouchableOpacity
+        style={styles.fab}
+        onPress={() => navigation.navigate('CreateTicket')}
+        activeOpacity={0.8}
+      >
+        <Typography type={Font.Poppins_SemiBold} size={30} color="#fff" style={{ marginTop: 4 }}>
+          +
+        </Typography>
+      </TouchableOpacity>
     </CommanView>
   );
 };
@@ -228,5 +245,21 @@ const styles = StyleSheet.create({
   emptyContainer: {
     alignItems: 'center',
     marginTop: 80,
+  },
+  fab: {
+    position: 'absolute',
+    bottom: 24,
+    right: 24,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#D98579',
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3.84,
   },
 });
