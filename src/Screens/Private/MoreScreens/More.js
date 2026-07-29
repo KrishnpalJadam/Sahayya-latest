@@ -296,7 +296,7 @@ const More = ({ navigation }) => {
           Images={ImageConstant?.ic_help}
           title={LocalizedStrings.MoreOptions.help_support}
           subtitle={LocalizedStrings.MoreOptions.find_answers}
-          onPress={() => handleCMSPage('help-support')}
+          onPress={() => navigation.navigate('TicketList')}
         />
         <Option
           Images={ImageConstant?.ic_policy}

@@ -27,6 +27,9 @@ import AppUpdate from '../Screens/Private/MoreScreens/AppUpdate';
 import ReferAndEarn from '../Screens/Private/MoreScreens/ReferAndEarn';
 import StaffWallet from '../Screens/Staff/StaffWallet';
 import BankAccounts from '../Screens/Staff/BankAccounts';
+import TicketList from '../Screens/Support/TicketList';
+import CreateTicket from '../Screens/Support/CreateTicket';
+import TicketDetail from '../Screens/Support/TicketDetail';
 import { useDispatch, useSelector } from 'react-redux';
 import Aadhaar from '../Screens/Auth/Aadhaar';
 import AadharOtp from '../Screens/Private/Staff/AadharOtp';
@@ -205,6 +208,21 @@ const RootStack = () => {
       <Stack.Screen
         name="BankAccounts"
         component={BankAccounts}
+        options={{ ...commonOptions }}
+      />
+      <Stack.Screen
+        name="TicketList"
+        component={TicketList}
+        options={{ ...commonOptions }}
+      />
+      <Stack.Screen
+        name="CreateTicket"
+        component={CreateTicket}
+        options={{ ...commonOptions }}
+      />
+      <Stack.Screen
+        name="TicketDetail"
+        component={TicketDetail}
         options={{ ...commonOptions }}
       />
     </Stack.Navigator>

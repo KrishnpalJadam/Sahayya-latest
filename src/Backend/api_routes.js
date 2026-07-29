@@ -201,6 +201,15 @@ export const FaqList = 'faq-support';
 export const FaqSearch = 'faq-support-search';
 
 // ===========================================
+// SUPPORT TICKETS (Zoho Desk)
+// ===========================================
+export const SupportTicketCreate = 'user/v1/support/tickets';
+export const SupportTicketList = 'user/v1/support/tickets';
+export const SupportTicketDetail = 'user/v1/support/tickets';
+export const SupportTicketComment = 'user/v1/support/tickets';
+export const SupportCategories = 'user/v1/support/categories';
+
+// ===========================================
 // BANK ACCOUNTS
 // ===========================================
 export const BankAccountList = 'bank-accounts';

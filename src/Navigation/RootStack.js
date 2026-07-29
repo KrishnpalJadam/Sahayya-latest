@@ -30,6 +30,9 @@ import ReferAndEarn from '../Screens/Private/MoreScreens/ReferAndEarn';
 import RecentSalaryList from '../Screens/Private/Salary/RecentSalaryList';
 import Salary from '../Screens/Private/Salary/Salary';
 import ManageAddresses from '../Screens/Private/MoreScreens/ManageAddresses';
+import TicketList from '../Screens/Support/TicketList';
+import CreateTicket from '../Screens/Support/CreateTicket';
+import TicketDetail from '../Screens/Support/TicketDetail';
 import { useSelector } from 'react-redux';
 
 const commonOptions = {
@@ -183,6 +186,21 @@ const RootStack = () => {
       <Stack.Screen
         name="ManageAddresses"
         component={ManageAddresses}
+        options={{ ...commonOptions }}
+      />
+      <Stack.Screen
+        name="TicketList"
+        component={TicketList}
+        options={{ ...commonOptions }}
+      />
+      <Stack.Screen
+        name="CreateTicket"
+        component={CreateTicket}
+        options={{ ...commonOptions }}
+      />
+      <Stack.Screen
+        name="TicketDetail"
+        component={TicketDetail}
         options={{ ...commonOptions }}
       />
     </Stack.Navigator>

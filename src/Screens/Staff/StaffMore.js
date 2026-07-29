@@ -290,7 +290,7 @@ const StaffMore = ({ navigation }) => {
           Images={ImageConstant?.ic_help}
           title={LocalizedStrings.MoreOptions?.help_support || "Help & Support"}
           subtitle={LocalizedStrings.Settings?.helpSubtitle || 'Find answers and contact us'}
-          onPress={() => handleCMSPage('help-support')}
+          onPress={() => navigation.navigate('TicketList')}
         />
         <Option
           Images={ImageConstant?.ic_policy}
