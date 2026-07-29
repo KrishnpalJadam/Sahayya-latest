@@ -39,32 +39,23 @@ const TermsAcceptanceModal = ({
   const [activeTab, setActiveTab] = useState('terms');
   const [termsChecked, setTermsChecked] = useState(false);
   const [privacyChecked, setPrivacyChecked] = useState(false);
-  const [hasScrolledToBottom, setHasScrolledToBottom] = useState(false);
   const termsScrollRef = useRef(null);
   const privacyScrollRef = useRef(null);
 
-  const allAccepted = termsChecked && privacyChecked && hasScrolledToBottom;
-
-  const handleScroll = (event) => {
-    const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
-    const distanceFromBottom = contentSize.height - layoutMeasurement.height - contentOffset.y;
-    if (distanceFromBottom < 50) {
-      setHasScrolledToBottom(true);
-    }
-  };
+  const allAccepted = termsChecked && privacyChecked;
 
   const handleAccept = () => {
     if (!allAccepted) return;
     onAccept && onAccept();
     setTermsChecked(false);
     setPrivacyChecked(false);
-    setHasScrolledToBottom(false);
     setActiveTab('terms');
   };
 
   const renderContent = (content) => {
-    if (!content || !content.sections) return null;
-    return content.sections.map((section, idx) => (
+    if (!content) return null;
+    const sections = Array.isArray(content) ? content : (content.sections || []);
+    return sections.map((section, idx) => (
       <View key={idx} style={styles.section}>
         <Typography type={Font.Poppins_SemiBold} size={14} style={styles.sectionHeading}>
           {section.heading}
@@ -146,7 +137,6 @@ const TermsAcceptanceModal = ({
             <ScrollView
               ref={termsScrollRef}
               style={styles.contentScroll}
-              onScroll={handleScroll}
               scrollEventThrottle={16}
               showsVerticalScrollIndicator={false}
             >
@@ -164,7 +154,6 @@ const TermsAcceptanceModal = ({
             <ScrollView
               ref={privacyScrollRef}
               style={styles.contentScroll}
-              onScroll={handleScroll}
               scrollEventThrottle={16}
               showsVerticalScrollIndicator={false}
             >
@@ -182,11 +171,6 @@ const TermsAcceptanceModal = ({
 
           {/* Checkboxes */}
           <View style={styles.checkboxSection}>
-            {!hasScrolledToBottom && (
-              <Typography size={11} color="#E65100" style={{ marginBottom: 6, textAlign: 'center' }}>
-                Please scroll to the bottom of both documents to enable acceptance
-              </Typography>
-            )}
             <Checkbox
               checked={termsChecked}
               onToggle={() => setTermsChecked(!termsChecked)}
