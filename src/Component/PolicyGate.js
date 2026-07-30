@@ -1,14 +1,27 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { GET_WITH_TOKEN, POST_WITH_TOKEN } from '../Backend/Backend';
 import { PolicyStatus, PolicyAccept } from '../Backend/api_routes';
 import TermsAcceptanceModal from './TermsAcceptanceModal';
+
+const POLICY_ACCEPTED_KEY = 'policy_accepted_v1';
 
 const PolicyGate = ({ children }) => {
   const [needsAcceptance, setNeedsAcceptance] = useState(false);
   const [isChecking, setIsChecking] = useState(true);
   const [isAccepting, setIsAccepting] = useState(false);
 
-  const checkPolicyStatus = useCallback(() => {
+  const checkPolicyStatus = useCallback(async () => {
+    try {
+      const cached = await AsyncStorage.getItem(POLICY_ACCEPTED_KEY);
+      if (cached === 'true') {
+        setIsChecking(false);
+        return;
+      }
+    } catch (e) {
+      // AsyncStorage read failed, continue to API check
+    }
+
     GET_WITH_TOKEN(
       PolicyStatus,
       (success) => {
@@ -16,6 +29,8 @@ const PolicyGate = ({ children }) => {
         const pendingPolicies = policies.filter(p => !p.accepted);
         if (pendingPolicies.length > 0) {
           setNeedsAcceptance(true);
+        } else {
+          AsyncStorage.setItem(POLICY_ACCEPTED_KEY, 'true').catch(() => {});
         }
         setIsChecking(false);
       },
@@ -51,6 +66,7 @@ const PolicyGate = ({ children }) => {
       acceptPolicy('terms_and_conditions'),
       acceptPolicy('privacy_policy'),
     ]).then(() => {
+      AsyncStorage.setItem(POLICY_ACCEPTED_KEY, 'true').catch(() => {});
       setNeedsAcceptance(false);
       setIsAccepting(false);
     }).catch(() => {

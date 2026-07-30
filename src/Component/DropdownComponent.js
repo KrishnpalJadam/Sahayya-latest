@@ -143,13 +143,13 @@ const DropdownComponent = ({
                   justifyContent: 'center',
                 }}>
                 <Image
-                  tintColor={iconColor}
-                  source={ImageConstant.BackArrow}
+                  tintColor={iconColor || '#979797'}
+                  source={ImageConstant.dropDown || ImageConstant.BackArrow}
                   style={{
-                    height: 15,
-                    width: 8,
+                    height: 12,
+                    width: 12,
                     resizeMode: 'contain',
-                    tintColor:"#979797",
+                    tintColor: '#979797',
                     transform: [{ rotate: '-90deg' }],
                   }}
                 />
@@ -252,7 +252,8 @@ const styles = StyleSheet.create({
     elevation: 4,
     borderWidth: 1,
     borderColor: '#E0E0E0',
-    overflow: 'visible',
+    overflow: 'hidden',
     marginTop: 2,
+    backgroundColor: '#fff',
   },
 });

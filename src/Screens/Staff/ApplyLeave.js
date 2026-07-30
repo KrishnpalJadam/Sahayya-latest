@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, ScrollView, Image } from 'react-native';
+import { StyleSheet, View, ScrollView, Image, ActivityIndicator } from 'react-native';
 import CommanView from '../../Component/CommanView';
 import HeaderForUser from '../../Component/HeaderForUser';
 import Typography from '../../Component/UI/Typography';
@@ -81,7 +81,7 @@ const ApplyLeave = ({ navigation, route }) => {
         const today = moment().startOf('day');
         // Find any leave that is pending, or approved but not yet ended
         const active = leaves.find(leave => {
-          const status = leave?.status?.toLowerCase();
+          const status = (leave?.status || '').toString().toLowerCase();
           if (status === 'pending') return true;
           if (status === 'approved') {
             const leaveEndDate = moment(leave?.end_date);
@@ -352,6 +352,28 @@ const ApplyLeave = ({ navigation, route }) => {
       },
     );
   };
+  if (checkingLeave) {
+    return (
+      <CommanView>
+        <HeaderForUser
+          title={
+            LocalizedStrings.staffSection?.StaffDashboard?.apply_leave ||
+            'Apply Leave'
+          }
+          style_title={{ fontSize: 18 }}
+          source_arrow={ImageConstant?.BackArrow}
+          onPressLeftIcon={() => navigation.goBack()}
+        />
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color="#D98579" />
+          <Typography type={Font.Poppins_Regular} style={{ marginTop: 12, color: '#888' }}>
+            Checking leave status...
+          </Typography>
+        </View>
+      </CommanView>
+    );
+  }
+
   if (activeLeave && !checkingLeave) {
     const isPending = activeLeave?.status?.toLowerCase() === 'pending';
     return (

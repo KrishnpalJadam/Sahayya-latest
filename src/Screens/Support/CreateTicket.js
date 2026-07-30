@@ -187,9 +187,14 @@ const CreateTicket = ({ navigation }) => {
         nestedScrollEnabled
       >
         <View style={styles.card}>
-          <Typography type={Font.Poppins_Regular} size={13} color="#666">
-            Describe your issue and our support team will assist you. The ticket will also be created in Zoho Desk for tracking.
-          </Typography>
+          <View style={styles.infoRow}>
+            <View style={styles.infoDot} />
+            <Typography type={Font.Poppins_Regular} size={12} color="#888" style={{ flex: 1 }}>
+              Describe your issue and our support team will assist you.
+            </Typography>
+          </View>
+
+          <View style={styles.divider} />
 
           <Input
             title="Subject"
@@ -199,23 +204,28 @@ const CreateTicket = ({ navigation }) => {
             error={errors.subject}
           />
 
-          <DropdownComponent
-            title="Category"
-            placeholder="Select category"
-            data={categories}
-            value={category}
-            onChange={item => { setCategory(item); clearError('category'); }}
-            error={errors.category}
-          />
-
-          <DropdownComponent
-            title="Priority"
-            placeholder="Select priority"
-            data={priorityData}
-            value={priority}
-            onChange={item => { setPriority(item); clearError('priority'); }}
-            error={errors.priority}
-          />
+          <View style={styles.rowContainer}>
+            <View style={styles.halfField}>
+              <DropdownComponent
+                title="Category"
+                placeholder="Select category"
+                data={categories}
+                value={category}
+                onChange={item => { setCategory(item); clearError('category'); }}
+                error={errors.category}
+              />
+            </View>
+            <View style={styles.halfField}>
+              <DropdownComponent
+                title="Priority"
+                placeholder="Select priority"
+                data={priorityData}
+                value={priority}
+                onChange={item => { setPriority(item); clearError('priority'); }}
+                error={errors.priority}
+              />
+            </View>
+          </View>
 
           <Input
             title="Description"
@@ -270,6 +280,30 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#EBEBEA',
     zIndex: 1,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  infoDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#D98579',
+    marginRight: 8,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#F0F0F0',
+    marginBottom: 12,
+  },
+  rowContainer: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  halfField: {
+    flex: 1,
   },
   footer: {
     position: 'absolute',
