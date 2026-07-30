@@ -54,7 +54,7 @@ const TicketDetail = ({ navigation, route }) => {
 
     setSending(true);
     POST_WITH_TOKEN(
-      `${SupportTicketComment}/${ticketId}`,
+      `${SupportTicketComment}/${ticketId}/comment`,
       { comment: commentText.trim() },
       success => {
         setSending(false);
@@ -199,13 +199,15 @@ const TicketDetail = ({ navigation, route }) => {
 
         {/* Comment Input */}
         <View style={styles.commentInputContainer}>
-          <Input
-            placeholder="Type your message..."
-            value={commentText}
-            onChange={setCommentText}
-            style_inputContainer={{ height: 44 }}
-            style_input={{ fontSize: 13 }}
-          />
+          <View style={styles.commentInputWrapper}>
+            <Input
+              placeholder="Type your message..."
+              value={commentText}
+              onChange={setCommentText}
+              style_inputContainer={{ height: 44, borderRadius: 22, backgroundColor: '#F5F5F5', borderWidth: 1, borderColor: '#E0E0E0' }}
+              style_input={{ fontSize: 13, paddingHorizontal: 16 }}
+            />
+          </View>
           <Button
             onPress={handleSendComment}
             title="Send"
@@ -277,6 +279,11 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
     paddingTop: 8,
     gap: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#F0F0F0',
+  },
+  commentInputWrapper: {
+    flex: 1,
   },
   sendButton: {
     width: 80,
