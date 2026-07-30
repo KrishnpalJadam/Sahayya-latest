@@ -69,7 +69,7 @@ const QuitJob = ({ navigation, route }) => {
         const requests = success?.data || [];
         const arr = Array.isArray(requests) ? requests : [];
         const active = arr.find(req => {
-          const status = req?.status?.toLowerCase();
+          const status = (req?.status || '').toString().toLowerCase();
           return status === 'pending' || status === 'approved';
         });
         if (active) {
@@ -215,7 +215,7 @@ const QuitJob = ({ navigation, route }) => {
 
   // Blocked screen — already has an active quit request (within 24hr)
   if (activeQuitRequest && !checkingQuit) {
-    const isPending = activeQuitRequest?.status?.toLowerCase() === 'pending';
+    const isPending = (activeQuitRequest?.status || '').toString().toLowerCase() === 'pending';
     const hoursLeft = activeQuitRequest?.submitted_at
       ? Math.max(0, Math.ceil(24 - (Date.now() - activeQuitRequest.submitted_at) / (1000 * 60 * 60)))
       : 0;

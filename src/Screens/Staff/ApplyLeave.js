@@ -375,7 +375,7 @@ const ApplyLeave = ({ navigation, route }) => {
   }
 
   if (activeLeave && !checkingLeave) {
-    const isPending = activeLeave?.status?.toLowerCase() === 'pending';
+    const isPending = (activeLeave?.status || '').toString().toLowerCase() === 'pending';
     return (
       <CommanView>
         <HeaderForUser
