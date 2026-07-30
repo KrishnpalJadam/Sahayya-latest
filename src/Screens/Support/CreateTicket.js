@@ -204,28 +204,31 @@ const CreateTicket = ({ navigation }) => {
             error={errors.subject}
           />
 
-          <View style={styles.rowContainer}>
-            <View style={styles.halfField}>
-              <DropdownComponent
-                title="Category"
-                placeholder="Select category"
-                data={categories}
-                value={category}
-                onChange={item => { setCategory(item); clearError('category'); }}
-                error={errors.category}
-              />
-            </View>
-            <View style={styles.halfField}>
-              <DropdownComponent
-                title="Priority"
-                placeholder="Select priority"
-                data={priorityData}
-                value={priority}
-                onChange={item => { setPriority(item); clearError('priority'); }}
-                error={errors.priority}
-              />
-            </View>
-          </View>
+          <DropdownComponent
+            title="Category"
+            placeholder="Select category"
+            data={categories}
+            value={category}
+            onChange={item => { setCategory(item); clearError('category'); }}
+            error={errors.category}
+            marginHorizontal={0}
+            style_dropdown={{ marginHorizontal: 0 }}
+            style_title={{ textAlign: 'left', fontFamily: Font.Poppins_Regular }}
+            selectedTextStyleNew={{ marginLeft: 10, fontFamily: Font.Poppins_Regular }}
+          />
+
+          <DropdownComponent
+            title="Priority"
+            placeholder="Select priority"
+            data={priorityData}
+            value={priority}
+            onChange={item => { setPriority(item); clearError('priority'); }}
+            error={errors.priority}
+            marginHorizontal={0}
+            style_dropdown={{ marginHorizontal: 0 }}
+            style_title={{ textAlign: 'left', fontFamily: Font.Poppins_Regular }}
+            selectedTextStyleNew={{ marginLeft: 10, fontFamily: Font.Poppins_Regular }}
+          />
 
           <Input
             title="Description"
@@ -297,13 +300,6 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: '#F0F0F0',
     marginBottom: 12,
-  },
-  rowContainer: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  halfField: {
-    flex: 1,
   },
   footer: {
     position: 'absolute',

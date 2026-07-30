@@ -252,7 +252,7 @@ const styles = StyleSheet.create({
     elevation: 4,
     borderWidth: 1,
     borderColor: '#E0E0E0',
-    overflow: 'hidden',
+    overflow: 'visible',
     marginTop: 2,
     backgroundColor: '#fff',
   },
