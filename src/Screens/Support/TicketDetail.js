@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { StyleSheet, View, ScrollView, ActivityIndicator, KeyboardAvoidingView, Platform, TextInput, Keyboard } from 'react-native';
 import CommanView from '../../Component/CommanView';
 import HeaderForUser from '../../Component/HeaderForUser';
@@ -16,6 +16,24 @@ const STATUS_COLORS = {
   'In Progress': { bg: '#FEF3C7', text: '#B45309' },
   Resolved: { bg: '#D1FAE5', text: '#047857' },
   Closed: { bg: '#F3F4F6', text: '#6B7280' },
+};
+
+const stripHtml = (html) => {
+  if (!html) return '';
+  let text = html
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/?div>/gi, '\n')
+    .replace(/<\/?p>/gi, '\n')
+    .replace(/<\/?span[^>]*>/gi, '')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+  return text;
 };
 
 const TicketDetail = ({ navigation, route }) => {
@@ -194,7 +212,7 @@ const TicketDetail = ({ navigation, route }) => {
                   </Typography>
                 </View>
                 <Typography type={Font.Poppins_Regular} size={13} color="#555" lineHeight={20}>
-                  {comment.content || comment.comment || ''}
+                  {stripHtml(comment.content || comment.comment || '')}
                 </Typography>
               </View>
             ))
