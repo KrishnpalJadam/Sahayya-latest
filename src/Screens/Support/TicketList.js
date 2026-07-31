@@ -12,8 +12,8 @@ import moment from 'moment';
 
 const STATUS_COLORS = {
   Open: { bg: '#DBEAFE', text: '#1D4ED8' },
-  'In Progress': { bg: '#FEF3C7', text: '#B45309' },
-  Resolved: { bg: '#D1FAE5', text: '#047857' },
+  'On Hold': { bg: '#FEF3C7', text: '#B45309' },
+  Escalated: { bg: '#FEE2E2', text: '#DC2626' },
   Closed: { bg: '#F3F4F6', text: '#6B7280' },
 };
 
@@ -24,7 +24,7 @@ const PRIORITY_COLORS = {
   Urgent: { bg: '#FEE2E2', text: '#991B1B' },
 };
 
-const FILTER_OPTIONS = ['All', 'Open', 'In Progress', 'Resolved', 'Closed'];
+const FILTER_OPTIONS = ['All', 'Open', 'On Hold', 'Escalated', 'Closed'];
 
 const TicketList = ({ navigation }) => {
   const [tickets, setTickets] = useState([]);
