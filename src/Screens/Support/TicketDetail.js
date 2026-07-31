@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, ScrollView, ActivityIndicator } from 'react-native';
+import { StyleSheet, View, ScrollView, ActivityIndicator, KeyboardAvoidingView, Platform, TextInput, Keyboard } from 'react-native';
 import CommanView from '../../Component/CommanView';
 import HeaderForUser from '../../Component/HeaderForUser';
 import Typography from '../../Component/UI/Typography';
 import { Font } from '../../Constants/Font';
 import Button from '../../Component/Button';
-import Input from '../../Component/Input';
 import { ImageConstant } from '../../Constants/ImageConstant';
 import { GET_WITH_TOKEN, POST_WITH_TOKEN } from '../../Backend/Backend';
 import { SupportTicketDetail, SupportTicketComment } from '../../Backend/api_routes';
@@ -51,6 +50,7 @@ const TicketDetail = ({ navigation, route }) => {
 
   const handleSendComment = () => {
     if (!commentText.trim() || sending) return;
+    Keyboard.dismiss();
 
     setSending(true);
     POST_WITH_TOKEN(
@@ -108,7 +108,11 @@ const TicketDetail = ({ navigation, route }) => {
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#fff' }}>
+    <KeyboardAvoidingView
+      style={{ flex: 1, backgroundColor: '#fff' }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={0}
+    >
       <HeaderForUser
         title="Ticket Details"
         style_title={{ fontSize: 18 }}
@@ -195,27 +199,30 @@ const TicketDetail = ({ navigation, route }) => {
               </View>
             ))
           )}
-        </ScrollView>
+      </ScrollView>
 
-        {/* Comment Input */}
-        <View style={styles.commentInputContainer}>
-          <View style={styles.commentInputWrapper}>
-            <Input
-              placeholder="Type your message..."
-              value={commentText}
-              onChange={setCommentText}
-              style_inputContainer={{ height: 44, borderRadius: 22, backgroundColor: '#F5F5F5', borderWidth: 1, borderColor: '#E0E0E0' }}
-              style_input={{ fontSize: 13, paddingHorizontal: 16 }}
-            />
-          </View>
-          <Button
-            onPress={handleSendComment}
-            title="Send"
-            main_style={styles.sendButton}
-            loader={sending}
+      {/* Comment Input */}
+      <View style={styles.commentInputContainer}>
+        <View style={styles.commentInputWrapper}>
+          <TextInput
+            placeholder="Type your message..."
+            placeholderTextColor="#999"
+            value={commentText}
+            onChangeText={setCommentText}
+            style={styles.textInput}
+            multiline={false}
+            returnKeyType="send"
+            onSubmitEditing={handleSendComment}
           />
         </View>
+        <Button
+          onPress={handleSendComment}
+          title="Send"
+          main_style={styles.sendButton}
+          loader={sending}
+        />
       </View>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -277,16 +284,30 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingBottom: 16,
-    paddingTop: 8,
+    paddingTop: 10,
     gap: 8,
     borderTopWidth: 1,
     borderTopColor: '#F0F0F0',
+    backgroundColor: '#fff',
   },
   commentInputWrapper: {
     flex: 1,
   },
+  textInput: {
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#F5F5F5',
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    paddingHorizontal: 20,
+    fontSize: 14,
+    color: '#333',
+    includeFontPadding: false,
+    textAlignVertical: 'center',
+  },
   sendButton: {
     width: 80,
+    height: 48,
   },
   emptyContainer: {
     flex: 1,
