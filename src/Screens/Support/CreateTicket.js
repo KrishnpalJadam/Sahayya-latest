@@ -16,6 +16,7 @@ import SimpleToast from 'react-native-simple-toast';
 
 const CreateTicket = ({ navigation }) => {
   const [subject, setSubject] = useState('');
+  const [email, setEmail] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState(null);
   const [priority, setPriority] = useState(null);
@@ -26,6 +27,7 @@ const CreateTicket = ({ navigation }) => {
 
   const [errors, setErrors] = useState({
     subject: '',
+    email: '',
     description: '',
     category: '',
     priority: '',
@@ -64,7 +66,7 @@ const CreateTicket = ({ navigation }) => {
   };
 
   const validateForm = () => {
-    const newErrors = { subject: '', description: '', category: '', priority: '' };
+    const newErrors = { subject: '', email: '', description: '', category: '', priority: '' };
     let hasError = false;
 
     if (!subject || subject.trim() === '') {
@@ -72,6 +74,14 @@ const CreateTicket = ({ navigation }) => {
       hasError = true;
     } else if (subject.trim().length < 5) {
       newErrors.subject = 'Subject must be at least 5 characters.';
+      hasError = true;
+    }
+
+    if (!email || email.trim() === '') {
+      newErrors.email = 'Email is required.';
+      hasError = true;
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      newErrors.email = 'Please enter a valid email address.';
       hasError = true;
     }
 
@@ -109,6 +119,7 @@ const CreateTicket = ({ navigation }) => {
     if (image) {
       const formData = new FormData();
       formData.append('subject', subject.trim());
+      formData.append('email', email.trim());
       formData.append('description', description.trim());
       formData.append('category', category?.value || category);
       formData.append('priority', priority?.value || priority);
@@ -140,6 +151,7 @@ const CreateTicket = ({ navigation }) => {
         SupportTicketCreate,
         {
           subject: subject.trim(),
+          email: email.trim(),
           description: description.trim(),
           category: category?.value || category,
           priority: priority?.value || priority,
@@ -202,6 +214,15 @@ const CreateTicket = ({ navigation }) => {
             value={subject}
             onChange={val => { setSubject(val); clearError('subject'); }}
             error={errors.subject}
+          />
+
+          <Input
+            title="Email *"
+            placeholder="your@email.com"
+            value={email}
+            onChange={val => { setEmail(val); clearError('email'); }}
+            keyboardType="email-address"
+            error={errors.email}
           />
 
           <DropdownComponent
