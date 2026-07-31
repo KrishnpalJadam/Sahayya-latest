@@ -59,15 +59,15 @@ const JobsList = ({ navigation }) => {
     }
   }, [isFocused]);
 
-  const JobList = () => {
+  const JobList = (filterRole, filterCity, filterState) => {
     setLoading(true);
 
-    // Build query params for role + location based filtering
+    // Build query params only when user explicitly applies filters
     let route = ListJob;
     const params = [];
-    if (staffRole) params.push(`role=${encodeURIComponent(staffRole)}`);
-    if (staffCity) params.push(`city=${encodeURIComponent(staffCity)}`);
-    if (staffState) params.push(`state=${encodeURIComponent(staffState)}`);
+    if (filterRole) params.push(`role=${encodeURIComponent(filterRole)}`);
+    if (filterCity) params.push(`city=${encodeURIComponent(filterCity)}`);
+    if (filterState) params.push(`state=${encodeURIComponent(filterState)}`);
     if (params.length > 0) route = `${ListJob}?${params.join('&')}`;
 
     GET_WITH_TOKEN(
@@ -75,29 +75,7 @@ const JobsList = ({ navigation }) => {
       success => {
         const rawData = success?.data;
         const jobs = Array.isArray(rawData) ? rawData : (rawData?.data || []);
-        const allJobs = Array.isArray(jobs) ? jobs : [];
-
-        // Client-side fallback filter by role and location
-        const filtered = allJobs.filter(job => {
-          const jobTitle = (job?.title || job?.role || '').toLowerCase();
-          const jobCity = (job?.city || '').toLowerCase();
-          const jobState = (job?.state || '').toLowerCase();
-
-          const roleMatch = staffRole
-            ? jobTitle.includes(staffRole.toLowerCase()) || staffRole.toLowerCase().includes(jobTitle)
-            : true;
-          const locationMatch = (staffCity || staffState)
-            ? jobCity.includes(staffCity.toLowerCase()) ||
-              jobState.includes(staffState.toLowerCase()) ||
-              (staffCity && jobCity.includes(staffCity.toLowerCase())) ||
-              (staffState && jobState.includes(staffState.toLowerCase()))
-            : true;
-
-          return roleMatch && locationMatch;
-        });
-
-        // If filtered results exist use them, else show all (graceful fallback)
-        setJobData(filtered.length > 0 ? filtered : allJobs);
+        setJobData(Array.isArray(jobs) ? jobs : []);
         setLoading(false);
       },
       error => {
