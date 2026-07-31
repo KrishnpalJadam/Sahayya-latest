@@ -67,21 +67,21 @@ const Date_Picker = ({
           />
         </View>
       </TouchableOpacity>
-      {showPicker && (
-        <View style={styles?.datePickerContainer}>
-          <DatePicker
-            mode="date"
-            modal
-            open={showPicker}
-            date={date || ageRestriction || new Date()}
-            minimumDate={disablePastDates ? new Date() : undefined}
-            maximumDate={ageRestriction}
-            onConfirm={handleConfirm}
-            onCancel={() => setShowPicker(false)}
-            onChange={onChange}
-          />
-        </View>
-      )}
+      <DatePicker
+        mode="date"
+        modal
+        open={showPicker}
+        date={date || ageRestriction || new Date()}
+        minimumDate={disablePastDates ? new Date() : undefined}
+        maximumDate={ageRestriction}
+        onConfirm={handleConfirm}
+        onCancel={() => setShowPicker(false)}
+        onChange={onChange}
+        theme="light"
+        title="Select Date"
+        confirmText="Confirm"
+        cancelText="Cancel"
+      />
       {error && (
         <Typography textAlign={'right'} style={styles.errorText}>
           {error}
