@@ -383,7 +383,7 @@ const MyWork = () => {
             <TouchableOpacity
               style={styles.button}
               onPress={() => {
-                const resolvedId = activeJobApplication?.job_id || workData?.job_id || workData?.id || null;
+                const resolvedId = activeJobApplication?.job_id || workData?.job_id || null;
                 navigation.navigate('EarningSummary', {
                   id: resolvedId,
                 });
@@ -407,10 +407,8 @@ const MyWork = () => {
             <TouchableOpacity
               style={[styles.button, styles.quitButton]}
               onPress={() => {
-                const resolvedId = activeJobApplication?.job_id || workData?.job_id || workData?.id;
-                if (resolvedId) {
-                  navigation.navigate('QuitJob', { jobId: resolvedId });
-                }
+                const resolvedId = activeJobApplication?.job_id || workData?.job_id || null;
+                navigation.navigate('QuitJob', { jobId: resolvedId });
               }}
             >
               <Image

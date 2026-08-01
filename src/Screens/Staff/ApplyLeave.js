@@ -36,6 +36,7 @@ const ApplyLeave = ({ navigation, route }) => {
   const [loading, setLoading] = useState(false);
   const [houseownerId, setHouseownerId] = useState(paramHouseownerId || null);
   const [activeLeave, setActiveLeave] = useState(null);
+  const [pendingLeave, setPendingLeave] = useState(null);
   const [checkingLeave, setCheckingLeave] = useState(true);
 
   // Employer selection for multi-job staff
@@ -79,17 +80,26 @@ const ApplyLeave = ({ navigation, route }) => {
       success => {
         const leaves = success?.data?.leave_requests || [];
         const today = moment().startOf('day');
-        // Find any leave that is pending, or approved but not yet ended
-        const active = leaves.find(leave => {
+
+        // Only block if there's an APPROVED leave with end_date in the future
+        // Pending leaves should NOT block — employer may take time to review
+        const blockingLeave = leaves.find(leave => {
           const status = (leave?.status || '').toString().toLowerCase();
-          if (status === 'pending') return true;
           if (status === 'approved') {
             const leaveEndDate = moment(leave?.end_date);
             return leaveEndDate.isValid() && leaveEndDate.isSameOrAfter(today, 'day');
           }
           return false;
         });
-        setActiveLeave(active || null);
+
+        // Show warning for pending leaves (but don't block)
+        const pendingLeave = leaves.find(leave => {
+          const status = (leave?.status || '').toString().toLowerCase();
+          return status === 'pending';
+        });
+
+        setActiveLeave(blockingLeave || null);
+        setPendingLeave(pendingLeave || null);
         setCheckingLeave(false);
       },
       () => {
@@ -497,6 +507,18 @@ const ApplyLeave = ({ navigation, route }) => {
         nestedScrollEnabled
       >
         <View style={styles.card}>
+          {pendingLeave && (
+            <View style={styles.warningBanner}>
+              <Typography type={Font.Poppins_Medium} size={13} color="#92400E">
+                You have a pending leave request
+                {pendingLeave?.start_date && pendingLeave?.end_date
+                  ? ` (${moment(pendingLeave.start_date).format('DD MMM')} - ${moment(pendingLeave.end_date).format('DD MMM')})`
+                  : ''}
+                . Please wait for employer review.
+              </Typography>
+            </View>
+          )}
+
           {hasMultipleEmployers && (
             <DropdownComponent
               title="Select Employer"
@@ -697,6 +719,14 @@ const styles = StyleSheet.create({
   blockedLabel: {
     fontSize: 13,
     color: '#888',
+  },
+  warningBanner: {
+    backgroundColor: '#FEF3C7',
+    borderWidth: 1,
+    borderColor: '#FCD34D',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 12,
   },
   blockedStatusTag: {
     paddingHorizontal: 12,

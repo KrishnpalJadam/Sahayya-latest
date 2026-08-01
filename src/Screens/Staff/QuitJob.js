@@ -149,14 +149,6 @@ const QuitJob = ({ navigation, route }) => {
       return;
     }
 
-    if (!jobId) {
-      SimpleToast.show(
-        'Job ID is missing. Please try again.',
-        SimpleToast.SHORT,
-      );
-      return;
-    }
-
     setLoading(true);
 
     const endDateFormatted =
@@ -167,10 +159,12 @@ const QuitJob = ({ navigation, route }) => {
         : moment(endDate).format('YYYY-MM-DD');
 
     const body = {
-      job_id: jobId,
       end_date: endDateFormatted,
       reason: reason.trim(),
     };
+    if (jobId) {
+      body.job_id = jobId;
+    }
 
     POST_WITH_TOKEN(
       QuitJobRoute,
@@ -371,10 +365,7 @@ const QuitJob = ({ navigation, route }) => {
 
         <Button
           onPress={handleSubmit}
-          title={
-            LocalizedStrings.staffSection?.RequestLeaveQuit
-              ?.submit_leave_request || 'Submit Request'
-          }
+          title={'Submit Quit Request'}
           main_style={[styles.button, { marginTop: 20 }]}
           loader={loading}
         />
