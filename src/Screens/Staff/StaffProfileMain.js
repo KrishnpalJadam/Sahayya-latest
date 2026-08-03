@@ -500,6 +500,42 @@ const StaffProfileMain = ({ navigation }) => {
                 </View>
 
                 <View style={styles.card}>
+                    <Typography style={styles.cardTitle}>Reviews & Ratings</Typography>
+                    {(() => {
+                        const reviewsList = userDetail?.reviewsReceived || userDetail?.reviews_received || [];
+                        const totalReviews = reviewsList.length;
+                        const avgRating = totalReviews > 0
+                            ? (reviewsList.reduce((sum, r) => sum + (r.rating || 0), 0) / totalReviews).toFixed(1)
+                            : 0;
+                        return totalReviews > 0 ? (
+                            <>
+                                <View style={styles.row}>
+                                    <Typography style={styles.icon}>{'\u2605'}</Typography>
+                                    <View style={styles.textBox}>
+                                        <Typography style={styles.label}>Average Rating</Typography>
+                                        <Typography style={styles.value}>{avgRating} / 5</Typography>
+                                    </View>
+                                </View>
+                                <View style={styles.rowNoBorder}>
+                                    <Typography style={styles.icon}>{'\u2606'}</Typography>
+                                    <View style={styles.textBox}>
+                                        <Typography style={styles.label}>Total Reviews</Typography>
+                                        <Typography style={styles.value}>{totalReviews}</Typography>
+                                    </View>
+                                </View>
+                            </>
+                        ) : (
+                            <View style={styles.rowNoBorder}>
+                                <Typography style={styles.icon}>{'\u2606'}</Typography>
+                                <View style={styles.textBox}>
+                                    <Typography style={styles.value}>No ratings yet</Typography>
+                                </View>
+                            </View>
+                        );
+                    })()}
+                </View>
+
+                <View style={styles.card}>
                     <Typography style={styles.cardTitle}>{LocalizedStrings.EditProfile?.Notification_Preferences || 'Notification Preferences'}</Typography>
                     <View style={styles.toggleRow}>
                         <View style={{ flex: 1, paddingRight: 12 }}>

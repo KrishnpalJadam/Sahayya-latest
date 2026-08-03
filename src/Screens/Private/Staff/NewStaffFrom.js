@@ -76,6 +76,11 @@ const NewStaffForm = ({ navigation, route }) => {
   const [googleLocation, setGoogleLocation] = useState('');
   const [lat, setLat] = useState('');
   const [long, setLong] = useState('');
+  // Permanent Address States
+  const [permStreet, setPermStreet] = useState('');
+  const [permCity, setPermCity] = useState('');
+  const [permStateName, setPermStateName] = useState('');
+  const [permPincode, setPermPincode] = useState('');
   const [emergencyContactName, setEmergencyContactName] = useState('');
   const [emergencyContactNumber, setEmergencyContactNumber] = useState('');
   const [relation, setRelation] = useState(null);
@@ -750,6 +755,13 @@ const NewStaffForm = ({ navigation, route }) => {
     formData.append('google_location', googleLocation?.trim() || '');
     formData.append('lat', lat || '');
     formData.append('long', long || '');
+
+    // Permanent Address
+    formData.append('perm_street', permStreet?.trim() || '');
+    formData.append('perm_city', permCity?.trim() || '');
+    formData.append('perm_state', permStateName?.trim() || '');
+    formData.append('perm_pincode', permPincode?.trim() || '');
+
     formData.append(
       'emergency_contact_name',
       emergencyContactName?.trim() || '',
@@ -1313,6 +1325,60 @@ const NewStaffForm = ({ navigation, route }) => {
                   clearError('stateName');
                 }}
                 error={errors.stateName}
+              />
+            </View>
+          </View>
+
+          <View style={{ borderBottomWidth: 1, borderBottomColor: '#E8E8E8', marginVertical: 15 }}>
+            <Typography size={16} style={{ fontWeight: '600', color: '#333', marginBottom: 5 }}>
+              Permanent Address (Aadhaar)
+            </Typography>
+            <Typography size={12} color="#888" style={{ marginBottom: 10 }}>
+              As per Aadhaar card - non-editable later
+            </Typography>
+          </View>
+
+          <Input
+            style_title={{ color: '#8C8D8B' }}
+            placeholder="Street/Landmark"
+            title="Permanent Street/Landmark"
+            value={permStreet}
+            onChange={value => setPermStreet(value)}
+            style_input={{ textAlign: 'start' }}
+            multiline
+            numberOfLines={2}
+          />
+          <Input
+            style_title={{ color: '#8C8D8B' }}
+            placeholder="400050"
+            title="Permanent Pincode"
+            value={permPincode}
+            onChange={value => {
+              const numericValue = value.replace(/[^0-9]/g, '').slice(0, 6);
+              setPermPincode(numericValue);
+            }}
+            keyboardType="number-pad"
+            maxLength={6}
+          />
+          <View
+            style={{ flexDirection: 'row', justifyContent: 'space-between' }}
+          >
+            <View style={{ flex: 1, marginRight: 8 }}>
+              <Input
+                style_title={{ color: '#8C8D8B' }}
+                placeholder="City"
+                title="Permanent City"
+                value={permCity}
+                onChange={value => setPermCity(value)}
+              />
+            </View>
+            <View style={{ flex: 1, marginLeft: 8 }}>
+              <Input
+                style_title={{ color: '#8C8D8B' }}
+                placeholder="State"
+                title="Permanent State"
+                value={permStateName}
+                onChange={value => setPermStateName(value)}
               />
             </View>
           </View>
