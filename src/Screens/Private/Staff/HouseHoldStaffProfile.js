@@ -490,7 +490,13 @@ const HouseHoldStaffProfile = ({ navigation, route }) => {
     formData.append('staff_id', data?.id);
     formData.append('rating', rating);
     if (remarks) formData.append('review', remarks);
-    POST_FORM_DATA(ReviewStore, formData);
+    POST_FORM_DATA(
+      ReviewStore,
+      formData,
+      success => {},
+      error => {},
+      fail => {},
+    );
   };
 
   const handleSubmitTerminate = () => {
