@@ -81,6 +81,9 @@ const NewStaffForm = ({ navigation, route }) => {
   const [permCity, setPermCity] = useState('');
   const [permStateName, setPermStateName] = useState('');
   const [permPincode, setPermPincode] = useState('');
+  // Previous Owner Contact States
+  const [prevOwnerName, setPrevOwnerName] = useState('');
+  const [prevOwnerPhone, setPrevOwnerPhone] = useState('');
   const [emergencyContactName, setEmergencyContactName] = useState('');
   const [emergencyContactNumber, setEmergencyContactNumber] = useState('');
   const [relation, setRelation] = useState(null);
@@ -105,6 +108,7 @@ const NewStaffForm = ({ navigation, route }) => {
 
   // API States
   const [loading, setLoading] = useState(false);
+  const [currentStep, setCurrentStep] = useState(1);
 
   // Error States
   const [errors, setErrors] = useState({
@@ -762,6 +766,10 @@ const NewStaffForm = ({ navigation, route }) => {
     formData.append('perm_state', permStateName?.trim() || '');
     formData.append('perm_pincode', permPincode?.trim() || '');
 
+    // Previous Owner Contact
+    formData.append('prev_owner_name', prevOwnerName?.trim() || '');
+    formData.append('prev_owner_phone', prevOwnerPhone?.trim() || '');
+
     formData.append(
       'emergency_contact_name',
       emergencyContactName?.trim() || '',
@@ -1276,8 +1284,37 @@ const NewStaffForm = ({ navigation, route }) => {
             <View style={{ marginBottom: 15 }}>
               <Typography size={12} color="green">Location Selected</Typography>
               <Typography size={11} color="gray">{googleLocation}</Typography>
-            </View>
-          ) : null}
+          </View>
+
+          <View style={{ borderBottomWidth: 1, borderBottomColor: '#E8E8E8', marginVertical: 15 }}>
+            <Typography size={16} style={{ fontWeight: '600', color: '#333', marginBottom: 5 }}>
+              Previous Owner Contact
+            </Typography>
+            <Typography size={12} color="#888" style={{ marginBottom: 10 }}>
+              If staff worked somewhere before
+            </Typography>
+          </View>
+
+          <Input
+            style_title={{ color: '#8C8D8B' }}
+            placeholder="Previous Owner Name"
+            title="Previous Owner Name"
+            value={prevOwnerName}
+            onChange={value => setPrevOwnerName(value)}
+          />
+          <Input
+            style_title={{ color: '#8C8D8B' }}
+            placeholder="Previous Owner Phone"
+            title="Previous Owner Phone"
+            value={prevOwnerPhone}
+            onChange={value => {
+              const digitsOnly = value.replace(/[^0-9]/g, '').slice(0, 10);
+              setPrevOwnerPhone(digitsOnly);
+            }}
+            keyboardType="phone-pad"
+            maxLength={10}
+          />
+
           <Input
             style_title={{ color: '#8C8D8B' }}
             placeholder={
@@ -1382,6 +1419,85 @@ const NewStaffForm = ({ navigation, route }) => {
               />
             </View>
           </View>
+
+          <Input
+            style_title={{ color: '#8C8D8B' }}
+            placeholder={
+              LocalizedStrings.NewStaffForm
+                .Emergency_Contact_Name_Placeholder || 'Emergency Contact Name'
+            }
+            title={
+              LocalizedStrings.NewStaffForm.Emergency_Contact_Name ||
+              'Emergency Contact Name'
+            }
+            value={emergencyContactName}
+            onChange={value => {
+              setEmergencyContactName(value);
+              clearError('emergencyContactName');
+            }}
+            error={errors.emergencyContactName}
+          />
+
+          <Input
+            style_title={{ color: '#8C8D8B' }}
+            placeholder={
+              LocalizedStrings.NewStaffForm
+                .Emergency_Contact_Number_Placeholder || '9123456780'
+            }
+            title={
+              LocalizedStrings.NewStaffForm.Emergency_Contact_Number ||
+              'Emergency Contact Number'
+            }
+            value={emergencyContactNumber}
+            onChange={value => {
+              const digitsOnly = value.replace(/[^0-9]/g, '').slice(0, 10);
+              setEmergencyContactNumber(digitsOnly);
+              clearError('emergencyContactNumber');
+            }}
+            keyboardType="phone-pad"
+            maxLength={10}
+            error={errors.emergencyContactNumber}
+          />
+
+          <DropdownComponent
+            title={LocalizedStrings.AddNewMember?.relation || 'Relation'}
+            placeholder={
+              LocalizedStrings.AddNewMember?.select_relation ||
+              'Select Relation'
+            }
+            width={'100%'}
+            style_dropdown={{ marginHorizontal: 0 }}
+            selectedTextStyleNew={{ marginLeft: 10 }}
+            marginHorizontal={0}
+            style_title={{ textAlign: 'left' }}
+            data={relationOptions}
+            value={relation}
+            onChange={item => {
+              setRelation(item);
+              clearError('relation');
+            }}
+            error={errors.relation}
+          />
+        </View>
+
+        {/* Step 1 Next Button */}
+        {currentStep === 1 && (
+          <View style={styles.bottomButton}>
+            <Button
+              title="Next"
+              onPress={() => setCurrentStep(2)}
+              main_style={styles.buttonStyle}
+            />
+          </View>
+        )}
+
+        {/* Step 2: Emergency + Work + Documents */}
+        {currentStep === 2 && (
+        <>
+        <View style={styles.section}>
+          <Typography type={Font?.Poppins_SemiBold} style={styles.sectionTitle}>
+            Emergency Contact
+          </Typography>
 
           <Input
             style_title={{ color: '#8C8D8B' }}
@@ -1694,20 +1810,32 @@ const NewStaffForm = ({ navigation, route }) => {
             </>
           )}
         </View>
+        </>
+        )}
+
       </View>
 
+      {currentStep === 2 && (
       <View style={styles.bottomButton}>
-        <Button
-          title={
-            isEditMode
-              ? LocalizedStrings.NewStaffForm.Update_Staff || 'Update Staff'
-              : LocalizedStrings.NewStaffForm.Add_Staff
-          }
-          onPress={() => handleSubmit()}
-          main_style={styles.buttonStyle}
-          loader={loading}
-        />
+        <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 12 }}>
+          <Button
+            title="Back"
+            onPress={() => setCurrentStep(1)}
+            main_style={[styles.buttonStyle, { backgroundColor: '#888', width: '40%' }]}
+          />
+          <Button
+            title={
+              isEditMode
+                ? LocalizedStrings.NewStaffForm.Update_Staff || 'Update Staff'
+                : LocalizedStrings.NewStaffForm.Add_Staff
+            }
+            onPress={() => handleSubmit()}
+            main_style={[styles.buttonStyle, { width: '50%' }]}
+            loader={loading}
+          />
+        </View>
       </View>
+      )}
 
       <ImageModal
         showModal={showImageModal}
