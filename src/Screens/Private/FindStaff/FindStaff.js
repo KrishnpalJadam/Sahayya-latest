@@ -314,7 +314,7 @@ const FindStaff = ({ navigation, route }) => {
             name: `${item?.first_name || ''} ${item?.last_name || ''}`.trim() || item?.name || 'Unknown',
             role: Array.isArray(workInfo?.primary_role) ? workInfo.primary_role.join(', ') : (workInfo?.primary_role || ''),
             tags: Array.isArray(workInfo?.skills) ? workInfo.skills : [],
-            location: item?.addresses?.[0]?.city || item?.location || item?.city || item?.address?.city || item?.current_address?.city || item?.region || '',
+            location: item?.addresses?.[0]?.city || item?.addresses?.[0]?.area_locality || item?.current_city || item?.area_locality || item?.location || item?.city || '',
             preferredLocation: item?.preferred_work_location || item?.user_work_info?.preferred_work_location || item?.work_info?.preferred_work_location || '',
             pincode: item?.addresses?.[0]?.pincode || item?.addresses?.[0]?.zip || item?.addresses?.[0]?.postal_code || item?.pincode || '',
             experience: (() => {
