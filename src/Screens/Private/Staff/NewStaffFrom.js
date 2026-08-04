@@ -705,6 +705,89 @@ const NewStaffForm = ({ navigation, route }) => {
     return !hasError;
   };
 
+  const validateStep1 = () => {
+    const newErrors = {
+      firstName: '',
+      lastName: '',
+      phoneNumber: '',
+      aadharNumber: '',
+      gender: '',
+      dateOfBirth: '',
+      street: '',
+      city: '',
+      stateName: '',
+      pincode: '',
+      areaLocality: '',
+      googleLocation: '',
+    };
+
+    let hasError = false;
+
+    const firstNameError = validators.checkName('First Name', 2, 50, firstName);
+    if (firstNameError) { newErrors.firstName = firstNameError; hasError = true; }
+
+    const lastNameError = validators.checkName('Last Name', 2, 50, lastName);
+    if (lastNameError) { newErrors.lastName = lastNameError; hasError = true; }
+
+    const phoneError = validators.checkFixPhoneNumber('Phone Number', phoneNumber, 10, 10);
+    if (phoneError) { newErrors.phoneNumber = phoneError; hasError = true; }
+
+    if (!aadharNumber || aadharNumber.trim() === '') {
+      newErrors.aadharNumber = 'Aadhaar Number is required.';
+      hasError = true;
+    } else if (!/^\d{12}$/.test(aadharNumber)) {
+      newErrors.aadharNumber = 'Aadhaar Number must be 12 digits.';
+      hasError = true;
+    }
+
+    if (!gender || (!gender?.value && !gender)) {
+      newErrors.gender = 'Please select gender.';
+      hasError = true;
+    }
+
+    if (!dateOfBirth) {
+      newErrors.dateOfBirth = 'Date of birth is required.';
+      hasError = true;
+    }
+
+    if (!street || street.trim() === '') {
+      newErrors.street = 'Street/Landmark is required.';
+      hasError = true;
+    }
+
+    const cityError = validators.checkAlphabet('City', 2, 50, city);
+    if (cityError) { newErrors.city = cityError; hasError = true; }
+
+    const stateError = validators.checkAlphabet('State', 2, 50, stateName);
+    if (stateError) { newErrors.stateName = stateError; hasError = true; }
+
+    if (!pincode || pincode.trim() === '' || !/^\d{6}$/.test(pincode)) {
+      newErrors.pincode = 'Pincode must be 6 digits.';
+      hasError = true;
+    }
+
+    if (!areaLocality || areaLocality.trim() === '') {
+      newErrors.areaLocality = 'Area/Locality is required.';
+      hasError = true;
+    }
+
+    if (!googleLocation || googleLocation.trim() === '' || !lat || !long) {
+      newErrors.googleLocation = 'Please select Google location.';
+      hasError = true;
+    }
+
+    setErrors(prev => ({ ...prev, ...newErrors }));
+    return !hasError;
+  };
+
+  const handleNext = () => {
+    if (validateStep1()) {
+      setCurrentStep(2);
+    } else {
+      SimpleToast.show('Please fill all required fields', SimpleToast.SHORT);
+    }
+  };
+
   // Handle form submission
   const handleSubmit = () => {
     if (loading) return;
@@ -1284,7 +1367,8 @@ const NewStaffForm = ({ navigation, route }) => {
             <View style={{ marginBottom: 15 }}>
               <Typography size={12} color="green">Location Selected</Typography>
               <Typography size={11} color="gray">{googleLocation}</Typography>
-          </View>
+            </View>
+          ) : null}
 
           <View style={{ borderBottomWidth: 1, borderBottomColor: '#E8E8E8', marginVertical: 15 }}>
             <Typography size={16} style={{ fontWeight: '600', color: '#333', marginBottom: 5 }}>
@@ -1420,64 +1504,6 @@ const NewStaffForm = ({ navigation, route }) => {
             </View>
           </View>
 
-          <Input
-            style_title={{ color: '#8C8D8B' }}
-            placeholder={
-              LocalizedStrings.NewStaffForm
-                .Emergency_Contact_Name_Placeholder || 'Emergency Contact Name'
-            }
-            title={
-              LocalizedStrings.NewStaffForm.Emergency_Contact_Name ||
-              'Emergency Contact Name'
-            }
-            value={emergencyContactName}
-            onChange={value => {
-              setEmergencyContactName(value);
-              clearError('emergencyContactName');
-            }}
-            error={errors.emergencyContactName}
-          />
-
-          <Input
-            style_title={{ color: '#8C8D8B' }}
-            placeholder={
-              LocalizedStrings.NewStaffForm
-                .Emergency_Contact_Number_Placeholder || '9123456780'
-            }
-            title={
-              LocalizedStrings.NewStaffForm.Emergency_Contact_Number ||
-              'Emergency Contact Number'
-            }
-            value={emergencyContactNumber}
-            onChange={value => {
-              const digitsOnly = value.replace(/[^0-9]/g, '').slice(0, 10);
-              setEmergencyContactNumber(digitsOnly);
-              clearError('emergencyContactNumber');
-            }}
-            keyboardType="phone-pad"
-            maxLength={10}
-            error={errors.emergencyContactNumber}
-          />
-
-          <DropdownComponent
-            title={LocalizedStrings.AddNewMember?.relation || 'Relation'}
-            placeholder={
-              LocalizedStrings.AddNewMember?.select_relation ||
-              'Select Relation'
-            }
-            width={'100%'}
-            style_dropdown={{ marginHorizontal: 0 }}
-            selectedTextStyleNew={{ marginLeft: 10 }}
-            marginHorizontal={0}
-            style_title={{ textAlign: 'left' }}
-            data={relationOptions}
-            value={relation}
-            onChange={item => {
-              setRelation(item);
-              clearError('relation');
-            }}
-            error={errors.relation}
-          />
         </View>
 
         {/* Step 1 Next Button */}
@@ -1485,7 +1511,7 @@ const NewStaffForm = ({ navigation, route }) => {
           <View style={styles.bottomButton}>
             <Button
               title="Next"
-              onPress={() => setCurrentStep(2)}
+              onPress={handleNext}
               main_style={styles.buttonStyle}
             />
           </View>
