@@ -116,7 +116,9 @@ const Staff = ({ navigation }) => {
         const name = (item.name || `${item.first_name || ''} ${item.last_name || ''}`).toLowerCase();
         const rawRole = item.user_work_info?.primary_role;
         const role = (Array.isArray(rawRole) ? rawRole.join(', ') : (rawRole || '')).toLowerCase();
-        return name.includes(query) || role.includes(query);
+        const addr = item?.addresses?.[0] || item?.address || {};
+        const location = [addr?.street, addr?.locality, addr?.area, addr?.city, addr?.state, item?.current_street, item?.current_city, item?.current_state, item?.location, item?.area_locality].filter(Boolean).join(' ').toLowerCase();
+        return name.includes(query) || role.includes(query) || location.includes(query);
       });
     }
 
