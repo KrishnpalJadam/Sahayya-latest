@@ -336,6 +336,8 @@ const FindStaff = ({ navigation, route }) => {
             age: getAge(item?.dob),
             salaryNum: Number(workInfo?.salary) || 0,
             salary: formatSalary(workInfo?.salary),
+            rating: item?.avg_rating || item?.rating || item?.staff_avg_rating || 0,
+            reviewsCount: item?.total_reviews || item?.reviews_count || 0,
             image: getCandidateImage(item),
             stayType: workInfo?.stay_type || item?.stay_type || '',
             isJobSeeking: (item?.is_job_seeking === true || item?.is_job_seeking === 1 || item?.is_available === true || item?.is_available === 1),
@@ -698,9 +700,18 @@ const FindStaff = ({ navigation, route }) => {
                       <Typography type={Font?.Poppins_SemiBold} size={17}>
                         {c.name}
                       </Typography>
-                      <Typography size={13} color="#555">
-                        {c.role}
-                      </Typography>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2 }}>
+                        <Typography size={13} color="#555">
+                          {c.role}
+                        </Typography>
+                        {Number(c.rating) > 0 && (
+                          <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 8, backgroundColor: '#FFF9E6', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 12 }}>
+                            <Typography size={11} color="#F5B041" type={Font?.Poppins_Medium}>
+                              ★ {Number(c.rating).toFixed(1)}
+                            </Typography>
+                          </View>
+                        )}
+                      </View>
                     </View>
                   </View>
 

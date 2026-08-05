@@ -99,6 +99,7 @@ const NewStaffForm = ({ navigation, route }) => {
   const [upiId, setUpiId] = useState('');
   const [payFrequency, setPayFrequency] = useState(null);
   const [workingDays, setWorkingDays] = useState([]); // array of values
+  const [salaryClosingDate, setSalaryClosingDate] = useState(null);
 
   // Document States
   const [staffPhoto, setStaffPhoto] = useState(null);
@@ -148,6 +149,12 @@ const NewStaffForm = ({ navigation, route }) => {
     { label: 'Weekly', value: 'weekly' },
     { label: 'Daily', value: 'daily' },
   ];
+
+  // Salary Closing Date Options (1-28, since months vary)
+  const salaryClosingDateOptions = Array.from({ length: 28 }, (_, i) => ({
+    label: `${i + 1}${i === 0 ? 'st' : i === 1 ? 'nd' : i === 2 ? 'rd' : 'th'} of each month`,
+    value: i + 1,
+  }));
 
   // Working Days Options
   const workingDaysOptions = [
@@ -314,6 +321,10 @@ const NewStaffForm = ({ navigation, route }) => {
           } catch (e) {
             setWorkingDays([]);
           }
+        }
+        if (workInfo.salary_closing_date) {
+          const closingOption = salaryClosingDateOptions.find(opt => opt.value === Number(workInfo.salary_closing_date));
+          setSalaryClosingDate(closingOption || null);
         }
       }
 
@@ -638,10 +649,7 @@ const NewStaffForm = ({ navigation, route }) => {
       hasError = true;
     }
 
-    if (!googleLocation || googleLocation.trim() === '' || !lat || !long) {
-      newErrors.googleLocation = 'Please select Google location.';
-      hasError = true;
-    }
+    // Google Location is optional — staff can add it later
 
     // Validate Emergency Contact Name (optional - only if provided)
     if (emergencyContactName && emergencyContactName.trim()) {
@@ -768,11 +776,6 @@ const NewStaffForm = ({ navigation, route }) => {
 
     if (!areaLocality || areaLocality.trim() === '') {
       newErrors.areaLocality = 'Area/Locality is required.';
-      hasError = true;
-    }
-
-    if (!googleLocation || googleLocation.trim() === '' || !lat || !long) {
-      newErrors.googleLocation = 'Please select Google location.';
       hasError = true;
     }
 
@@ -1680,6 +1683,23 @@ const NewStaffForm = ({ navigation, route }) => {
             }}
             error={errors.payFrequency}
           />
+
+          {payFrequency?.value === 'monthly' && (
+            <DropdownComponent
+              title={'Salary Closing Date'}
+              placeholder={'Select closing day of month'}
+              width={'100%'}
+              style_dropdown={{ marginHorizontal: 0 }}
+              selectedTextStyleNew={{ marginLeft: 10 }}
+              marginHorizontal={0}
+              style_title={{ textAlign: 'left' }}
+              data={salaryClosingDateOptions}
+              value={salaryClosingDate}
+              onChange={item => {
+                setSalaryClosingDate(item);
+              }}
+            />
+          )}
 
           <Typography
             type={Font?.Poppins_Bold}

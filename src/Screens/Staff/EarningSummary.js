@@ -274,9 +274,15 @@ const EarningSummary = ({ route }) => {
   const bonusAmount = Number(summary2?.earnings_breakdown?.performance_bonus?.amount || 0);
   const overtimeAmount = Number(summary2?.earnings_breakdown?.overtime_pay?.amount || 0);
 
+  // Use backend provided attendance summary
+  const backendDaysWorked = summary2?.attendance_summary?.present_days !== undefined
+    ? Number(summary2.attendance_summary.present_days) + Number(summary2.attendance_summary.late_arrivals || 0)
+    : 0;
+  const backendDaysInPeriod = summary2?.attendance_summary?.days_in_period || 30;
+
   let displayedBaseSalary = Number(summary2?.earnings_breakdown?.base_salary?.amount || 0);
-  if (isPending && monthlySalary > 0 && attendanceSummary.daysInMonth > 0) {
-    displayedBaseSalary = (monthlySalary / attendanceSummary.daysInMonth) * attendanceSummary.totalWorked;
+  if (isPending && monthlySalary > 0 && backendDaysInPeriod > 0) {
+    displayedBaseSalary = (monthlySalary / backendDaysInPeriod) * backendDaysWorked;
   }
 
   const pendingAdvanceDeduction = isPending ? projectedAdvanceDeduction : advanceRepayment;
@@ -349,7 +355,7 @@ const EarningSummary = ({ route }) => {
           <View style={{ alignItems: 'center' }}>
             <Typography size={11} color="#999">Days Worked</Typography>
             <Typography type={Font.Poppins_SemiBold} size={13} color="#4CAF50">
-              {attendanceSummary.totalWorked} of {attendanceSummary.daysInMonth}
+              {backendDaysWorked} of {backendDaysInPeriod}
             </Typography>
           </View>
           <View style={{ alignItems: 'flex-end' }}>
