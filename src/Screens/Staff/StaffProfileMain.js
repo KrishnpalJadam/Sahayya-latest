@@ -121,8 +121,8 @@ const StaffProfileMain = ({ navigation }) => {
 
     // Get address from userDetails
     const addresses = userDetail?.addresses || [];
-    const presentAddress = addresses.find(addr => addr.is_primary === 0) || addresses[0] || {};
-    const permanentAddress = addresses.find(addr => addr.is_primary === 1) || addresses[1] || {};
+    const presentAddress = addresses.find(addr => addr.address_type === 'present') || addresses[0] || {};
+    const permanentAddress = addresses.find(addr => addr.address_type === 'permanent') || addresses[1] || {};
     const presentStreet = presentAddress?.street || 'Not Found';
     const presentCity = presentAddress?.city || 'Not Found';
     const presentState = presentAddress?.state || 'Not Found';

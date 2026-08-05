@@ -272,8 +272,8 @@ const HouseHoldStaffProfile = ({ navigation, route }) => {
 
   // Address: try addresses array, then single address object, then nested structures, then flat fields
   const allAddresses = data?.addresses || [];
-  const presentAddr = allAddresses.find(a => a.is_primary === 0) || allAddresses[0] || {};
-  const permanentAddr = allAddresses.find(a => a.is_primary === 1) || allAddresses[1] || {};
+  const presentAddr = allAddresses.find(a => a.address_type === 'present') || allAddresses[0] || {};
+  const permanentAddr = allAddresses.find(a => a.address_type === 'permanent') || allAddresses[1] || {};
   const addr = presentAddr;
   const addrStreet = addr?.street || data?.street || data?.street_address || '';
   const addrLocality = addr?.area_locality || addr?.locality || addr?.area || data?.locality || data?.area || '';
