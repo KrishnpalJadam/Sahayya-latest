@@ -193,7 +193,7 @@ const Step1 = () => {
       if (activeTab === 0) {
         validationErrors = {
           firstName: validators?.checkRequire('First Name', firstName),
-          lastName: validators?.checkRequire('Last Name', lastName),
+          lastName: null,
           dob: validators?.checkRequire('Dob', dob),
           gender: validators?.checkRequire('Gender', gender?.value),
         };

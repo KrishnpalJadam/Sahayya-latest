@@ -241,10 +241,19 @@ const HouseholdProfile = ({ navigation, route }) => {
     }, 150);
   };
 
+  const [deletedAddressIds, setDeletedAddressIds] = useState([]);
+
   const removeAddress = index => {
-    setAddresses(prev =>
-      prev.length > 1 ? prev.filter((_, i) => i !== index) : prev,
-    );
+    setAddresses(prev => {
+      if (prev.length > 1) {
+        const addrToRemove = prev[index];
+        if (addrToRemove.id) {
+          setDeletedAddressIds(d => [...d, addrToRemove.id]);
+        }
+        return prev.filter((_, i) => i !== index);
+      }
+      return prev;
+    });
   };
 
   const updateAddressHousehold = (index, field, value) => {
@@ -354,6 +363,7 @@ const HouseholdProfile = ({ navigation, route }) => {
           ? rawPets.map(p => ({ pet_type: p?.pet_type || '', count: p?.pet_count ? String(p.pet_count) : '' }))
           : [{ pet_type: '', count: '' }];
         return {
+          id: addr?.id || null,
           name: addr?.name || '',
           street: addr?.street || '',
           city: addr?.city || '',
@@ -578,6 +588,7 @@ const HouseholdProfile = ({ navigation, route }) => {
 
     // Address + per-address household + pets
     addresses.forEach((address, index) => {
+      if (address.id) formData.append(`addresses[${index}][id]`, address.id);
       if (address.title || address.name) {
         formData.append(`addresses[${index}][title]`, address.title || address.name);
       }
@@ -607,14 +618,17 @@ const HouseholdProfile = ({ navigation, route }) => {
       const validPets = (address.pets || []).filter(p => {
         const petType = (p.pet_type || '').trim();
         if (petType === '') return false;
-        if (petType.toLowerCase() === 'other') return true;
         return (p.count?.trim() !== '' || p.pet_count?.trim() !== '');
       });
       const petsPayload = validPets.map(pet => ({
         pet_type: pet.pet_type,
-        pet_count: pet.pet_type?.toLowerCase() === 'other' ? null : (pet.count || pet.pet_count || null),
+        pet_count: pet.count || pet.pet_count || null,
       }));
       formData.append(`addresses[${index}][pets]`, JSON.stringify(petsPayload));
+    });
+
+    deletedAddressIds.forEach((id, index) => {
+      formData.append(`deleted_addresses[${index}]`, id);
     });
 
     formData.append('is_edit', '1');
@@ -627,6 +641,7 @@ const HouseholdProfile = ({ navigation, route }) => {
     const jsonPayload = {
       auto_attendence: autoPresent ? 1 : 0,
       is_edit: 1,
+      deleted_addresses: deletedAddressIds,
       addresses: addresses.map(address => {
         const hh = address.household || {};
         const residenceTypeValue =
@@ -636,12 +651,12 @@ const HouseholdProfile = ({ navigation, route }) => {
         const validPets = (address.pets || []).filter(p => {
           const petType = String(p.pet_type || p.type || '').trim();
           if (petType === '') return false;
-          if (petType.toLowerCase() === 'other') return true;
           const petCount = String(p.count || p.pet_count || '').trim();
           return petCount !== '';
         });
 
         return {
+          id: address.id || null,
           title: address.title || address.name || '',
           name: address.name || address.title || '',
           street: address.street || '',
@@ -663,7 +678,7 @@ const HouseholdProfile = ({ navigation, route }) => {
           },
           pets: validPets.map(pet => ({
             pet_type: pet.pet_type || pet.type,
-            pet_count: (pet.pet_type || pet.type || '').toLowerCase() === 'other' ? null : (pet.count || pet.pet_count || null),
+            pet_count: pet.count || pet.pet_count || null,
           })),
         };
       }),

@@ -137,12 +137,20 @@ const ManageAddresses = ({ navigation }) => {
     setAddresses(prev => [...prev, createEmptyAddress()]);
   };
 
+  const [deletedAddressIds, setDeletedAddressIds] = useState([]);
+
   const removeAddress = index => {
     if (addresses.length === 1) {
       SimpleToast.show('You must have at least one address', SimpleToast.SHORT);
       return;
     }
-    setAddresses(prev => prev.filter((_, i) => i !== index));
+    setAddresses(prev => {
+      const addrToRemove = prev[index];
+      if (addrToRemove.id) {
+        setDeletedAddressIds(d => [...d, addrToRemove.id]);
+      }
+      return prev.filter((_, i) => i !== index);
+    });
   };
 
   const updateAddress = (index, field, value) => {
@@ -250,6 +258,10 @@ const ManageAddresses = ({ navigation }) => {
     const formData = new FormData();
     formData.append('is_edit', '1');
 
+    deletedAddressIds.forEach((id, index) => {
+      formData.append(`deleted_addresses[${index}]`, id);
+    });
+
     addresses.forEach((addr, index) => {
       if (addr.id) formData.append(`addresses[${index}][id]`, addr.id);
       if (addr.title) formData.append(`addresses[${index}][title]`, addr.title);
@@ -276,7 +288,6 @@ const ManageAddresses = ({ navigation }) => {
       const validPets = (addr.pets || []).filter(p => {
         const petType = (p.pet_type || '').trim();
         if (petType === '') return false;
-        if (petType.toLowerCase() === 'other') return true;
         return (p.pet_count || '').trim() !== '';
       });
       validPets.forEach((pet, pi) => {

@@ -403,12 +403,11 @@ const StepHousehold = React.forwardRef((props, ref) => {
       const petDetails = h.pets
         .filter(pet => {
           if (!pet.type) return false;
-          if (pet.type.toLowerCase() === 'other') return true;
           return !!pet.count;
         })
         .map(pet => ({
           pet_type: pet.type,
-          pet_count: pet.type?.toLowerCase() === 'other' ? null : pet.count,
+          pet_count: pet.count,
         }));
 
       return {
