@@ -82,7 +82,9 @@ const LocationMap = ({
       setRegion(newRegion);
       setSelectedCoordinate({latitude, longitude});
       if (mapRef.current) {
-        mapRef.current.animateToRegion(newRegion, 500);
+        setTimeout(() => {
+          mapRef.current?.animateToRegion(newRegion, 500);
+        }, 100);
       }
     }
   }, [lat, long]);
@@ -91,11 +93,12 @@ const LocationMap = ({
     if (!isValidCoordinate(latitude, longitude)) return;
 
     const nextRegion = buildRegion(latitude, longitude);
-    setRegion(nextRegion);
     setSelectedCoordinate({latitude, longitude});
     
     if (mapRef.current) {
-      mapRef.current.animateToRegion(nextRegion, 500);
+      setTimeout(() => {
+        mapRef.current?.animateToRegion(nextRegion, 500);
+      }, 50);
     }
     
     onMarkerDragEnd?.({latitude, longitude});
@@ -182,8 +185,7 @@ const LocationMap = ({
         ref={mapRef}
         provider={PROVIDER_GOOGLE}
         style={styles.map}
-        region={region}
-        onRegionChangeComplete={setRegion}
+        initialRegion={region}
         onPress={event => handleCoordinateChange(event.nativeEvent.coordinate)}
         showsUserLocation={hasLocationPermission}
         showsMyLocationButton={false}>
