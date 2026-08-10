@@ -232,22 +232,20 @@ const HouseholdSection = ({ index, data, updateField, updatePet, addPet, removeP
               error={errors?.[`petType${petIndex}`]}
             />
           </View>
-          {pet.type?.toLowerCase() !== 'other' && (
-            <View style={styles.petCountContainer}>
-              <Input
-                title={
-                  LocalizedStrings.EditProfile?.Count ||
-                  LocalizedStrings.CompleteProfile?.count ||
-                  'Count'
-                }
-                placeholder=""
-                keyboardType="numeric"
-                value={pet.count}
-                onChange={value => updatePetField(petIndex, 'count', value)}
-                error={errors?.[`petCount${petIndex}`]}
-              />
-            </View>
-          )}
+          <View style={styles.petCountContainer}>
+            <Input
+              title={
+                LocalizedStrings.EditProfile?.Count ||
+                LocalizedStrings.CompleteProfile?.count ||
+                'Count'
+              }
+              placeholder=""
+              keyboardType="numeric"
+              value={pet.count}
+              onChange={value => updatePetField(petIndex, 'count', value)}
+              error={errors?.[`petCount${petIndex}`]}
+            />
+          </View>
           {data.pets.length > 1 && (
             <TouchableOpacity
               style={styles.removePetButton}
@@ -388,14 +386,10 @@ const StepHousehold = React.forwardRef((props, ref) => {
             prefix + (LocalizedStrings.EditProfile?.Pet_Type || 'Pet Type'),
             pet.type,
           );
-          if (pet.type?.toLowerCase() !== 'other') {
-            allErrors[`${idx}_petCount${petIdx}`] = validators.checkRequire(
-              prefix + (LocalizedStrings.EditProfile?.Count || 'Pet Count'),
-              pet.count,
-            );
-          } else {
-            allErrors[`${idx}_petCount${petIdx}`] = null;
-          }
+          allErrors[`${idx}_petCount${petIdx}`] = validators.checkRequire(
+            prefix + (LocalizedStrings.EditProfile?.Count || 'Pet Count'),
+            pet.count,
+          );
         }
       });
     });

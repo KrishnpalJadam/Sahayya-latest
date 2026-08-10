@@ -542,7 +542,7 @@ const HouseholdProfile = ({ navigation, route }) => {
     // Basic Information
     if (firstName) formData.append('first_name', firstName);
     // formData.append('user_role_id', 3);
-    if (lastName) formData.append('last_name', lastName);
+    formData.append('last_name', lastName || '');
     if (gender?.value) formData.append('gender', gender.value);
     if (email) formData.append('email', email);
     formData.append('auto_attendence', autoPresent ? 1 : 0);
@@ -669,7 +669,7 @@ const HouseholdProfile = ({ navigation, route }) => {
       }),
     };
     if (firstName) jsonPayload.first_name = firstName;
-    if (lastName) jsonPayload.last_name = lastName;
+    jsonPayload.last_name = lastName || '';
     if (gender?.value) jsonPayload.gender = gender.value;
     if (email) jsonPayload.email = email;
     if (dob) {
@@ -1130,16 +1130,14 @@ const HouseholdProfile = ({ navigation, route }) => {
                       ]}
                     />
                   </View>
-                  {(pet.pet_type || pet.type || '').toLowerCase() !== 'other' && (
-                    <View style={styles.petCountField}>
-                      <Input
-                        title={LocalizedStrings.EditProfile.Count || 'Count'}
-                        keyboardType="numeric"
-                        value={pet.count || pet.pet_count || ''}
-                        onChange={value => updateAddressPet(index, pi, 'count', value)}
-                      />
-                    </View>
-                  )}
+                  <View style={styles.petCountField}>
+                    <Input
+                      title={LocalizedStrings.EditProfile.Count || 'Count'}
+                      keyboardType="numeric"
+                      value={pet.count || pet.pet_count || ''}
+                      onChange={value => updateAddressPet(index, pi, 'count', value)}
+                    />
+                  </View>
                   {(address.pets.length > 1 || pet.pet_type || pet.type || pet.count) && (
                     <TouchableOpacity
                       style={styles.removePetButton}

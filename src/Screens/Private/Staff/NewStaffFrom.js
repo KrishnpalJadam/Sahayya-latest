@@ -900,6 +900,9 @@ const NewStaffForm = ({ navigation, route }) => {
     // Salary - send 0 as default if not provided
     formData.append('salary', salary?.trim() || '0');
 
+    // Salary closing date
+    formData.append('salary_closing_date', salaryClosingDate?.value || '');
+
     if (upiId?.trim()) {
       formData.append('upi_id', upiId.trim());
     }

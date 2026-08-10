@@ -251,6 +251,7 @@ const ManageAddresses = ({ navigation }) => {
     formData.append('is_edit', '1');
 
     addresses.forEach((addr, index) => {
+      if (addr.id) formData.append(`addresses[${index}][id]`, addr.id);
       if (addr.title) formData.append(`addresses[${index}][title]`, addr.title);
       formData.append(`addresses[${index}][street]`, addr.street);
       formData.append(`addresses[${index}][city]`, addr.city);
@@ -280,9 +281,7 @@ const ManageAddresses = ({ navigation }) => {
       });
       validPets.forEach((pet, pi) => {
         formData.append(`addresses[${index}][pets][${pi}][pet_type]`, pet.pet_type);
-        if ((pet.pet_type || '').toLowerCase() !== 'other') {
-          formData.append(`addresses[${index}][pets][${pi}][pet_count]`, pet.pet_count);
-        }
+        formData.append(`addresses[${index}][pets][${pi}][pet_count]`, pet.pet_count);
       });
     });
 
@@ -452,11 +451,9 @@ const ManageAddresses = ({ navigation }) => {
                     <View style={{ flex: 1, marginRight: 8 }}>
                       <Input title="Type" value={pet.pet_type} onChange={val => updatePet(addrIndex, petIndex, 'pet_type', val)} />
                     </View>
-                    {(pet.pet_type || '').toLowerCase() !== 'other' && (
-                      <View style={{ width: 80 }}>
-                        <Input title="Count" keyboardType="numeric" value={pet.pet_count} onChange={val => updatePet(addrIndex, petIndex, 'pet_count', val)} />
-                      </View>
-                    )}
+                    <View style={{ width: 80 }}>
+                      <Input title="Count" keyboardType="numeric" value={pet.pet_count} onChange={val => updatePet(addrIndex, petIndex, 'pet_count', val)} />
+                    </View>
                     {(address.pets.length > 1 || pet.pet_type || pet.pet_count) && (
                       <TouchableOpacity style={styles.removeBtn} onPress={() => removePet(addrIndex, petIndex)}>
                         <Typography size={12} color="red">Remove</Typography>
