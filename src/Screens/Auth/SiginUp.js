@@ -69,7 +69,7 @@ const SiginUp = ({ navigation }) => {
     }
   };
 
-  const logConsentAndProceedSignup = () => {
+  const logConsentAndProceedSignup = (checkedState = []) => {
     if (!pendingPayload) {
       setIsTermsAccepted(true);
       setShowTermsModal(false);
@@ -85,20 +85,22 @@ const SiginUp = ({ navigation }) => {
           { type: 'terms_and_conditions', consent_data: { accepted: true } },
         ],
       },
-      () => proceedSignup(0),
-      () => proceedSignup(0),
-      () => proceedSignup(0),
+      () => proceedSignup(0, checkedState[0]),
+      () => proceedSignup(0, checkedState[0]),
+      () => proceedSignup(0, checkedState[0]),
     );
   };
 
-  const proceedSignup = (retryCount = 0) => {
+  const proceedSignup = (retryCount = 0, whatsappConsent = false) => {
     if (!pendingPayload || isLoading) return;
     setIsLoading(true);
 
-    console.log('Calling signup API with:', { phone: mobile, country: selectedCountry.dial_code });
+    const payloadWithConsent = { ...pendingPayload, whatsapp_consent: whatsappConsent };
+
+    console.log('Calling signup API with:', { phone: mobile, country: selectedCountry.dial_code, whatsapp_consent: whatsappConsent });
     POST(
       SIGINUP,
-      pendingPayload,
+      payloadWithConsent,
       response => {
         console.log('Signup Success Response:', response);
         setIsLoading(false);
@@ -282,6 +284,9 @@ const SiginUp = ({ navigation }) => {
         onAccept={logConsentAndProceedSignup}
         title="Terms and conditions"
         contentSections={TERMS_AND_CONDITIONS_CONTENT}
+        checkboxes={[
+          'I consent to receive important updates, invoices, and notifications on WhatsApp from Sahayya.'
+        ]}
         acceptButtonText="I agree"
       />
     </CommanView>
