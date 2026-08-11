@@ -906,7 +906,7 @@ const StepWokInfo = forwardRef(({ navigation }, ref) => {
         {[
           'Inhouse (Live-in)',
           'Come and Go (Outhouse)'
-        ]).map((option, index) => {
+        ].map((option, index) => {
           const val = index === 0 ? 'inhouse' : 'come_and_go';
           const isSelected = stayType.includes(val);
 
