@@ -40,10 +40,13 @@ const StepWokInfo = forwardRef(({ navigation }, ref) => {
   const [additionalInfo, setAdditionalInfo] = useState(''); // Additional info
   const [voiceNote, setVoiceNote] = useState(null); // Voice note (optional)
   const [workingDays, setWorkingDays] = useState([]); // Selected working days
+  const [expectedSalary, setExpectedSalary] = useState(''); // Expected monthly salary
+  const [workingHours, setWorkingHours] = useState(''); // Preferred working hours
   const [stayType, setStayType] = useState([]); // Stay type
   const [errors, setErrors] = useState({}); // Validation errors
   const [loader, setLoader] = useState(false); // Loading state
   const [emergencyContactName, setEmergencyContactName] = useState(''); // Emergency Contact Name
+  const [emergencyContactRelation, setEmergencyContactRelation] = useState(''); // Emergency Contact Relation
   const [emergencyContactNumber, setEmergencyContactNumber] = useState(''); // Emergency Contact Number
   const [upiId, setUpiId] = useState(''); // UPI ID
 
@@ -169,11 +172,26 @@ const StepWokInfo = forwardRef(({ navigation }, ref) => {
       if (workInfo.emergency_contact_name) {
         setEmergencyContactName(workInfo.emergency_contact_name);
       }
+      if (workInfo.emergency_contact_relation) {
+        setEmergencyContactRelation(workInfo.emergency_contact_relation);
+      }
       if (workInfo.emergency_contact_number) {
         setEmergencyContactNumber(workInfo.emergency_contact_number);
       }
       if (workInfo?.stay_type) {
         setStayType([workInfo.stay_type]);
+      }
+      if (workInfo.working_days && workInfo.working_days.length > 0) {
+        const daysList = Array.isArray(workInfo.working_days)
+          ? workInfo.working_days.filter(d => d)
+          : String(workInfo.working_days).split(',').map(d => d.trim()).filter(d => d);
+        setWorkingDays(daysList);
+      }
+      if (workInfo.salary || workInfo.expected_salary) {
+        setExpectedSalary(String(workInfo.salary || workInfo.expected_salary || ''));
+      }
+      if (workInfo.working_hours) {
+        setWorkingHours(String(workInfo.working_hours));
       }
       if (workInfo.upi_id || userDetail?.upi_id) {
         setUpiId(workInfo.upi_id || userDetail?.upi_id);
@@ -502,6 +520,14 @@ const StepWokInfo = forwardRef(({ navigation }, ref) => {
         formData.append(`working_days[${index}]`, day);
       });
     }
+
+    if (expectedSalary) {
+      formData.append('salary', expectedSalary);
+    }
+
+    if (workingHours) {
+      formData.append('working_hours', workingHours);
+    }
     
     if (stayType.length > 0) {
       formData.append('stay_type', stayType[0]);
@@ -518,6 +544,9 @@ const StepWokInfo = forwardRef(({ navigation }, ref) => {
 
     if (emergencyContactName) {
       formData.append('emergency_contact_name', emergencyContactName);
+    }
+    if (emergencyContactRelation) {
+      formData.append('emergency_contact_relation', emergencyContactRelation);
     }
     if (emergencyContactNumber) {
       formData.append('emergency_contact_number', emergencyContactNumber);
@@ -877,7 +906,7 @@ const StepWokInfo = forwardRef(({ navigation }, ref) => {
         {[
           'Inhouse (Live-in)',
           'Come and Go (Outhouse)'
-        ].map((option, index) => {
+        ]).map((option, index) => {
           const val = index === 0 ? 'inhouse' : 'come_and_go';
           const isSelected = stayType.includes(val);
 
@@ -897,11 +926,53 @@ const StepWokInfo = forwardRef(({ navigation }, ref) => {
       </View>
 
       <Input
+        title={'Expected Monthly Salary (₹)'}
+        placeholder={'e.g. 15000'}
+        value={expectedSalary}
+        onChange={text => {
+          const num = text.replace(/[^0-9]/g, '');
+          setExpectedSalary(num);
+        }}
+        keyboardType="numeric"
+        maxLength={7}
+        showTitle={true}
+      />
+
+      <Input
+        title={'Preferred Working Hours / Timings'}
+        placeholder={'e.g. 9:00 AM - 6:00 PM'}
+        value={workingHours}
+        onChange={text => setWorkingHours(text)}
+        showTitle={true}
+      />
+
+      <Input
         title={'Emergency Contact Name'}
         placeholder={'Enter emergency contact name'}
         value={emergencyContactName}
         onChange={text => setEmergencyContactName(text)}
         showTitle={true}
+      />
+
+      <DropdownComponent
+        title={'Emergency Contact Relation'}
+        placeholder={'Select relation (e.g. Father, Mother, Spouse)'}
+        data={[
+          { label: 'Father', value: 'Father' },
+          { label: 'Mother', value: 'Mother' },
+          { label: 'Husband', value: 'Husband' },
+          { label: 'Wife', value: 'Wife' },
+          { label: 'Brother', value: 'Brother' },
+          { label: 'Sister', value: 'Sister' },
+          { label: 'Son', value: 'Son' },
+          { label: 'Daughter', value: 'Daughter' },
+          { label: 'Uncle', value: 'Uncle' },
+          { label: 'Aunt', value: 'Aunt' },
+          { label: 'Friend', value: 'Friend' },
+          { label: 'Other', value: 'Other' },
+        ]}
+        value={emergencyContactRelation}
+        onChange={item => setEmergencyContactRelation(item?.value)}
       />
 
       <Input

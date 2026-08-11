@@ -43,6 +43,7 @@ const JobsList = ({ navigation }) => {
   const [selectedLocations, setSelectedLocations] = useState([]);
   const [selectedCompTypes, setSelectedCompTypes] = useState([]);
   const [showFilters, setShowFilters] = useState(false);
+  const [allIndia, setAllIndia] = useState(false);
 
   // Get staff's primary role and location from profile
   const staffRole = (() => {
@@ -85,6 +86,37 @@ const JobsList = ({ navigation }) => {
         setLoading(false);
       },
     );
+  };
+
+  const fetchAllIndia = () => {
+    setJobData([]);
+    setLoading(true);
+    GET_WITH_TOKEN(
+      `${ListJob}?city=All`,
+      success => {
+        const rawData = success?.data;
+        const jobs = Array.isArray(rawData) ? rawData : (rawData?.data || []);
+        setJobData(Array.isArray(jobs) ? jobs : []);
+        setLoading(false);
+      },
+      error => {
+        setLoading(false);
+      },
+      fail => {
+        setLoading(false);
+      },
+    );
+  };
+
+  const toggleAllIndia = () => {
+    if (!allIndia) {
+      setAllIndia(true);
+      setSelectedLocations([]);
+      fetchAllIndia();
+    } else {
+      setAllIndia(false);
+      JobList();
+    }
   };
 
   // Extract unique locations and compensation types for filter options
@@ -190,6 +222,10 @@ const JobsList = ({ navigation }) => {
     setSelectedLocations(prev =>
       prev.includes(loc) ? prev.filter(l => l !== loc) : [...prev, loc],
     );
+    if (allIndia) {
+      setAllIndia(false);
+      JobList();
+    }
   };
 
   const toggleCompType = (ct) => {
@@ -201,10 +237,14 @@ const JobsList = ({ navigation }) => {
   const clearFilters = () => {
     setSelectedLocations([]);
     setSelectedCompTypes([]);
+    if (allIndia) {
+      setAllIndia(false);
+      JobList();
+    }
     setShowFilterModal(false);
   };
 
-  const hasActiveFilters = selectedLocations.length > 0 || selectedCompTypes.length > 0;
+  const hasActiveFilters = selectedLocations.length > 0 || selectedCompTypes.length > 0 || allIndia;
 
   // Split jobs into featured (first 4) and recent (rest)
   const jobsFeatured = filteredJobs.slice(0, 4);
@@ -380,7 +420,22 @@ const JobsList = ({ navigation }) => {
                <Typography type={Font.Poppins_SemiBold} size={15} style={{ marginBottom: 10 }}>
                   Quick Filters
                </Typography>
-               <View style={styles.chipContainer}>
+                <View style={styles.chipContainer}>
+                  <TouchableOpacity
+                    style={[
+                      styles.chip,
+                      allIndia && styles.chipActive,
+                    ]}
+                    onPress={toggleAllIndia}
+                  >
+                    <Typography
+                      type={Font.Poppins_Regular}
+                      size={12}
+                      color={allIndia ? '#fff' : '#333'}
+                    >
+                      All India
+                    </Typography>
+                  </TouchableOpacity>
                   {filterOptions.locations.map(loc => (
                     <TouchableOpacity
                       key={loc}
@@ -399,7 +454,7 @@ const JobsList = ({ navigation }) => {
                       </Typography>
                     </TouchableOpacity>
                   ))}
-               </View>
+                </View>
                <View style={styles.chipContainer}>
                   {filterOptions.compTypes.map(ct => (
                     <TouchableOpacity
@@ -567,6 +622,21 @@ const JobsList = ({ navigation }) => {
                   Location
                 </Typography>
                 <View style={styles.chipContainer}>
+                  <TouchableOpacity
+                    style={[
+                      styles.chip,
+                      allIndia && styles.chipActive,
+                    ]}
+                    onPress={toggleAllIndia}
+                  >
+                    <Typography
+                      type={Font.Poppins_Regular}
+                      size={13}
+                      color={allIndia ? '#fff' : '#333'}
+                    >
+                      All India
+                    </Typography>
+                  </TouchableOpacity>
                   {filterOptions.locations.map(loc => (
                     <TouchableOpacity
                       key={loc}

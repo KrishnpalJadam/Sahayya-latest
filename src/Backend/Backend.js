@@ -144,17 +144,47 @@ const _hasFileUpload = (body) => {
   }
 };
 
+const _setNestedValue = (obj, path, value) => {
+  const segments = path.replace(/\]/g, '').split('[');
+  let current = obj;
+  for (let i = 0; i < segments.length - 1; i++) {
+    const key = segments[i];
+    const nextKey = segments[i + 1];
+    const isNextNumeric = /^\d+$/.test(nextKey);
+    if (current[key] === undefined || current[key] === null) {
+      current[key] = isNextNumeric ? [] : {};
+    }
+    current = current[key];
+  }
+  const lastKey = segments[segments.length - 1];
+  if (Array.isArray(current)) {
+    const idx = parseInt(lastKey, 10);
+    current[idx] = value;
+  } else {
+    if (current[lastKey] !== undefined) {
+      if (!Array.isArray(current[lastKey])) current[lastKey] = [current[lastKey]];
+      current[lastKey].push(value);
+    } else {
+      current[lastKey] = value;
+    }
+  }
+};
+
 const _formDataToJsonObject = (body) => {
   const obj = {};
   try {
     const parts = body._parts || [];
     for (const [key, value] of parts) {
       if (value && typeof value === 'object' && value.uri) continue;
-      if (obj[key] !== undefined) {
-        if (!Array.isArray(obj[key])) obj[key] = [obj[key]];
-        obj[key].push(value);
+      if (key.includes('[')) {
+        _setNestedValue(obj, key, value);
       } else {
-        obj[key] = value;
+        if (obj[key] !== undefined) {
+          if (!Array.isArray(obj[key])) obj[key] = [obj[key]];
+          obj[key].push(value);
+        } else {
+          obj[key] = value;
+        }
       }
     }
   } catch (e) {}

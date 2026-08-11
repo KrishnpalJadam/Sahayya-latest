@@ -81,14 +81,21 @@ const PostNewJob = ({ navigation, route }) => {
       addressOptionsList.push(selectedAddress);
     }
 
-    return addressOptionsList.map(addr => ({
-      label:
-        addr?.title ||
-        addr?.name ||
-        `${addr?.street || addr?.streetAddress || ''}, ${addr?.city || ''}`,
-      value: getAddressKey(addr),
-      address: addr,
-    }));
+    return [
+      {
+        label: 'All India (Remote / Anywhere in India)',
+        value: 'all_india',
+        address: { isAllIndia: true, city: 'All', state: 'All India' },
+      },
+      ...addressOptionsList.map(addr => ({
+        label:
+          addr?.title ||
+          addr?.name ||
+          `${addr?.street || addr?.streetAddress || ''}, ${addr?.city || ''}`,
+        value: getAddressKey(addr),
+        address: addr,
+      })),
+    ];
   }, [selectedAddress, userAddresses]);
 
   // Working Schedule
@@ -534,7 +541,10 @@ const PostNewJob = ({ navigation, route }) => {
     );
 
     // Location
-    if (selectedAddress) {
+    if (selectedAddress?.isAllIndia) {
+      formData.append('city', 'All');
+      formData.append('state', 'All India');
+    } else if (selectedAddress) {
       formData.append('street_address', selectedAddress.street || '');
       formData.append('city', selectedAddress.city || '');
       formData.append('state', typeof selectedAddress.state === 'string' ? selectedAddress.state : selectedAddress.state?.label || '');
@@ -862,7 +872,10 @@ const PostNewJob = ({ navigation, route }) => {
     );
 
     // Location
-    if (selectedAddress) {
+    if (selectedAddress?.isAllIndia) {
+      formData.append('city', 'All');
+      formData.append('state', 'All India');
+    } else if (selectedAddress) {
       formData.append('street_address', selectedAddress.street || '');
       formData.append('city', selectedAddress.city || '');
       formData.append('state', typeof selectedAddress.state === 'string' ? selectedAddress.state : selectedAddress.state?.label || '');

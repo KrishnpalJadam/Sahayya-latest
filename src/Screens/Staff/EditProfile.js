@@ -678,8 +678,8 @@ const EditProfile = ({ navigation, route }) => {
     const formData = new FormData();
 
     // Basic Information
-    if (firstName) formData.append('first_name', firstName);
-    if (lastName) formData.append('last_name', lastName);
+    formData.append('first_name', firstName);
+    formData.append('last_name', lastName);
     if (gender?.value) formData.append('gender', gender.value);
     if (dob) {
       const formattedDob = formatDateWithDashes(dob);

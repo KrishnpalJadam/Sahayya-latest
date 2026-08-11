@@ -14,7 +14,7 @@ import Typography from '../../Component/UI/Typography';
 import { ImageConstant } from '../../Constants/ImageConstant';
 import Button from '../../Component/Button';
 import { POST_WITH_TOKEN, GET_WITH_TOKEN } from '../../Backend/Backend';
-import { SUBSCRIPTIONS_BY_ROLE, SUBSCRIPTIONS, SUBSCRIBE_PLAN, SUBSCRIPTION_USER_CURRENT, SUBSCRIPTION_USER_SUBSCRIBE, SUBSCRIPTION_USER_CREATE_ORDER, SUBSCRIPTION_USER_VERIFY } from '../../Backend/api_routes';
+import { SUBSCRIPTIONS_BY_ROLE, SUBSCRIPTIONS, SUBSCRIBE_PLAN, SUBSCRIPTION_USER_CURRENT, SUBSCRIPTION_USER_SUBSCRIBE, SUBSCRIPTION_USER_CREATE_ORDER, SUBSCRIPTION_USER_VERIFY, ReferralCode } from '../../Backend/api_routes';
 import { useSelector } from 'react-redux';
 import SimpleToast from 'react-native-simple-toast';
 import LocalizedStrings from '../../Constants/localization';
@@ -36,6 +36,7 @@ const HouseholdManager = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [selectedPlanId, setSelectedPlanId] = useState(null);
+  const [walletBalance, setWalletBalance] = useState(0);
   const currentPlanRequestId = useRef(0);
 
   const handleActivatedPlan = (subscription, response) => {
@@ -63,9 +64,22 @@ const HouseholdManager = ({ navigation }) => {
   useEffect(() => {
     fetchCurrentPlan();
     fetchSubscriptions();
+    fetchWalletBalance();
     // Membership data is loaded once whenever this screen is mounted.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const fetchWalletBalance = () => {
+    GET_WITH_TOKEN(
+      ReferralCode,
+      success => {
+        const balance = parseFloat(success?.data?.wallet_balance || 0);
+        setWalletBalance(balance > 0 ? balance : 0);
+      },
+      () => {},
+      () => {},
+    );
+  };
 
   const fetchCurrentPlan = ({preserveOnError = false} = {}) => {
     const requestId = ++currentPlanRequestId.current;
@@ -188,9 +202,29 @@ const HouseholdManager = ({ navigation }) => {
     const price = parseFloat(subscription.price);
     const { baseAmount, gstAmount, totalAmount } = calculateGst(price);
 
+    const creditApplied = Math.min(walletBalance, totalAmount);
+    const payable = totalAmount - creditApplied;
+
+    if (walletBalance > 0 && creditApplied >= totalAmount) {
+      Alert.alert(
+        'Confirm with Credits',
+        `${subscription.subscription_name}\n\nTotal (incl. 18% GST): ₹${totalAmount.toFixed(2)}\nCredits to apply: ₹${creditApplied.toFixed(2)}\nAmount to pay: ₹0.00\n\nYour credits fully cover this plan. Proceed?`,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Pay with Credits', onPress: () => processPayment(subscription, true) },
+        ],
+      );
+      return;
+    }
+
+    const creditsNote =
+      walletBalance > 0
+        ? `\nCredits to apply: ₹${creditApplied.toFixed(2)}\nAmount to pay: ₹${payable.toFixed(2)}`
+        : '';
+
     Alert.alert(
       'Confirm Payment',
-      `${subscription.subscription_name}\n\nBase Price: ₹${baseAmount.toFixed(2)}\nGST (18%): ₹${gstAmount.toFixed(2)}\nTotal: ₹${totalAmount.toFixed(2)}\n\nDo you want to proceed?`,
+      `${subscription.subscription_name}\n\nBase Price: ₹${baseAmount.toFixed(2)}\nGST (18%): ₹${gstAmount.toFixed(2)}\nTotal: ₹${totalAmount.toFixed(2)}${creditsNote}\n\nDo you want to proceed?`,
       [
         { text: 'Cancel', style: 'cancel' },
         { text: 'Pay Now', onPress: () => processPayment(subscription) },
@@ -198,7 +232,7 @@ const HouseholdManager = ({ navigation }) => {
     );
   };
 
-  const processPayment = async subscription => {
+  const processPayment = async (subscription, useCreditsOnly = false) => {
     setPaymentLoading(true);
     setSelectedPlanId(subscription.id);
 
@@ -210,6 +244,20 @@ const HouseholdManager = ({ navigation }) => {
         SUBSCRIPTION_USER_CREATE_ORDER,
         { subscription_id: subscription.id },
         async (orderSuccess) => {
+          // Wallet-funded zero-payment path — backend activates subscription directly
+          if (orderSuccess?.subscription || (orderSuccess?.status && !orderSuccess?.order_id)) {
+            setPaymentLoading(false);
+            setSelectedPlanId(null);
+            handleActivatedPlan(subscription, orderSuccess);
+            setWalletBalance(0);
+            SimpleToast.show(
+              orderSuccess?.message ||
+                'Subscription activated with credits successfully!',
+              SimpleToast.LONG,
+            );
+            return;
+          }
+
           if (orderSuccess?.status && orderSuccess?.order_id) {
             try {
               const result = await initiatePayment({
@@ -415,6 +463,20 @@ const HouseholdManager = ({ navigation }) => {
           <Typography type={Font.Poppins_Bold} style={styles.sectionTitle}>
             {visibleSubscriptions.length > 0 ? 'Available Plans' : ''}
           </Typography>
+
+          {walletBalance > 0 && (
+            <View style={styles.walletCard}>
+              <Typography type={Font.Poppins_Medium} style={styles.walletLabel}>
+                Available Credits
+              </Typography>
+              <Typography type={Font.Poppins_Bold} style={styles.walletValue}>
+                ₹{walletBalance.toFixed(2)}
+              </Typography>
+              <Typography type={Font.Poppins_Regular} style={styles.walletHint}>
+                Credits will be applied automatically to your plan purchase.
+              </Typography>
+            </View>
+          )}
 
           {visibleSubscriptions.map((subscription, index) => {
             const extra = subscription?.extra;
@@ -646,5 +708,27 @@ const styles = StyleSheet.create({
     width: '95%',
     marginTop: 10,
     marginBottom: 5,
+  },
+  walletCard: {
+    backgroundColor: '#FFF8F6',
+    borderRadius: 12,
+    padding: 16,
+    width: '95%',
+    borderWidth: 1,
+    borderColor: '#D98579',
+    marginBottom: 10,
+  },
+  walletLabel: {
+    fontSize: 13,
+    color: '#555',
+  },
+  walletValue: {
+    fontSize: 20,
+    color: '#D98579',
+    marginVertical: 4,
+  },
+  walletHint: {
+    fontSize: 11,
+    color: '#888',
   },
 });

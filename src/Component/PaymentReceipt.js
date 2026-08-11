@@ -42,7 +42,15 @@ const PaymentReceipt = ({ visible, onClose, paymentData, userDetails, employerNa
   const advancePayment = Number(
     sb?.advance_payment ?? paymentData?.advance_payment ?? 0,
   );
-  const totalDeductions = Number(sb?.total_deductions ?? advancePayment);
+  const pfDeduction = Number(
+    sb?.pf_deduction ?? paymentData?.pf_deduction ?? 0,
+  );
+  const taxDeduction = Number(
+    sb?.tax_deduction ?? paymentData?.tax_deduction ?? 0,
+  );
+  const totalDeductions = Number(
+    sb?.total_deductions ?? (pfDeduction + taxDeduction),
+  );
 
   const staffName =
     paymentData?.staff_name ??
@@ -267,13 +275,17 @@ const PaymentReceipt = ({ visible, onClose, paymentData, userDetails, employerNa
                   <Typography type={Font.Poppins_SemiBold} style={styles.breakdownTitle}>
                     Deductions
                   </Typography>
-                  {advancePayment > 0 ? (
-                    <BreakdownRow label="Advance Repayment" value={advancePayment} />
-                  ) : (
+                  {pfDeduction > 0 ? (
+                    <BreakdownRow label="Provident Fund (PF)" value={pfDeduction} />
+                  ) : null}
+                  {taxDeduction > 0 ? (
+                    <BreakdownRow label="Income Tax (IT)" value={taxDeduction} />
+                  ) : null}
+                  {totalDeductions <= 0 ? (
                     <Typography type={Font.Poppins_Regular} size={12} color="#999">
                       No deductions
                     </Typography>
-                  )}
+                  ) : null}
                 </View>
 
                 <View style={styles.totalLine} />

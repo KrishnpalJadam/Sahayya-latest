@@ -43,6 +43,7 @@ const ApplyLeave = ({ navigation, route }) => {
   const [employers, setEmployers] = useState([]);
   const [selectedEmployer, setSelectedEmployer] = useState(null);
   const [hasMultipleEmployers, setHasMultipleEmployers] = useState(false);
+  const [singleJobId, setSingleJobId] = useState(null);
 
   // Error states
   const [errors, setErrors] = useState({
@@ -159,7 +160,11 @@ const ApplyLeave = ({ navigation, route }) => {
             label: `${job?.employer || 'Unknown'} - ${job?.role || 'Staff'}`,
             employerName: job?.employer || 'Unknown',
             jobId: job?.job_details?.job_id || null,
-            houseownerId: job?.employer_id || job?.job_details?.employer_id || null,
+            houseownerId:
+              job?.job_details?.employer_id ||
+              job?.employer_id ||
+              job?.creator?.id ||
+              null,
           }));
           setEmployers(mapped);
           setHasMultipleEmployers(true);
@@ -171,7 +176,12 @@ const ApplyLeave = ({ navigation, route }) => {
           }
         } else if (jobs.length === 1) {
           const single = jobs[0];
-          const employerId = single?.employer_id || single?.job_details?.employer_id || null;
+          const employerId =
+            single?.job_details?.employer_id ||
+            single?.employer_id ||
+            single?.creator?.id ||
+            null;
+          setSingleJobId(single?.job_details?.job_id || null);
           if (employerId && !houseownerId) {
             setHouseownerId(employerId);
           }
@@ -326,6 +336,7 @@ const ApplyLeave = ({ navigation, route }) => {
 
     const body = {
       houseowner_id: Number(houseownerId),
+      job_id: selectedEmployer?.jobId || singleJobId || null,
       leave_type_id: Number(leaveType?.value || leaveType),
       start_date: startDateFormatted,
       end_date: endDateFormatted,

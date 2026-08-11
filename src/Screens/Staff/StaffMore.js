@@ -293,6 +293,12 @@ const StaffMore = ({ navigation }) => {
           onPress={() => navigation.navigate('TicketList')}
         />
         <Option
+          Images={ImageConstant?.ic_help}
+          title="Training Videos"
+          subtitle="Watch guides to learn the app and care best practices"
+          onPress={() => navigation.navigate('TrainingVideos')}
+        />
+        <Option
           Images={ImageConstant?.ic_policy}
           title={LocalizedStrings.MoreOptions?.privacy_policy || "Privacy Policy"}
           subtitle={LocalizedStrings.Settings?.privacyPolicyDesc || 'Understand our data handling practices'}

@@ -10,6 +10,7 @@ import { Font } from '../../../Constants/Font';
 import Input from '../../../Component/Input';
 import Typography from '../../../Component/UI/Typography';
 import { POST_FORM_DATA } from '../../../Backend/Backend';
+import { mapKey } from '../../../Backend/env';
 import { ADDRESSES_UPDATE } from '../../../Backend/api_routes';
 import { StyleSheet, View, TouchableOpacity, Image, Alert, Platform, Linking } from 'react-native';
 import { ImageConstant } from '../../../Constants/ImageConstant';
@@ -18,6 +19,73 @@ import { isValidForm, fetchPincodeDetails } from '../../../Backend/Utility';
 import { useSelector } from 'react-redux';
 import LocalizedStrings from '../../../Constants/localization';
 import MapLocationPicker from '../../../Component/MapLocationPicker';
+
+const buildGoogleMapLink = (latitude, longitude) =>
+  `https://maps.google.com/?q=${latitude},${longitude}`;
+
+// Forward-geocode a typed address so the map pin follows what the user types.
+const geocodeAddress = async (addressText) => {
+  if (!mapKey || !addressText) {
+    return null;
+  }
+  try {
+    const response = await fetch(
+      `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(addressText)}&key=${encodeURIComponent(mapKey)}&language=en`,
+    );
+    const payload = await response.json();
+    if (!response.ok || payload?.status !== 'OK' || !payload?.results?.[0]) {
+      return null;
+    }
+    const result = payload.results[0];
+    const location = result?.geometry?.location;
+    if (!location) {
+      return null;
+    }
+    return {
+      lat: String(location.lat),
+      long: String(location.lng),
+      google_location: buildGoogleMapLink(location.lat, location.lng),
+    };
+  } catch (error) {
+    console.error('Error forward-geocoding address:', error);
+    return null;
+  }
+};
+
+// Debounced effect that keeps the map pin in sync with a typed address.
+const useTypedAddressMapSync = (parts, typedRef, setLat, setLong, setGoogleLocation) => {
+  const addressText = [
+    parts.street,
+    parts.areaLocality,
+    parts.city,
+    parts.state,
+    parts.pincode,
+  ]
+    .filter(Boolean)
+    .join(', ');
+
+  useEffect(() => {
+    if (!typedRef.current || !addressText) {
+      return undefined;
+    }
+    let cancelled = false;
+    const timer = setTimeout(async () => {
+      const geocoded = await geocodeAddress(addressText);
+      if (cancelled || !geocoded) {
+        return;
+      }
+      setLat(prev => (prev !== geocoded.lat ? geocoded.lat : prev));
+      setLong(prev => (prev !== geocoded.long ? geocoded.long : prev));
+      setGoogleLocation(prev =>
+        prev !== geocoded.google_location ? geocoded.google_location : prev,
+      );
+    }, 700);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [addressText, typedRef, setLat, setLong, setGoogleLocation]);
+};
 
 const StepLoactionStaff = forwardRef((props, ref) => {
   const userDetail = useSelector(store => store?.userDetails);
@@ -42,10 +110,16 @@ const StepLoactionStaff = forwardRef((props, ref) => {
   const [permanentLat, setPermanentLat] = useState('');
   const [permanentLong, setPermanentLong] = useState('');
   const [permanentId, setPermanentId] = useState(null);
+  const [permanentLocked, setPermanentLocked] = useState(false);
+  // Tracks whether the user edited the address by typing (vs map selection),
+  // so typed text can move the map pin via forward geocoding.
+  const currentTypedRef = useRef(false);
+  const permanentTypedRef = useRef(false);
   // State for errors
   const [errors, setErrors] = useState({});
   const [loader, setLoader] = useState(false);
   const handleCurrentPlaceSelected = location => {
+    currentTypedRef.current = false;
     setCurrentGoogleLocation(location?.google_location || '');
     setCurrentLat(location?.lat ? String(location.lat) : '');
     setCurrentLong(location?.long ? String(location.long) : '');
@@ -65,6 +139,7 @@ const StepLoactionStaff = forwardRef((props, ref) => {
   };
 
   const handlePermanentPlaceSelected = location => {
+    permanentTypedRef.current = false;
     setPermanentGoogleLocation(location?.google_location || '');
     setPermanentLat(location?.lat ? String(location.lat) : '');
     setPermanentLong(location?.long ? String(location.long) : '');
@@ -153,6 +228,9 @@ const StepLoactionStaff = forwardRef((props, ref) => {
         setPermanentLat(prev => (prev !== newLat ? newLat : prev));
         setPermanentLong(prev => (prev !== newLong ? newLong : prev));
         setPermanentId(prev => (prev !== newId ? newId : prev));
+        if (permanentAddress?.id) {
+          setPermanentLocked(true);
+        }
       }
     }
 
@@ -238,6 +316,36 @@ const StepLoactionStaff = forwardRef((props, ref) => {
 
     return () => clearTimeout(timer);
   }, [permanentPincode]);
+
+  // Keep the map pin in sync when the user types the current address.
+  useTypedAddressMapSync(
+    {
+      street: currentStreet,
+      areaLocality: currentAreaLocality,
+      city: currentCity,
+      state: currentState,
+      pincode: currentPincode,
+    },
+    currentTypedRef,
+    setCurrentLat,
+    setCurrentLong,
+    setCurrentGoogleLocation,
+  );
+
+  // Keep the map pin in sync when the user types the permanent address.
+  useTypedAddressMapSync(
+    {
+      street: permanentStreet,
+      areaLocality: permanentAreaLocality,
+      city: permanentCity,
+      state: permanentState,
+      pincode: permanentPincode,
+    },
+    permanentTypedRef,
+    setPermanentLat,
+    setPermanentLong,
+    setPermanentGoogleLocation,
+  );
 
   const saveAddresses = () => {
     // Validate all required fields using validators utility
@@ -382,6 +490,7 @@ const StepLoactionStaff = forwardRef((props, ref) => {
                 placeholder="e.g. Flat 12B, 3rd Floor"
                 value={currentStreet}
                 onChange={text => {
+                  currentTypedRef.current = true;
                   setCurrentStreet(text);
                   if (errors.currentStreet) setErrors({...errors, currentStreet: null});
                 }}
@@ -392,6 +501,7 @@ const StepLoactionStaff = forwardRef((props, ref) => {
                 placeholder="e.g. Phase 1, Model Town"
                 value={currentAreaLocality}
                 onChange={text => {
+                  currentTypedRef.current = true;
                   setCurrentAreaLocality(text);
                   if (errors.currentAreaLocality) setErrors({...errors, currentAreaLocality: null});
                 }}
@@ -404,6 +514,7 @@ const StepLoactionStaff = forwardRef((props, ref) => {
                     placeholder="Auto-filled, or enter city"
                     value={currentCity}
                     onChange={text => {
+                      currentTypedRef.current = true;
                       setCurrentCity(text);
                       if (errors.currentCity) setErrors({...errors, currentCity: null});
                     }}
@@ -416,6 +527,7 @@ const StepLoactionStaff = forwardRef((props, ref) => {
                     placeholder="Auto-filled, or enter state"
                     value={currentState}
                     onChange={text => {
+                      currentTypedRef.current = true;
                       setCurrentState(text);
                       if (errors.currentState) setErrors({...errors, currentState: null});
                     }}
@@ -430,6 +542,7 @@ const StepLoactionStaff = forwardRef((props, ref) => {
                 value={currentPincode}
                 onChange={text => {
                   const numericValue = text.replace(/[^0-9]/g, '');
+                  currentTypedRef.current = true;
                   setCurrentPincode(numericValue);
                   if (errors.currentPincode) setErrors({...errors, currentPincode: null});
                 }}
@@ -452,7 +565,43 @@ const StepLoactionStaff = forwardRef((props, ref) => {
             <Typography type={Font?.Poppins_SemiBold} size={18}>
               {LocalizedStrings.EditProfile?.Permanent_Address || 'Permanent Address'}
             </Typography>
+            {permanentLocked && (
+              <View style={styles.lockedBadge}>
+                <Typography type={Font?.Poppins_Medium} size={11} color="#1F6E43">
+                  Saved
+                </Typography>
+              </View>
+            )}
           </View>
+
+          {permanentLocked ? (
+            <View style={styles.lockedCard}>
+              <Typography size={12} color="#555555" style={styles.lockedNote}>
+                Permanent address is verified and cannot be edited after it is saved. Contact support if you need to update it.
+              </Typography>
+              <View style={styles.lockedRow}>
+                <Typography type={Font?.Poppins_SemiBold} size={12} color="#8A8A8A">House / Flat / Floor / Block</Typography>
+                <Typography type={Font?.Poppins_Regular} size={13} color="#111">{permanentStreet || '-'}</Typography>
+              </View>
+              <View style={styles.lockedRow}>
+                <Typography type={Font?.Poppins_SemiBold} size={12} color="#8A8A8A">Apartment / Building / Road / Area</Typography>
+                <Typography type={Font?.Poppins_Regular} size={13} color="#111">{permanentAreaLocality || '-'}</Typography>
+              </View>
+              <View style={styles.lockedRow}>
+                <Typography type={Font?.Poppins_SemiBold} size={12} color="#8A8A8A">City</Typography>
+                <Typography type={Font?.Poppins_Regular} size={13} color="#111">{permanentCity || '-'}</Typography>
+              </View>
+              <View style={styles.lockedRow}>
+                <Typography type={Font?.Poppins_SemiBold} size={12} color="#8A8A8A">State</Typography>
+                <Typography type={Font?.Poppins_Regular} size={13} color="#111">{permanentState || '-'}</Typography>
+              </View>
+              <View style={styles.lockedRow}>
+                <Typography type={Font?.Poppins_SemiBold} size={12} color="#8A8A8A">Pincode</Typography>
+                <Typography type={Font?.Poppins_Regular} size={13} color="#111">{permanentPincode || '-'}</Typography>
+              </View>
+            </View>
+          ) : (
+            <>
           <Typography size={12} color="#707070" style={styles.addressIntro}>
             Choose the exact location first, then complete your address details.
           </Typography>
@@ -484,6 +633,7 @@ const StepLoactionStaff = forwardRef((props, ref) => {
                 placeholder="e.g. Flat 12B, 3rd Floor"
                 value={permanentStreet}
                 onChange={text => {
+                  permanentTypedRef.current = true;
                   setPermanentStreet(text);
                   if (errors.permanentStreet) setErrors({...errors, permanentStreet: null});
                 }}
@@ -494,6 +644,7 @@ const StepLoactionStaff = forwardRef((props, ref) => {
                 placeholder="e.g. Phase 1, Model Town"
                 value={permanentAreaLocality}
                 onChange={text => {
+                  permanentTypedRef.current = true;
                   setPermanentAreaLocality(text);
                   if (errors.permanentAreaLocality) setErrors({...errors, permanentAreaLocality: null});
                 }}
@@ -506,6 +657,7 @@ const StepLoactionStaff = forwardRef((props, ref) => {
                     placeholder="Auto-filled, or enter city"
                     value={permanentCity}
                     onChange={text => {
+                      permanentTypedRef.current = true;
                       setPermanentCity(text);
                       if (errors.permanentCity) setErrors({...errors, permanentCity: null});
                     }}
@@ -518,6 +670,7 @@ const StepLoactionStaff = forwardRef((props, ref) => {
                     placeholder="Auto-filled, or enter state"
                     value={permanentState}
                     onChange={text => {
+                      permanentTypedRef.current = true;
                       setPermanentState(text);
                       if (errors.permanentState) setErrors({...errors, permanentState: null});
                     }}
@@ -532,6 +685,7 @@ const StepLoactionStaff = forwardRef((props, ref) => {
                 value={permanentPincode}
                 onChange={text => {
                   const numericValue = text.replace(/[^0-9]/g, '');
+                  permanentTypedRef.current = true;
                   setPermanentPincode(numericValue);
                   if (errors.permanentPincode) setErrors({...errors, permanentPincode: null});
                 }}
@@ -545,6 +699,8 @@ const StepLoactionStaff = forwardRef((props, ref) => {
                 Address fields will appear after you confirm the pin.
               </Typography>
             </View>
+          )}
+            </>
           )}
         </View>
       </View>
@@ -601,5 +757,31 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 10,
     backgroundColor: '#F8F8F8',
-  }
+  },
+  lockedBadge: {
+    backgroundColor: '#E7F6EC',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  lockedCard: {
+    marginTop: 10,
+    padding: 14,
+    borderRadius: 12,
+    backgroundColor: '#F9F9F8',
+    borderWidth: 1,
+    borderColor: '#EDEAE6',
+  },
+  lockedNote: {
+    marginBottom: 12,
+    lineHeight: 17,
+  },
+  lockedRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 6,
+    borderBottomWidth: 0.5,
+    borderBottomColor: '#EFEAE6',
+  },
 });

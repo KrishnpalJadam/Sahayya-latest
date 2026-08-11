@@ -27,6 +27,7 @@ import AppUpdate from '../Screens/Private/MoreScreens/AppUpdate';
 import ReferAndEarn from '../Screens/Private/MoreScreens/ReferAndEarn';
 import StaffWallet from '../Screens/Staff/StaffWallet';
 import BankAccounts from '../Screens/Staff/BankAccounts';
+import TrainingVideos from '../Screens/Staff/TrainingVideos';
 import TicketList from '../Screens/Support/TicketList';
 import CreateTicket from '../Screens/Support/CreateTicket';
 import TicketDetail from '../Screens/Support/TicketDetail';
@@ -223,6 +224,11 @@ const RootStack = () => {
       <Stack.Screen
         name="TicketDetail"
         component={TicketDetail}
+        options={{ ...commonOptions }}
+      />
+      <Stack.Screen
+        name="TrainingVideos"
+        component={TrainingVideos}
         options={{ ...commonOptions }}
       />
     </Stack.Navigator>

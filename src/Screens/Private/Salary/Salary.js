@@ -48,7 +48,11 @@ const StaffManagement = ({ navigation, route }) => {
   const [bonus, setBonus] = useState('');
   const [overtime, setOvertime] = useState('');
   const [advance, setAdvance] = useState('');
+  const [pfDeduction, setPfDeduction] = useState('');
   const [deduction, setDeduction] = useState('');
+  const [nextPayDate, setNextPayDate] = useState('');
+  const [salaryPeriodStart, setSalaryPeriodStart] = useState('');
+  const [salaryPeriodEnd, setSalaryPeriodEnd] = useState('');
   const [selectedMethod, setSelectedMethod] = useState('Cash');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const userDetails = useSelector(state => state?.userDetails);
@@ -164,9 +168,9 @@ const StaffManagement = ({ navigation, route }) => {
     const base = Number(baseSalary) || 0;
     const bonusAmount = Number(bonus) || 0;
     const overtimeAmount = Number(overtime) || 0;
-    const advanceVal = Number(advance) || 0;
+    const pfVal = Number(pfDeduction) || 0;
     const deductionVal = Number(deduction) || 0;
-    const netSalary = Math.max(0, base + bonusAmount + overtimeAmount - advanceVal - deductionVal);
+    const netSalary = Math.max(0, base + bonusAmount + overtimeAmount - pfVal - deductionVal);
     setTotalNet(netSalary);
     
     // Auto-calculate custom amount whenever net salary components change
@@ -194,7 +198,7 @@ const StaffManagement = ({ navigation, route }) => {
     });
     const paidSum = staffPayments?.reduce((sum, p) => sum + (Number(p.net_salary || p.amount) || 0), 0) || 0;
     setTotalPaidThisMonth(paidSum);
-  }, [overtime, baseSalary, bonus, advance, deduction, leaveType, listPastPayments]);
+  }, [overtime, baseSalary, bonus, pfDeduction, deduction, leaveType, listPastPayments]);
 
   useEffect(() => {
     setRemainingBalance(Math.max(0, getPayableAmount() - totalPaidThisMonth));
@@ -259,8 +263,11 @@ const StaffManagement = ({ navigation, route }) => {
         setProfileMonthlySalary(baseSalary);
         setBonus(adjustments.performance_bonus ?? 0);
         setOvertime(adjustments.overtime_pay ?? 0);
-        setAdvance(adjustments.advance_payment ?? 0);
+        setPfDeduction(adjustments.pf_deduction ?? 0);
         setDeduction(adjustments.tax_deduction ?? 0);
+        setNextPayDate(salaryDetails?.next_pay_date ?? '');
+        setSalaryPeriodStart(salaryDetails?.salary_period_start ?? '');
+        setSalaryPeriodEnd(salaryDetails?.salary_period_end ?? '');
       },
       error => {
         console.log('fetchSalaryDetails error ---->', error);
@@ -332,7 +339,7 @@ const StaffManagement = ({ navigation, route }) => {
             item.payment_id === paymentId ? { ...item, status: 'paid' } : item,
           ),
         );
-        SimpleToast.show('Payment marked as paid', SimpleToast.SHORT);
+        SimpleToast.show('Salary marked as paid', SimpleToast.SHORT);
         setPendingPaymentToConfirm(null);
         setConfirmReceiptFile(null);
       },
@@ -366,8 +373,9 @@ const StaffManagement = ({ navigation, route }) => {
       basic_salary: Number(baseSalary) || 0,
       performative_allowance: Number(bonus) || 0,
       over_time_allowance: Number(overtime) || 0,
-      tax: 0,
-      advance_payment: Number(advance) || 0,
+      tax: Number(deduction) || 0,
+      pf_deduction: Number(pfDeduction) || 0,
+      advance_payment: 0,
       payment_mode: selectedMethod?.toLowerCase() || 'cash',
       status: 'paid',
     };
@@ -382,7 +390,7 @@ const StaffManagement = ({ navigation, route }) => {
           setBonus(savedData.performative_allowance ?? bonus);
           setOvertime(savedData.over_time_allowance ?? overtime);
           setDeduction(savedData.tax ?? deduction);
-          setAdvance(savedData.advance_payment ?? advance);
+          setPfDeduction(savedData.pf_deduction ?? pfDeduction);
           if (savedData.net_salary != null) {
             setTotalNet(savedData.net_salary);
           }
@@ -818,8 +826,8 @@ const StaffManagement = ({ navigation, route }) => {
         // This prevents network "Try Again" errors during app switching
         setTimeout(() => {
           Alert.alert(
-            'Payment Confirmation',
-            'Please confirm if you have completed the payment in your UPI app.',
+            'Salary Payment Confirmation',
+            'Please confirm if you have completed the salary payment in your UPI app.',
             [
               { 
                 text: 'Cancel', 
@@ -848,7 +856,7 @@ const StaffManagement = ({ navigation, route }) => {
         setIsSubmitting(false);
         setAdvanceLoading(false);
         Alert.alert(
-          'UPI Payment Failed',
+          'UPI Salary Payment Failed',
           'Failed to open UPI app. Please install GPay, PhonePe or any UPI app. Alternatively, use Cash or Bank Transfer.',
         );
       });
@@ -863,8 +871,9 @@ const StaffManagement = ({ navigation, route }) => {
       basic_salary: Number(baseSalary) || 0,
       performative_allowance: Number(bonus) || 0,
       over_time_allowance: Number(overtime) || 0,
-      tax: 0,
-      advance_payment: Number(advance) || 0,
+      tax: Number(deduction) || 0,
+      pf_deduction: Number(pfDeduction) || 0,
+      advance_payment: 0,
       payment_mode: paymentMode,
       amount: getPayableAmount(),
       status: isPaid ? 'paid' : 'pending',
@@ -891,8 +900,8 @@ const StaffManagement = ({ navigation, route }) => {
               base_salary: Number(baseSalary) || 0,
               performance_bonus: Number(bonus) || 0,
               overtime_pay: Number(overtime) || 0,
-              tax_deduction: 0,
-              advance_payment: Number(advance) || 0,
+              tax_deduction: Number(deduction) || 0,
+              pf_deduction: Number(pfDeduction) || 0,
             },
           };
           setListPastPayments(prev => [newPayment, ...(prev || [])]);
@@ -978,9 +987,13 @@ const StaffManagement = ({ navigation, route }) => {
             setBonus('');
             setOvertime('');
             setAdvance('');
+            setPfDeduction('');
             setDeduction(0);
             setTotalNet(0);
             setWorkedDays(0);
+            setNextPayDate('');
+            setSalaryPeriodStart('');
+            setSalaryPeriodEnd('');
             // Fetch the selected staff's salary details
             fetchSalaryDetails(item?.value);
             loadAdvanceHistory(item?.value);
@@ -1210,7 +1223,7 @@ const StaffManagement = ({ navigation, route }) => {
                   Advance History
                 </Typography>
                 <Typography type={Font.Poppins_SemiBold} size={14} color="#D98579">
-                  Total: {'\u20B9'}{Number(advance) || 0}
+                  Total: {'\u20B9'}{advanceHistory.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)}
                 </Typography>
               </View>
 
@@ -1316,6 +1329,18 @@ const StaffManagement = ({ navigation, route }) => {
                    </Typography>
                  )}
               </View>
+              {nextPayDate ? (
+                <View style={{ marginBottom: 10, padding: 10, backgroundColor: '#FFF5EE', borderRadius: 8, borderWidth: 1, borderColor: '#FED7AA' }}>
+                  <Typography type={Font.Poppins_Medium} size={13} color="#9A3412">
+                    Next Salary Payment Date: {nextPayDate}
+                  </Typography>
+                  {salaryPeriodStart && salaryPeriodEnd && (
+                    <Typography type={Font.Poppins_Regular} size={11} color="#B45309" style={{ marginTop: 3 }}>
+                      Salary Period: {salaryPeriodStart} to {salaryPeriodEnd}
+                    </Typography>
+                  )}
+                </View>
+              ) : null}
               <View style={styles.salaryRow}>
                 <Typography type={Font.Poppins_Regular} style={styles.subText}>
                   {LocalizedStrings.SalaryManagement.monthly_salary} ({moment().format('MMMM-YYYY')})
@@ -1470,18 +1495,18 @@ const StaffManagement = ({ navigation, route }) => {
               <View style={styles.salaryRow}>
                 <View style={styles.amountLabelWrap}>
                   <Typography type={Font.Poppins_Regular} style={styles.label}>
-                    Advance Deduction
+                    Provident Fund (PF)
                   </Typography>
                   <Typography type={Font.Poppins_Regular} style={styles.amountHelpText}>
-                    Deduct taken advance
+                    PF contribution
                   </Typography>
                 </View>
                 {isEditingDeductions ? (
                   <TextInput
                     style={[styles.amountInput, styles.deductionInput]}
                     keyboardType="numeric"
-                    value={getSanitizedValue(advance)}
-                    onChangeText={handleAmountChange(setAdvance)}
+                    value={getSanitizedValue(pfDeduction)}
+                    onChangeText={handleAmountChange(setPfDeduction)}
                     placeholder="0"
                     placeholderTextColor="#D98579"
                   />
@@ -1490,11 +1515,38 @@ const StaffManagement = ({ navigation, route }) => {
                     type={Font.Poppins_SemiBold}
                     style={{ color: '#D98579' }}
                   >
-                    {Number(advance) > 0 ? `-${getSanitizedValue(advance)}` : '0'}
+                    {Number(pfDeduction) > 0 ? `-${getSanitizedValue(pfDeduction)}` : '0'}
                   </Typography>
                 )}
               </View>
 
+              <View style={styles.salaryRow}>
+                <View style={styles.amountLabelWrap}>
+                  <Typography type={Font.Poppins_Regular} style={styles.label}>
+                    Income Tax (IT)
+                  </Typography>
+                  <Typography type={Font.Poppins_Regular} style={styles.amountHelpText}>
+                    Tax deduction
+                  </Typography>
+                </View>
+                {isEditingDeductions ? (
+                  <TextInput
+                    style={[styles.amountInput, styles.deductionInput]}
+                    keyboardType="numeric"
+                    value={getSanitizedValue(deduction)}
+                    onChangeText={handleAmountChange(setDeduction)}
+                    placeholder="0"
+                    placeholderTextColor="#D98579"
+                  />
+                ) : (
+                  <Typography
+                    type={Font.Poppins_SemiBold}
+                    style={{ color: '#D98579' }}
+                  >
+                    {Number(deduction) > 0 ? `-${getSanitizedValue(deduction)}` : '0'}
+                  </Typography>
+                )}
+              </View>
 
               {isEditingDeductions && (
                 <TouchableOpacity
@@ -1769,7 +1821,7 @@ const StaffManagement = ({ navigation, route }) => {
           <View style={styles.upiModalContent}>
             <View style={styles.upiModalHeader}>
               <Typography type={Font.Poppins_SemiBold} size={18}>
-                Confirm Payment
+                Confirm Salary Payment
               </Typography>
               <TouchableOpacity
                 onPress={() => {

@@ -1087,6 +1087,32 @@ const HouseHoldStaffProfile = ({ navigation, route }) => {
           </View>
         ))}
 
+        {!fromFindStaffAI && (
+          <View style={styles.card}>
+            <Typography style={styles.cardTitle}>
+              Reviews & Ratings
+            </Typography>
+            <View style={styles.row}>
+              <Image source={ImageConstant.star || ImageConstant.Verify} style={styles.icon} />
+              <View style={styles.textBox}>
+                <Typography style={styles.label}>Average Rating</Typography>
+                <Typography style={styles.value}>
+                  {averageRating ? `${averageRating} / 5` : 'No ratings yet'}
+                </Typography>
+              </View>
+            </View>
+            <View style={styles.rowNoBorder}>
+              <Image source={ImageConstant.Users} style={styles.icon} />
+              <View style={styles.textBox}>
+                <Typography style={styles.label}>Reviews</Typography>
+                <Typography style={styles.value}>
+                  {totalReviews > 0 ? `${totalReviews} review${totalReviews === 1 ? '' : 's'}` : 'No reviews yet'}
+                </Typography>
+              </View>
+            </View>
+          </View>
+        )}
+
         {!fromFindStaffAI && data?.about_me && (
           <View style={styles.card}>
             <Typography style={styles.cardTitle}>

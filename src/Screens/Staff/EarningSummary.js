@@ -270,7 +270,8 @@ const EarningSummary = ({ route }) => {
       : styles.statusPending;
 
   const monthlySalary = Number(summary2?.salary_summary?.current_monthly_salary || 0);
-  const advanceRepayment = Number(summary2?.deductions?.advance_repayment?.amount || 0);
+  const pfDeduction = Number(summary2?.deductions?.provident_fund?.amount || 0);
+  const taxDeduction = Number(summary2?.deductions?.income_tax?.amount || 0);
   const bonusAmount = Number(summary2?.earnings_breakdown?.performance_bonus?.amount || 0);
   const overtimeAmount = Number(summary2?.earnings_breakdown?.overtime_pay?.amount || 0);
 
@@ -285,10 +286,10 @@ const EarningSummary = ({ route }) => {
     displayedBaseSalary = (monthlySalary / backendDaysInPeriod) * backendDaysWorked;
   }
 
-  const pendingAdvanceDeduction = isPending ? projectedAdvanceDeduction : advanceRepayment;
+  const totalDeductions = pfDeduction + taxDeduction;
 
   const totalPayableAmount = isPending 
-    ? Math.max(0, displayedBaseSalary + bonusAmount + overtimeAmount - pendingAdvanceDeduction)
+    ? Math.max(0, displayedBaseSalary + bonusAmount + overtimeAmount - totalDeductions)
     : (Number(summary2?.total_payable_amount) > 0 ? Number(summary2?.total_payable_amount) : 0);
 
   const staffName = userDetail?.name || (userDetail?.first_name ? `${userDetail.first_name} ${userDetail.last_name || ''}`.trim() : 'Staff Member');
@@ -377,7 +378,7 @@ const EarningSummary = ({ route }) => {
               </Typography>
               {advanceBalance > 0 && (
                 <Typography size={11} color="#B45309" style={{ marginTop: 2 }}>
-                  ₹{Number(advanceBalance).toLocaleString('en-IN')} remaining to deduct
+                  ₹{Number(advanceBalance).toLocaleString('en-IN')} outstanding advance
                 </Typography>
               )}
             </View>
@@ -419,11 +420,20 @@ const EarningSummary = ({ route }) => {
           </View>
         )}
 
-        {pendingAdvanceDeduction > 0 && (
+        {pfDeduction > 0 && (
           <View style={styles.breakdownRow}>
-            <Typography size={13} color="#666">Advance Deducted</Typography>
+            <Typography size={13} color="#666">Provident Fund (PF)</Typography>
             <Typography type={Font.Poppins_Medium} size={13} color={Colors.red}>
-              -{formatCurrency(pendingAdvanceDeduction)}
+              -{formatCurrency(pfDeduction)}
+            </Typography>
+          </View>
+        )}
+
+        {taxDeduction > 0 && (
+          <View style={styles.breakdownRow}>
+            <Typography size={13} color="#666">Income Tax (IT)</Typography>
+            <Typography type={Font.Poppins_Medium} size={13} color={Colors.red}>
+              -{formatCurrency(taxDeduction)}
             </Typography>
           </View>
         )}
@@ -451,7 +461,8 @@ const EarningSummary = ({ route }) => {
                 worked_days: attendanceSummary.totalWorked,
                 total_days: attendanceSummary.daysInMonth,
                 salary_breakdown: summary2?.earnings_breakdown || {},
-                advance_payment: pendingAdvanceDeduction,
+                pf_deduction: pfDeduction,
+                tax_deduction: taxDeduction,
                 payment_id: summary2?.job_id ? `SAL-${summary2.job_id}-${moment().format('YYYYMM')}` : undefined,
                 payment_mode: summary2?.payment_mode || 'Cash',
                 status: summary2?.payment_status || 'Pending',
@@ -489,7 +500,8 @@ const EarningSummary = ({ route }) => {
                   worked_days: entry?.worked_days ?? summary2?.attendance_summary?.present_days,
                   total_days: entry?.total_days ?? summary2?.attendance_summary?.total_working_days,
                   salary_breakdown: entry?.salary_breakdown || summary2?.earnings_breakdown || {},
-                  advance_payment: entry?.advance_payment ?? (summary2?.deductions?.advance_repayment?.amount || 0),
+                  pf_deduction: entry?.pf_deduction ?? pfDeduction,
+                  tax_deduction: entry?.tax_deduction ?? taxDeduction,
                   payment_mode: entry?.payment_mode || 'cash',
                   payment_id: entry?.payment_id || entry?.id,
                   status: entry?.status || summary2?.payment_status || 'Paid',

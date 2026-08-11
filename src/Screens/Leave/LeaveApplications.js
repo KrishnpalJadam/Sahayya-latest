@@ -214,6 +214,18 @@ export default function LeaveApplicationsScreen({ navigation, route }) {
                 {LocalizedStrings.Dashboard?.Reason || 'Reason'}: {reason}
               </Typography>
             </View>
+            {item?.job ? (
+              <View style={styles.row}>
+                <Image
+                  source={ImageConstant.lines}
+                  style={styles.icon}
+                  resizeMode="contain"
+                />
+                <Typography type={Font.Poppins_Regular} style={styles.reason}>
+                  Job: {item.job.title || item.job.role || 'Job'}
+                </Typography>
+              </View>
+            ) : null}
             {status.toLowerCase() === 'pending' && (
               <View style={styles.buttonRow}>
                 <TouchableOpacity
