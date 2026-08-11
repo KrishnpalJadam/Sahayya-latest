@@ -22,6 +22,7 @@ const SiginUp = ({ navigation }) => {
   const [mobileError, setMobileError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isTermsAccepted, setIsTermsAccepted] = useState(false);
+  const [isWhatsappConsent, setIsWhatsappConsent] = useState(true);
   const [termsError, setTermsError] = useState('');
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [pendingPayload, setPendingPayload] = useState(null);
@@ -69,7 +70,7 @@ const SiginUp = ({ navigation }) => {
     }
   };
 
-  const logConsentAndProceedSignup = (checkedState = []) => {
+  const logConsentAndProceedSignup = () => {
     if (!pendingPayload) {
       setIsTermsAccepted(true);
       setShowTermsModal(false);
@@ -85,19 +86,19 @@ const SiginUp = ({ navigation }) => {
           { type: 'terms_and_conditions', consent_data: { accepted: true } },
         ],
       },
-      () => proceedSignup(0, checkedState[0]),
-      () => proceedSignup(0, checkedState[0]),
-      () => proceedSignup(0, checkedState[0]),
+      () => proceedSignup(0),
+      () => proceedSignup(0),
+      () => proceedSignup(0),
     );
   };
 
-  const proceedSignup = (retryCount = 0, whatsappConsent = false) => {
+  const proceedSignup = (retryCount = 0) => {
     if (!pendingPayload || isLoading) return;
     setIsLoading(true);
 
-    const payloadWithConsent = { ...pendingPayload, whatsapp_consent: whatsappConsent };
+    const payloadWithConsent = { ...pendingPayload, whatsapp_consent: isWhatsappConsent };
 
-    console.log('Calling signup API with:', { phone: mobile, country: selectedCountry.dial_code, whatsapp_consent: whatsappConsent });
+    console.log('Calling signup API with:', { phone: mobile, country: selectedCountry.dial_code, whatsapp_consent: isWhatsappConsent });
     POST(
       SIGINUP,
       payloadWithConsent,
@@ -239,6 +240,19 @@ const SiginUp = ({ navigation }) => {
           </View>
         </View>
 
+        <View style={styles.checkboxContainer}>
+          <CheckBox
+            value={isWhatsappConsent}
+            onValueChange={setIsWhatsappConsent}
+            tintColors={{ true: '#D98579', false: '#B0B0B0' }}
+          />
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', flex: 1, marginTop: 4 }}>
+            <Typography size={12}>
+              I consent to receive important updates, invoices, and notifications on WhatsApp from Sahayya.
+            </Typography>
+          </View>
+        </View>
+
         {termsError ? (
           <Typography size={12} style={{ color: 'red', marginTop: 4 }}>
             {termsError}
@@ -284,9 +298,6 @@ const SiginUp = ({ navigation }) => {
         onAccept={logConsentAndProceedSignup}
         title="Terms and conditions"
         contentSections={TERMS_AND_CONDITIONS_CONTENT}
-        checkboxes={[
-          'I consent to receive important updates, invoices, and notifications on WhatsApp from Sahayya.'
-        ]}
         acceptButtonText="I agree"
       />
     </CommanView>
