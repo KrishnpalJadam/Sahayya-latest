@@ -511,11 +511,11 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   petTypeContainer: {
-    flex: 1,
+    flex: 1.5,
     marginRight: 8,
   },
   petCountContainer: {
-    width: 80,
+    flex: 1,
   },
   removePetButton: {
     padding: 5,

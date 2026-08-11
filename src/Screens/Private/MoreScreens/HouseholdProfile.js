@@ -1336,11 +1336,11 @@ const styles = StyleSheet.create({
     marginVertical: 6,
   },
   petField: {
-    flex: 1,
+    flex: 1.5,
     marginRight: 8,
   },
   petCountField: {
-    width: 100,
+    flex: 1,
   },
   bottomButton: {
     alignItems: 'center',
