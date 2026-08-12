@@ -938,13 +938,6 @@ const StepWokInfo = forwardRef(({ navigation }, ref) => {
         showTitle={true}
       />
 
-      <Input
-        title={'Preferred Working Hours / Timings'}
-        placeholder={'e.g. 9:00 AM - 6:00 PM'}
-        value={workingHours}
-        onChange={text => setWorkingHours(text)}
-        showTitle={true}
-      />
 
       <Input
         title={'Emergency Contact Name'}
@@ -1018,10 +1011,7 @@ const StepWokInfo = forwardRef(({ navigation }, ref) => {
           LocalizedStrings.PostNewJob?.additional_requirements ||
           'Additional Info'
         }
-        placeholder={
-          LocalizedStrings.PostNewJob?.additional_requirements_placeholder ||
-          "I'm a hardworking professional..."
-        }
+        placeholder=""
         value={additionalInfo}
         onChange={text => {
           setAdditionalInfo(text);
@@ -1150,6 +1140,33 @@ const styles = StyleSheet.create({
     height: 14,
     marginLeft: 6,
     tintColor: '#555',
+  },
+  checkboxRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+    marginTop: 4,
+  },
+  checkbox: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: '#D1D5DB',
+    marginRight: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFF',
+  },
+  checkboxSelected: {
+    borderColor: '#D98579',
+    backgroundColor: '#D98579',
+  },
+  checkboxInner: {
+    width: 10,
+    height: 10,
+    borderRadius: 2,
+    backgroundColor: '#FFFFFF',
   },
   updateBtn: {
     marginTop: 30,

@@ -275,11 +275,7 @@ const HouseholdSection = ({ index, data, updateField, updatePet, addPet, removeP
       </TouchableOpacity>
       <Input
         title={`Additional Information (${LocalizedStrings.CompleteProfile?.optional || 'Optional'})`}
-        placeholder={
-          LocalizedStrings.EditProfile?.special_requirements_placeholder ||
-          LocalizedStrings.CompleteProfile?.special_requirements_placeholder ||
-          'Looking for staff comfortable with pets...'
-        }
+        placeholder=""
         multiline
         value={data.specialRequirements}
         onChange={value => update('specialRequirements', value)}

@@ -100,7 +100,7 @@ const LastWorkExperience = ({ navigation }) => {
 
             <Input
                 title={LocalizedStrings.PostNewJob?.additional_requirements || 'Additional Info'}
-                placeholder={LocalizedStrings.PostNewJob?.additional_requirements_placeholder || "I'm a hardworking professional..."}
+                placeholder=""
                 value={additionalInfo}
                 onChange={setAdditionalInfo}
                 multiline={true}
