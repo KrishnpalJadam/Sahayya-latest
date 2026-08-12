@@ -247,6 +247,12 @@ const More = ({ navigation }) => {
           onPress={() => navigation.navigate('Notification')}
         />
         <Option
+          Images={ImageConstant?.Quit || ImageConstant?.lines}
+          title="Quit Job Requests"
+          subtitle="View and manage staff quit requests"
+          onPress={() => navigation.navigate('QuitRequests')}
+        />
+        <Option
           Images={ImageConstant?.Calendar || ImageConstant?.lines}
           title="Leave Requests"
           subtitle="Review and approve staff leave requests"

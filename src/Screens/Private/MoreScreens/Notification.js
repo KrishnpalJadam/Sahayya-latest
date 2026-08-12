@@ -143,6 +143,11 @@ const Notification = ({ navigation }) => {
       return;
     }
 
+    if (typeStr.includes('quit') || messageStr.includes('quit')) {
+      navigation.navigate('QuitRequests');
+      return;
+    }
+
     if (typeStr === 'job_application' || messageStr.includes('has applied for the job')) {
       const jobId = getNotificationJobId(item);
       
