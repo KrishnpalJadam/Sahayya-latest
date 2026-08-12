@@ -101,6 +101,10 @@ const StaffVerifection = ({ navigation, route }) => {
     // Auto-send OTP on mount ONLY when not already sent (e.g. from ListingJob flow)
     // When navigated from Aadhar.js, OTP was already sent — skip to avoid double-send
     if (adharNumber && !otpAlreadySent) {
+      if (!/^[0-9]{12}$/.test(adharNumber)) {
+        setOtpError('Invalid Aadhaar number. Please go back and enter a valid 12-digit Aadhaar number.');
+        return;
+      }
       const body = {
         aadhar_number: adharNumber,
         is_staff_add: 1,

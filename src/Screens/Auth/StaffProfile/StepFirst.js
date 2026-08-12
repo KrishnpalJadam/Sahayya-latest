@@ -143,6 +143,10 @@ const StepFirst = () => {
               await kycRef.current?.saveKYC();
               setActiveTab(2);
             } catch (error) {
+              SimpleToast.show(
+                error?.message || 'Failed to save KYC details. Please fill all required fields.',
+                SimpleToast.SHORT,
+              );
             } finally {
               setLoader(false);
             }
@@ -153,6 +157,10 @@ const StepFirst = () => {
               await locationRef.current?.saveAddresses();
               setActiveTab(3);
             } catch (error) {
+              SimpleToast.show(
+                error?.message || 'Please fill all required address fields and pin your location on the map.',
+                SimpleToast.SHORT,
+              );
             } finally {
               setLoader(false);
             }
@@ -163,6 +171,10 @@ const StepFirst = () => {
               await workInfoRef.current?.saveWorkInfo();
               setActiveTab(4);
             } catch (error) {
+              SimpleToast.show(
+                error?.message || 'Failed to save work info. Please fill all required fields.',
+                SimpleToast.SHORT,
+              );
             } finally {
               setLoader(false);
             }

@@ -349,6 +349,7 @@ const StepLoactionStaff = forwardRef((props, ref) => {
 
   const saveAddresses = () => {
     // Validate all required fields using validators utility
+    // Skip permanent address validation if it's already locked (saved with ID)
 
     const error = {
       currentStreet: validators?.checkRequire('Current Street', currentStreet),
@@ -366,28 +367,31 @@ const StepLoactionStaff = forwardRef((props, ref) => {
         'Current Google Location',
         currentGoogleLocation,
       ),
-      permanentStreet: validators?.checkRequire(
+    };
+
+    if (!permanentLocked) {
+      error.permanentStreet = validators?.checkRequire(
         'Permanent Street',
         permanentStreet,
-      ),
-      permanentCity: validators?.checkRequire('Permanent City', permanentCity),
-      permanentState: validators?.checkRequire(
+      );
+      error.permanentCity = validators?.checkRequire('Permanent City', permanentCity);
+      error.permanentState = validators?.checkRequire(
         'Permanent State',
         permanentState,
-      ),
-      permanentPincode: validators?.checkRequire(
+      );
+      error.permanentPincode = validators?.checkRequire(
         'Permanent Pincode',
         permanentPincode,
-      ),
-      permanentAreaLocality: validators?.checkRequire(
+      );
+      error.permanentAreaLocality = validators?.checkRequire(
         'Permanent Area / Locality',
         permanentAreaLocality,
-      ),
-      permanentGoogleLocation: validators?.checkRequire(
+      );
+      error.permanentGoogleLocation = validators?.checkRequire(
         'Permanent Google Location',
         permanentGoogleLocation,
-      ),
-    };
+      );
+    }
 
     setErrors(error);
 
@@ -452,7 +456,7 @@ const StepLoactionStaff = forwardRef((props, ref) => {
 
   return (
     <>
-      <View style={{ flex: 1 }}>
+      <View>
         <View style={styles.wrap}>
           <View style={styles.headerRow}>
             <Typography type={Font?.Poppins_SemiBold} size={18}>
@@ -559,7 +563,7 @@ const StepLoactionStaff = forwardRef((props, ref) => {
           )}
         </View>
       </View>
-      <View style={{ flex: 1 }}>
+      <View>
         <View style={styles.wrap}>
           <View style={styles.headerRow}>
             <Typography type={Font?.Poppins_SemiBold} size={18}>

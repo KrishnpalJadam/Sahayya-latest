@@ -289,7 +289,7 @@ const styles = StyleSheet.create({
   },
   errorText: {
     color: 'red',
-    fontize: 11,
+    fontSize: 11,
     paddingTop: 8,
   },
   image: {

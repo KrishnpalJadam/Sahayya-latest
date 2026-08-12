@@ -175,13 +175,36 @@ export default function ListingJob({ navigation, route }) {
     }
 
     if (status === 'accepted' && item?.user) {
-      // Do NOT approve yet — verify Aadhaar OTP FIRST, then approve
-      navigation.navigate('StaffVerifection', {
-        adharNumber: item?.user?.aadhar_number || item?.user?.aadhaar_number,
-        userData: item?.user,
-        pendingApproval: true,
-        applicationId: jobID,
-      });
+      const isAadhaarVerified = item?.user?.aadhar__verify == 1;
+
+      if (isAadhaarVerified) {
+        // Aadhaar already verified — approve directly, skip OTP
+        POST_WITH_TOKEN(
+          `${ApplicantsStatus}/${jobID}/status`,
+          { application_status: 'accepted' },
+          success => {
+            SimpleToast.show(success?.message || 'Staff approved successfully', SimpleToast.SHORT);
+            JobList();
+          },
+          error => {
+            SimpleToast.show(
+              error?.data?.message || error?.message || 'Failed to approve. Please try again.',
+              SimpleToast.SHORT,
+            );
+          },
+          fail => {
+            SimpleToast.show('Network error. Please try again.', SimpleToast.SHORT);
+          },
+        );
+      } else {
+        // Aadhaar NOT verified — require OTP verification first
+        navigation.navigate('StaffVerifection', {
+          adharNumber: item?.user?.aadhar_number || item?.user?.aadhaar_number,
+          userData: item?.user,
+          pendingApproval: true,
+          applicationId: jobID,
+        });
+      }
     }
   };
 

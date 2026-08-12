@@ -43,6 +43,10 @@ export const UpdateStaff = 'staff/update';
 export const ListStaff = 'staff/list';
 export const applicationsList = 'applications';
 export const QuitJob = 'quit-job-request';
+export const QuitJobListOwner = 'quit-job-list-owner';
+export const QuitJobApprove = (id) => `quit-job-request/${id}/approve`;
+export const QuitJobReject = (id) => `quit-job-request/${id}/reject`;
+export const TrainingVideosList = 'training-videos';
 export const myWork = 'mywork';
 export const myWorkJobs = 'admin/jobs';
 

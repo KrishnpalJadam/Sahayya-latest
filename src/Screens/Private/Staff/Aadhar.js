@@ -53,15 +53,21 @@ const Aadhar = () => {
 
   const submit = () => {
     if (isLoading) return;
-    let error = {
-      add_error: validators?.checkRequire('Aadhaar Number', adharNumber),
-    };
-    if (!adharNumber || !/^[0-9]{12}$/.test(adharNumber)) {
-      const errMsg = 'Aadhaar number must be 12 digits';
-      setError({ add_error: errMsg });
-      return errMsg;
+
+    if (!adharNumber || !adharNumber.trim()) {
+      setError({ add_error: 'Aadhaar number is required' });
+      return;
     }
-    setError(error);
+    if (!/^[0-9]{12}$/.test(adharNumber)) {
+      setError({ add_error: 'Aadhaar number must be exactly 12 digits' });
+      return;
+    }
+    if (/^0{12}$/.test(adharNumber) || /^(\d)\1{11}$/.test(adharNumber)) {
+      setError({ add_error: 'Please enter a valid Aadhaar number' });
+      return;
+    }
+
+    setError({});
     setIsLoading(true);
 
     const body = {

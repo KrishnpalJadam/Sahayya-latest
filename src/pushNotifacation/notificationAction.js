@@ -3,7 +3,8 @@ import {navigationRef} from '../Navigation/RootNavigation';
 const notificationScreenMap = {
   // Owner notifications
   job_application: {tab: 'Jobs'},
-  job_quit: {tab: 'Dashboard', nestedScreen: 'StaffManagement'},
+  job_quit: {rootScreen: 'QuitRequests'},
+  quit_job_request: {rootScreen: 'QuitRequests'},
   leave_application: {tab: 'More'},
   subscription_activated: {tab: 'More'},
   subscription_expiring: {tab: 'More'},
@@ -15,6 +16,8 @@ const notificationScreenMap = {
   // Staff notifications
   job_application_accepted: {tab: 'My Work'},
   job_application_rejected: {tab: 'My Work'},
+  job_quit_approved: {tab: 'My Work'},
+  job_quit_rejected: {tab: 'My Work'},
   leave_approved: {tab: 'My Work'},
   leave_rejected: {tab: 'My Work'},
   salary_paid: {tab: 'DashboardHome'},
@@ -59,6 +62,12 @@ export const notificationOpen = async remoteMessage => {
       );
 
       if (ownerRoot && !staffRoot) {
+        // Navigate to root-level screens (e.g., QuitRequests) directly
+        if (route.rootScreen) {
+          navigationRef.navigate(route.rootScreen);
+          return;
+        }
+
         const ownerParams = route.nestedScreen
           ? {
               screen: route.tab,
