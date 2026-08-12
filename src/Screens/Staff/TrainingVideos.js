@@ -8,7 +8,7 @@ import {
   Dimensions,
 } from 'react-native';
 import React, {useState, useEffect, useCallback} from 'react';
-import Video from 'react-native-video';
+import {WebView} from 'react-native-webview';
 import CommanView from '../../Component/CommanView';
 import HeaderForUser from '../../Component/HeaderForUser';
 import Typography from '../../Component/UI/Typography';
@@ -69,11 +69,16 @@ const isDirectMp4 = url => {
 };
 
 const TrainingVideoCard = ({title, subtitle, onPress, index, sourceType}) => (
-  <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
-    <View style={styles.cardLeft}>
-      <View style={styles.playCircle}>
-        <Typography type={Font.Poppins_Bold} size={14} color="#fff">
+  <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.85}>
+    <View style={styles.thumbArea}>
+      <View style={styles.thumbGradient}>
+        <Typography type={Font.Poppins_Bold} size={22} color="#fff">
           {index + 1}
+        </Typography>
+      </View>
+      <View style={styles.playCircle}>
+        <Typography type={Font.Poppins_Bold} size={12} color="#fff">
+          {'\u25B6'}
         </Typography>
       </View>
     </View>
@@ -85,23 +90,51 @@ const TrainingVideoCard = ({title, subtitle, onPress, index, sourceType}) => (
         <Typography
           type={Font.Poppins_Regular}
           size={12}
-          color="#666"
-          style={{marginTop: 2}}>
+          color="#777"
+          numberOfLines={2}
+          style={{marginTop: 3, lineHeight: 17}}>
           {subtitle}
         </Typography>
-      ) : null}
-    </View>
-    <View style={styles.cardRight}>
-      {sourceType === 'upload' && (
-        <View style={styles.uploadBadge}>
-          <Typography type={Font.Poppins_Medium} size={10} color="#fff">
-            MP4
+      ) : (
+        <Typography
+          type={Font.Poppins_Regular}
+          size={11}
+          color="#aaa"
+          style={{marginTop: 3}}>
+          No description
+        </Typography>
+      )}
+      <View style={styles.cardFooter}>
+        {sourceType === 'upload' && (
+          <View style={styles.uploadBadge}>
+            <Typography type={Font.Poppins_Medium} size={9} color="#fff">
+              MP4
+            </Typography>
+          </View>
+        )}
+        {sourceType === 'youtube' && (
+          <View style={[styles.uploadBadge, styles.ytBadge]}>
+            <Typography type={Font.Poppins_Medium} size={9} color="#fff">
+              YouTube
+            </Typography>
+          </View>
+        )}
+        {sourceType === 'vimeo' && (
+          <View style={[styles.uploadBadge, styles.vimeoBadge]}>
+            <Typography type={Font.Poppins_Medium} size={9} color="#fff">
+              Vimeo
+            </Typography>
+          </View>
+        )}
+        <View style={styles.watchRow}>
+          <Typography type={Font.Poppins_Medium} size={12} color="#D98579">
+            Watch now
+          </Typography>
+          <Typography type={Font.Poppins_Medium} size={12} color="#D98579">
+            {'\u203A'}
           </Typography>
         </View>
-      )}
-      <Typography type={Font.Poppins_Medium} size={12} color="#D98C79">
-        Watch
-      </Typography>
+      </View>
     </View>
   </TouchableOpacity>
 );
@@ -140,68 +173,40 @@ const TrainingVideos = ({navigation}) => {
 
     const url = getVideoSource(selectedVideo);
 
-    // Uploaded MP4 — use native Video player
-    if (selectedVideo.video_file && isDirectMp4(url)) {
-      return (
-        <Modal
-          visible={!!selectedVideo}
-          animationType="slide"
-          presentationStyle="pageSheet"
-          onRequestClose={() => setSelectedVideo(null)}>
-          <View style={styles.modalContainer}>
-            <View style={styles.modalHeader}>
-              <TouchableOpacity
-                onPress={() => setSelectedVideo(null)}
-                style={styles.closeBtn}>
-                <Typography
-                  type={Font.Poppins_SemiBold}
-                  size={16}
-                  color="#D98C79">
-                  Close
-                </Typography>
-              </TouchableOpacity>
-              <Typography
-                type={Font.Poppins_SemiBold}
-                size={15}
-                color="#111"
-                style={{flex: 1, textAlign: 'center'}}>
-                {selectedVideo.title}
-              </Typography>
-              <View style={{width: 60}} />
-            </View>
-
-            <View style={styles.videoContainer}>
-              <Video
-                source={{uri: url}}
-                style={styles.videoPlayer}
-                controls={true}
-                resizeMode="contain"
-                paused={false}
-                repeat={false}
-              />
-            </View>
-
-            {selectedVideo.subtitle ? (
-              <ScrollView style={styles.modalBody}>
-                <Typography type={Font.Poppins_Regular} size={14} color="#555">
-                  {selectedVideo.subtitle}
-                </Typography>
-              </ScrollView>
-            ) : null}
-          </View>
-        </Modal>
-      );
-    }
-
-    // YouTube / Vimeo / Other URL — use WebView
+    // Determine embed approach
     let embedUrl = null;
-    if (isYouTube(url)) {
+    let isHtml5 = false;
+
+    if (selectedVideo.video_file || isDirectMp4(url)) {
+      // Uploaded file / direct mp4 — use HTML5 video player
+      isHtml5 = true;
+    } else if (isYouTube(url)) {
       embedUrl = getYouTubeEmbedUrl(url);
     } else if (isVimeo(url)) {
       embedUrl = getVimeoEmbedUrl(url);
     } else {
       embedUrl = url;
     }
+
+    const html5Source = `data:text/html;charset=utf-8,${encodeURIComponent(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+          <style>
+            html, body { margin: 0; padding: 0; background: #000; height: 100%; }
+            video {
+              width: 100%;
+              height: 100%;
+              object-fit: contain;
+            }
+          </style>
+        </head>
+        <body>
+          <video src="${url}" controls autoplay playsinline webkit-playsinline></video>
+        </body>
+      </html>
+    `)}`;
 
     return (
       <Modal
@@ -217,7 +222,7 @@ const TrainingVideos = ({navigation}) => {
               <Typography
                 type={Font.Poppins_SemiBold}
                 size={16}
-                color="#D98C79">
+                color="#D98579">
                 Close
               </Typography>
             </TouchableOpacity>
@@ -232,14 +237,16 @@ const TrainingVideos = ({navigation}) => {
           </View>
 
           <View style={styles.videoContainer}>
-            {embedUrl ? (
+            {(embedUrl || isHtml5) ? (
               <WebView
-                source={{uri: embedUrl}}
+                source={isHtml5 ? {html: decodeURIComponent(html5Source)} : {uri: embedUrl}}
                 style={styles.webview}
                 allowsInlineMediaPlayback={true}
                 mediaPlaybackRequiresUserAction={false}
                 allowsFullscreenVideo={true}
                 originWhitelist={['*']}
+                javaScriptEnabled={true}
+                domStorageEnabled={true}
               />
             ) : (
               <View style={styles.noVideo}>
@@ -349,34 +356,67 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderWidth: 1,
     borderColor: '#F0F0F0',
-    borderRadius: 10,
+    borderRadius: 14,
     marginTop: 12,
     padding: 12,
+    shadowColor: '#000',
+    shadowOpacity: 0.06,
+    shadowOffset: {width: 0, height: 2},
+    shadowRadius: 6,
+    elevation: 2,
   },
-  cardLeft: {
-    marginRight: 12,
+  thumbArea: {
+    position: 'relative',
+    marginRight: 14,
   },
-  playCircle: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#D98C79',
+  thumbGradient: {
+    width: 62,
+    height: 62,
+    borderRadius: 10,
+    backgroundColor: '#D98579',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  playCircle: {
+    position: 'absolute',
+    right: -4,
+    bottom: -4,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: '#7AA80F',
+    borderWidth: 2,
+    borderColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingLeft: 2,
   },
   cardContent: {
     flex: 1,
   },
-  cardRight: {
-    marginLeft: 8,
-    alignItems: 'flex-end',
+  cardFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 8,
+  },
+  watchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
   },
   uploadBadge: {
     backgroundColor: '#28a745',
-    paddingHorizontal: 6,
+    paddingHorizontal: 7,
     paddingVertical: 2,
     borderRadius: 4,
-    marginBottom: 4,
+    alignSelf: 'flex-start',
+  },
+  ytBadge: {
+    backgroundColor: '#E53935',
+  },
+  vimeoBadge: {
+    backgroundColor: '#1AB7EA',
   },
   modalContainer: {
     flex: 1,
@@ -398,9 +438,6 @@ const styles = StyleSheet.create({
     width: SCREEN_WIDTH,
     height: SCREEN_WIDTH * (9 / 16),
     backgroundColor: '#000',
-  },
-  videoPlayer: {
-    flex: 1,
   },
   webview: {
     flex: 1,
