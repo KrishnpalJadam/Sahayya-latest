@@ -194,16 +194,21 @@ const TrainingVideos = ({navigation}) => {
         <head>
           <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
           <style>
-            html, body { margin: 0; padding: 0; background: #000; height: 100%; }
-            video {
+            html, body { margin: 0; padding: 0; background: #000; height: 100%; display: flex; align-items: center; justify-content: center; }
+            video, iframe {
               width: 100%;
               height: 100%;
               object-fit: contain;
+              border: none;
             }
           </style>
         </head>
         <body>
-          <video src="${url}" controls autoplay playsinline webkit-playsinline></video>
+          ${
+            isHtml5
+              ? `<video src="${url}" controls autoplay playsinline webkit-playsinline></video>`
+              : `<iframe src="${embedUrl}" allow="autoplay; fullscreen" allowfullscreen></iframe>`
+          }
         </body>
       </html>
     `)}`;
@@ -239,7 +244,7 @@ const TrainingVideos = ({navigation}) => {
           <View style={styles.videoContainer}>
             {(embedUrl || isHtml5) ? (
               <WebView
-                source={isHtml5 ? {html: decodeURIComponent(html5Source)} : {uri: embedUrl}}
+                source={{html: decodeURIComponent(html5Source)}}
                 style={styles.webview}
                 allowsInlineMediaPlayback={true}
                 mediaPlaybackRequiresUserAction={false}
