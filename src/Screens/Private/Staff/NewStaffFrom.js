@@ -100,6 +100,8 @@ const NewStaffForm = ({ navigation, route }) => {
   const [payFrequency, setPayFrequency] = useState(null);
   const [workingDays, setWorkingDays] = useState([]); // array of values
   const [salaryClosingDate, setSalaryClosingDate] = useState(null);
+  const [preferredWorkCities, setPreferredWorkCities] = useState([]); // array of cities
+  const [selectedLanguages, setSelectedLanguages] = useState([]); // array of languages
 
   // Document States
   const [staffPhoto, setStaffPhoto] = useState(null);
@@ -165,6 +167,24 @@ const NewStaffForm = ({ navigation, route }) => {
     { label: 'Fri', value: 'Friday' },
     { label: 'Sat', value: 'Saturday' },
     { label: 'Sun', value: 'Sunday' },
+  ];
+
+  // Languages list for multi-select
+  const languagesList = [
+    'English',
+    'Hindi',
+    'Telugu',
+    'Tamil',
+    'Kannada',
+    'Malayalam',
+    'Marathi',
+    'Gujarati',
+    'Bengali',
+    'Punjabi',
+    'Odia',
+    'Assamese',
+    'Urdu',
+    'Nepali',
   ];
 
   // Relation Options — project-appropriate for Indian household staff emergency contacts
@@ -325,6 +345,19 @@ const NewStaffForm = ({ navigation, route }) => {
         if (workInfo.salary_closing_date) {
           const closingOption = salaryClosingDateOptions.find(opt => opt.value === Number(workInfo.salary_closing_date));
           setSalaryClosingDate(closingOption || null);
+        }
+        if (workInfo.preferred_work_location) {
+          const raw = workInfo.preferred_work_location;
+          const parsed = raw.split(',').map(s => s.trim()).filter(Boolean);
+          setPreferredWorkCities(parsed);
+        }
+        if (workInfo.languages_spoken) {
+          const langs = Array.isArray(workInfo.languages_spoken)
+            ? workInfo.languages_spoken.filter(l => l)
+            : typeof workInfo.languages_spoken === 'string'
+              ? workInfo.languages_spoken.split(',').map(l => l.trim()).filter(l => l)
+              : [];
+          setSelectedLanguages(langs);
         }
       }
 
@@ -501,6 +534,42 @@ const NewStaffForm = ({ navigation, route }) => {
       return [...prev, dayValue];
     });
     clearError('workingDays');
+  };
+
+  const isAllIndiaSelected = preferredWorkCities.includes('All India');
+
+  const togglePreferredCity = city => {
+    if (city === 'All India') {
+      setPreferredWorkCities(['All India']);
+      return;
+    }
+    setPreferredWorkCities(prev => {
+      const without = prev.filter(c => c !== 'All India');
+      if (without.includes(city)) {
+        return without.filter(c => c !== city);
+      }
+      return [...without, city];
+    });
+  };
+
+  const addCityFromText = city => {
+    const trimmed = city.trim();
+    if (!trimmed) return;
+    setPreferredWorkCities(prev => {
+      const without = prev.filter(c => c !== 'All India');
+      if (without.includes(trimmed)) return without;
+      return [...without, trimmed];
+    });
+  };
+
+  // toggle language for multi-select
+  const toggleLanguage = lang => {
+    setSelectedLanguages(prev => {
+      if (prev.includes(lang)) {
+        return prev.filter(l => l !== lang);
+      }
+      return [...prev, lang];
+    });
   };
 
   // Validation function
@@ -921,6 +990,16 @@ const NewStaffForm = ({ navigation, route }) => {
     daysToSend.forEach((day, index) => {
       formData.append(`working_days[${index}]`, day);
     });
+
+    if (preferredWorkCities.length > 0) {
+      formData.append('preferred_work_location', preferredWorkCities.join(', '));
+    }
+
+    if (selectedLanguages.length > 0) {
+      selectedLanguages.forEach((lang, index) => {
+        formData.append(`languages_spoken[${index}]`, lang);
+      });
+    }
 
     // Documents - only send newly picked images (they have a .type from image picker)
     // Don't re-send existing server URLs as file uploads
@@ -1754,6 +1833,93 @@ const NewStaffForm = ({ navigation, route }) => {
               {errors.workingDays}
             </Typography>
           ) : null}
+        </View>
+
+        <View style={styles.section}>
+          <Typography type={Font?.Poppins_SemiBold} style={styles.sectionTitle}>
+            Preferred Work Cities
+          </Typography>
+
+          {preferredWorkCities.length > 0 && (
+            <View style={[styles.daysContainer, { marginBottom: 10 }]}>
+              {preferredWorkCities.map((city, idx) => (
+                <TouchableOpacity
+                  key={idx}
+                  style={[styles.dayChip, styles.dayChipSelected]}
+                  onPress={() => setPreferredWorkCities(prev => prev.filter(c => c !== city))}
+                >
+                  <Text style={[styles.dayChipText, styles.dayChipTextSelected]}>
+                    {city} ✕
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+
+          <View
+            style={{ zIndex: 50, position: 'relative', opacity: isAllIndiaSelected ? 0.45 : 1 }}
+            pointerEvents={isAllIndiaSelected ? 'none' : 'auto'}
+          >
+            <GooglePlacesInput
+              title="Search City"
+              placeholder="Type city name for suggestions..."
+              onPlaceSelected={location => {
+                if (isAllIndiaSelected) return;
+                const city = location?.city || location?.data?.description?.split(',')[0];
+                if (city) addCityFromText(city);
+              }}
+            />
+          </View>
+
+          <View style={[styles.daysContainer, { marginTop: 8 }]}>
+            {[{ label: 'All India (Anywhere)', value: 'All India' }].map(opt => {
+              const isSelected = preferredWorkCities.includes(opt.value);
+              return (
+                <TouchableOpacity
+                  key={opt.value}
+                  style={[styles.dayChip, isSelected && styles.dayChipSelected]}
+                  onPress={() => togglePreferredCity(opt.value)}
+                >
+                  <Text style={[styles.dayChipText, isSelected && styles.dayChipTextSelected]}>
+                    {opt.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <Typography type={Font?.Poppins_SemiBold} style={styles.sectionTitle}>
+            Languages Spoken
+          </Typography>
+          <View style={styles.daysContainer}>
+            {languagesList.map((lang, index) => {
+              const isSelected = selectedLanguages.includes(lang);
+              return (
+                <TouchableOpacity
+                  key={index}
+                  style={[styles.dayChip, isSelected && styles.dayChipSelected]}
+                  onPress={() => toggleLanguage(lang)}
+                >
+                  {isSelected && (
+                    <Image
+                      source={ImageConstant?.check}
+                      style={{
+                        width: 12,
+                        height: 12,
+                        tintColor: '#fff',
+                        marginRight: 4,
+                      }}
+                    />
+                  )}
+                  <Text style={[styles.dayChipText, isSelected && styles.dayChipTextSelected]}>
+                    {lang}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
         </View>
 
         <View style={styles.section}>

@@ -25,6 +25,7 @@ import { isValidForm } from '../../../Backend/Utility';
 import SimpleToast from 'react-native-simple-toast';
 import { useSelector } from 'react-redux';
 import LocalizedStrings from '../../../Constants/localization';
+import GooglePlacesInput from '../../../Component/GooglePlacesInput';
 
 const StepWokInfo = forwardRef(({ navigation }, ref) => {
   const userDetail = useSelector(store => store?.userDetails);
@@ -49,6 +50,7 @@ const StepWokInfo = forwardRef(({ navigation }, ref) => {
   const [emergencyContactRelation, setEmergencyContactRelation] = useState(''); // Emergency Contact Relation
   const [emergencyContactNumber, setEmergencyContactNumber] = useState(''); // Emergency Contact Number
   const [upiId, setUpiId] = useState(''); // UPI ID
+  const [preferredWorkCities, setPreferredWorkCities] = useState([]); // Preferred work cities
 
   const DAYS_OPTIONS = [
     { label: 'Mon', value: 'Monday' },
@@ -64,6 +66,32 @@ const StepWokInfo = forwardRef(({ navigation }, ref) => {
     setWorkingDays(prev =>
       prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]
     );
+  };
+
+  const isAllIndiaSelected = preferredWorkCities.includes('All India');
+
+  const togglePreferredCity = (city) => {
+    if (city === 'All India') {
+      setPreferredWorkCities(['All India']);
+      return;
+    }
+    setPreferredWorkCities(prev => {
+      const without = prev.filter(c => c !== 'All India');
+      if (without.includes(city)) {
+        return without.filter(c => c !== city);
+      }
+      return [...without, city];
+    });
+  };
+
+  const addCityFromText = (city) => {
+    const trimmed = city.trim();
+    if (!trimmed) return;
+    setPreferredWorkCities(prev => {
+      const without = prev.filter(c => c !== 'All India');
+      if (without.includes(trimmed)) return without;
+      return [...without, trimmed];
+    });
   };
 
   const toggleSkill = skill => {
@@ -180,6 +208,11 @@ const StepWokInfo = forwardRef(({ navigation }, ref) => {
       }
       if (workInfo?.stay_type) {
         setStayType([workInfo.stay_type]);
+      }
+      if (workInfo?.preferred_work_location) {
+        const raw = workInfo.preferred_work_location;
+        const parsed = raw.split(',').map(s => s.trim()).filter(Boolean);
+        setPreferredWorkCities(parsed);
       }
       if (workInfo.working_days && workInfo.working_days.length > 0) {
         const daysList = Array.isArray(workInfo.working_days)
@@ -533,6 +566,10 @@ const StepWokInfo = forwardRef(({ navigation }, ref) => {
       formData.append('stay_type', stayType[0]);
     }
 
+    if (preferredWorkCities.length > 0) {
+      formData.append('preferred_work_location', preferredWorkCities.join(', '));
+    }
+
     // Voice Note (optional) - if provided
     if (voiceNote && voiceNote.uri) {
       formData.append('voice_note', {
@@ -851,6 +888,106 @@ const StepWokInfo = forwardRef(({ navigation }, ref) => {
                 'No languages available'}
             </Typography>
           )}
+        </View>
+      </View>
+
+      {/* Preferred Work Cities */}
+      <View
+        style={{
+          borderWidth: 1,
+          paddingHorizontal: 10,
+          paddingBottom: 10,
+          borderRadius: 10,
+          borderColor: '#EBEBEA',
+          marginTop: 10,
+        }}
+      >
+        <Typography
+          style={[styles.sectionTitle, { marginBottom: 8 }]}
+          type={Font.Poppins_Medium}
+          size={16}
+        >
+          Preferred Work Cities
+        </Typography>
+
+        {preferredWorkCities.length > 0 && (
+          <View style={[styles.skillContainer, { marginBottom: 12 }]}>
+            {preferredWorkCities.map((city, idx) => (
+              <View
+                key={idx}
+                style={[
+                  styles.skillChip,
+                  styles.skillChipSelected,
+                  { flexDirection: 'row', alignItems: 'center' },
+                ]}
+              >
+                <Typography
+                  style={[styles.skillText, styles.skillTextSelected]}
+                  type={Font?.Manrope_SemiBold}
+                >
+                  {city}
+                </Typography>
+                <TouchableOpacity
+                  onPress={() =>
+                    setPreferredWorkCities(prev => prev.filter(c => c !== city))
+                  }
+                  hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                  style={{ marginLeft: 4, padding: 6 }}
+                >
+                  <Typography style={{ color: '#fff', fontSize: 14, fontWeight: 'bold' }}>✕</Typography>
+                </TouchableOpacity>
+              </View>
+            ))}
+          </View>
+        )}
+
+        <View
+          style={{ zIndex: 50, position: 'relative', opacity: isAllIndiaSelected ? 0.45 : 1 }}
+          pointerEvents={isAllIndiaSelected ? 'none' : 'auto'}
+        >
+          <GooglePlacesInput
+            title="Search City"
+            placeholder="Type city name for suggestions..."
+            onPlaceSelected={location => {
+              if (isAllIndiaSelected) return;
+              const city = location?.city || location?.data?.description?.split(',')[0];
+              if (city) addCityFromText(city);
+            }}
+          />
+        </View>
+
+        <Typography size={11} color="#888" style={{ marginTop: -6, marginBottom: 10 }}>
+          {isAllIndiaSelected
+            ? 'All India selected — remove it to pick specific cities.'
+            : 'Start typing to see city suggestions. Multiple selections allowed.'}
+        </Typography>
+
+        <View style={[styles.skillContainer, { marginBottom: 0 }]}>
+          {[
+            { label: 'All India (Anywhere)', value: 'All India' },
+          ].map((opt) => {
+            const isSelected = preferredWorkCities.includes(opt.value);
+            return (
+              <TouchableOpacity
+                key={opt.value}
+                onPress={() => togglePreferredCity(opt.value)}
+                style={[
+                  styles.skillChip,
+                  isSelected && styles.skillChipSelected,
+                ]}
+              >
+                <Typography
+                  style={[
+                    styles.skillText,
+                    isSelected && styles.skillTextSelected,
+                  ]}
+                  type={Font?.Manrope_SemiBold}
+                >
+                  {opt.label}
+                </Typography>
+              </TouchableOpacity>
+            );
+          })}
         </View>
       </View>
 
