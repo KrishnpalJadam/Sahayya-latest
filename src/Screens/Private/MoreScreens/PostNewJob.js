@@ -607,9 +607,11 @@ const PostNewJob = ({ navigation, route }) => {
           setLoading(false);
           if (success?.error_code === 'LIMIT_EXCEEDED') {
             const price = success?.extra_job_price || 500;
+            const gstTotal = Math.round(price * 1.18 * 100) / 100;
+            const gstAmount = Math.round((price * 0.18) * 100) / 100;
             Alert.alert(
               'Job Limit Exceeded',
-              `Your subscription's monthly job limit has been reached. Would you like to post an extra job for ₹${price}?`,
+              `Your subscription's monthly job limit has been reached.\n\nBase: ₹${price}\nGST (18%): ₹${gstAmount}\nTotal: ₹${gstTotal}`,
               [
                 { text: 'Cancel', style: 'cancel' },
                 {

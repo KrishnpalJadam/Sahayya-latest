@@ -13,6 +13,7 @@ import CommanView from '../../Component/CommanView';
 import HeaderForUser from '../../Component/HeaderForUser';
 import Typography from '../../Component/UI/Typography';
 import { Font } from '../../Constants/Font';
+import { calculateGst } from '../../Utils/gst';
 import Button from '../../Component/Button';
 import { ImageConstant } from '../../Constants/ImageConstant';
 import { GET_WITH_TOKEN, POST_WITH_TOKEN } from '../../Backend/Backend';
@@ -133,10 +134,8 @@ const StaffWallet = ({ navigation }) => {
   };
 
   const pricePerCredit = limitInfo?.credit_purchase_price || 10;
-  const totalPrice = creditsToPurchase * pricePerCredit;
-  const GST_RATE = 18;
-  const baseAmount = Math.round((totalPrice / 1.18) * 100) / 100;
-  const gstAmount = Math.round((totalPrice - baseAmount) * 100) / 100;
+  const baseAmount = creditsToPurchase * pricePerCredit;
+  const { gstAmount, totalAmount: totalPrice } = calculateGst(baseAmount);
 
   return (
     <CommanView>

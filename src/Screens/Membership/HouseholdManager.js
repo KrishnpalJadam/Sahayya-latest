@@ -13,6 +13,7 @@ import { Font } from '../../Constants/Font';
 import Typography from '../../Component/UI/Typography';
 import { ImageConstant } from '../../Constants/ImageConstant';
 import Button from '../../Component/Button';
+import { calculateGst } from '../../Utils/gst';
 import { POST_WITH_TOKEN, GET_WITH_TOKEN } from '../../Backend/Backend';
 import { SUBSCRIPTIONS_BY_ROLE, SUBSCRIPTIONS, SUBSCRIBE_PLAN, SUBSCRIPTION_USER_CURRENT, SUBSCRIPTION_USER_SUBSCRIBE, SUBSCRIPTION_USER_CREATE_ORDER, SUBSCRIPTION_USER_VERIFY, ReferralCode } from '../../Backend/api_routes';
 import { useSelector } from 'react-redux';
@@ -167,14 +168,6 @@ const HouseholdManager = ({ navigation }) => {
         setSubscriptions([]);
       },
     );
-  };
-
-  const GST_RATE = 18;
-
-  const calculateGst = price => {
-    const baseAmount = Math.round((price / 1.18) * 100) / 100;
-    const gstAmount = Math.round((price - baseAmount) * 100) / 100;
-    return { baseAmount, gstAmount, totalAmount: price };
   };
 
   const formatPrice = price => {

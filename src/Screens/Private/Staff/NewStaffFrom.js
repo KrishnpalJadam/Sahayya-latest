@@ -993,9 +993,11 @@ const NewStaffForm = ({ navigation, route }) => {
 
         if (error?.error_code === 'LIMIT_EXCEEDED' || error?.data?.error_code === 'LIMIT_EXCEEDED') {
           const price = error?.extra_staff_price || error?.data?.extra_staff_price || 500;
+          const gstTotal = Math.round(price * 1.18 * 100) / 100;
+          const gstAmount = Math.round((price * 0.18) * 100) / 100;
           Alert.alert(
             "Staff Limit Exceeded",
-            `Your subscription's staff limit has been reached. Would you like to add an extra staff member for ₹${price}?`,
+            `Your subscription's staff limit has been reached.\n\nBase: ₹${price}\nGST (18%): ₹${gstAmount}\nTotal: ₹${gstTotal}`,
             [
               { text: "Cancel", style: "cancel" },
               { 

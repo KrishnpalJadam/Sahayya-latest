@@ -13,6 +13,7 @@ import SimpleToast from 'react-native-simple-toast'
 import LocalizedStrings from '../../Constants/localization'
 import { initiatePayment } from '../../Services/RazorpayService'
 import { hasActivePaidSubscription, isFreeSubscriptionPlan } from '../../Utils/subscription'
+import { calculateGst } from '../../Utils/gst'
 
 
 const MemberShip = ({ navigation }) => {
@@ -119,15 +120,6 @@ const MemberShip = ({ navigation }) => {
                 setSubscriptions([]);
             },
         );
-    };
-
-    const GST_RATE = 18;
-
-    const calculateGst = (price) => {
-        const baseAmount = Math.round((price / 1.18) * 100) / 100;
-        const gstAmount = Math.round((price - baseAmount) * 100) / 100;
-        const totalAmount = price;
-        return { baseAmount, gstAmount, totalAmount };
     };
 
     const formatPrice = (price) => {

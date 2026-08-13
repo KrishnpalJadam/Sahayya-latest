@@ -19,6 +19,7 @@ import LocalizedStrings from '../../Constants/localization';
 import { GET_WITH_TOKEN, POST_FORM_DATA, POST_WITH_TOKEN } from '../../Backend/Backend';
 import { ListJob, Apply_Job, SUBSCRIPTION_USER_CURRENT, JOB_LIMIT_STATUS, JOB_LIMIT_CREATE_ORDER, JOB_LIMIT_VERIFY_PAYMENT } from '../../Backend/api_routes';
 import { initiatePayment } from '../../Services/RazorpayService';
+import { calculateGst } from '../../Utils/gst';
 import { useIsFocused } from '@react-navigation/native';
 import Input from '../../Component/Input';
 import Date_Picker from '../../Component/Date_Picker';
@@ -694,7 +695,13 @@ const JobDetails = ({ navigation, route }) => {
               </View>
 
               <Typography type={Font.Poppins_Regular} style={styles.creditTotal}>
-                Total: ₹{creditsToPurchase * (limitInfo?.credit_purchase_price || 10)}
+                Base: ₹{creditsToPurchase * (limitInfo?.credit_purchase_price || 10)}
+              </Typography>
+              <Typography type={Font.Poppins_Regular} style={styles.creditTotal}>
+                + 18% GST: ₹{calculateGst(creditsToPurchase * (limitInfo?.credit_purchase_price || 10)).gstAmount}
+              </Typography>
+              <Typography type={Font.Poppins_SemiBold} style={[styles.creditTotal, { marginTop: 4 }]}>
+                Total: ₹{calculateGst(creditsToPurchase * (limitInfo?.credit_purchase_price || 10)).totalAmount}
               </Typography>
             </View>
 
