@@ -273,6 +273,7 @@ const ManageAddresses = ({ navigation }) => {
       formData.append(`addresses[${index}][google_location]`, addr.google_location || '');
       formData.append(`addresses[${index}][lat]`, addr.lat || '');
       formData.append(`addresses[${index}][long]`, addr.long || '');
+      formData.append(`addresses[${index}][address_type]`, addr.address_type || 'present');
 
       const hh = addr.household;
       if (hh.residence_type?.value) formData.append(`addresses[${index}][household][residence_type]`, hh.residence_type.value);

@@ -68,6 +68,7 @@ const Step1 = () => {
     google_location: address?.google_location || address?.googleLocation || '',
     lat: address?.lat || address?.latitude || '',
     long: address?.long || address?.longitude || '',
+    address_type: address?.address_type || 'present',
   });
 
   const hasCompleteAddress = address =>
