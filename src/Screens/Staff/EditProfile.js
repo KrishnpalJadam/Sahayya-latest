@@ -198,6 +198,15 @@ const EditProfile = ({ navigation, route }) => {
     }
   };
 
+  // Fetch the freshest profile once on mount so the edit screen shows the
+  // latest saved values (stay type, joining date, UPI, etc.) instead of stale
+  // Redux state from login/previous saves. The fetched payload updates
+  // userDetail, which triggers loadProfileData below.
+  useEffect(() => {
+    fetchProfile();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Load data from userDetails when available
   useEffect(() => {
     if (userDetail && Object.keys(userDetail).length > 0) {
