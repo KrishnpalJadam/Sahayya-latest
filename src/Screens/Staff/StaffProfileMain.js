@@ -338,7 +338,7 @@ const StaffProfileMain = ({ navigation }) => {
                         <View style={styles.textBox}>
                             <Typography style={styles.label}>Emergency Contact Relation</Typography>
                             <Typography style={styles.value}>
-                                {userDetail?.user_work_info?.relation || userDetail?.work_info?.relation || userDetail?.relation || 'Not Found'}
+                                {userDetail?.user_work_info?.emergency_contact_relation || userDetail?.user_work_info?.relation || userDetail?.work_info?.relation || userDetail?.relation || 'Not Found'}
                             </Typography>
                         </View>
                     </View>
@@ -420,8 +420,8 @@ const StaffProfileMain = ({ navigation }) => {
                         <View style={styles.textBox}>
                             <Typography style={styles.label}>Joining Date</Typography>
                             <Typography style={styles.value}>
-                                {userDetail?.user_work_info?.joining_date || userDetail?.work_info?.joining_date
-                                    ? moment(userDetail?.user_work_info?.joining_date || userDetail?.work_info?.joining_date).format('DD MMM YYYY')
+                                {userDetail?.user_work_info?.joining_date || userDetail?.work_info?.joining_date || userDetail?.lastExp?.[0]?.join_date
+                                    ? moment(userDetail?.user_work_info?.joining_date || userDetail?.work_info?.joining_date || userDetail?.lastExp?.[0]?.join_date).format('DD MMM YYYY')
                                     : 'Not Found'}
                             </Typography>
                         </View>

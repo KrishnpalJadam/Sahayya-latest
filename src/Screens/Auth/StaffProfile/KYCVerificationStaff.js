@@ -52,6 +52,8 @@ const KYCVerificationStaff = forwardRef(({ userDetail, prefillFromProfile = true
         ? { uri: userDetail.verification_certificate }
         : isValidPath(kycInfo?.verification_certificate)
         ? { uri: kycInfo.verification_certificate }
+        : isValidPath(kycInfo?.police_verification_path)
+        ? { uri: kycInfo.police_verification_path }
         : isValidPath(kycInfo?.police_clearance_certificate_path)
         ? { uri: kycInfo.police_clearance_certificate_path }
         : null,
@@ -59,6 +61,8 @@ const KYCVerificationStaff = forwardRef(({ userDetail, prefillFromProfile = true
         ? { uri: userDetail.aadhar_front }
         : isValidPath(kycInfo?.aadhar_front)
         ? { uri: kycInfo.aadhar_front }
+        : isValidPath(kycInfo?.aadhaar_front_path)
+        ? { uri: kycInfo.aadhaar_front_path }
         : isValidPath(kycInfo?.adharfront_path)
         ? { uri: kycInfo.adharfront_path }
         : null,
@@ -66,6 +70,8 @@ const KYCVerificationStaff = forwardRef(({ userDetail, prefillFromProfile = true
         ? { uri: userDetail.aadhar_back }
         : isValidPath(kycInfo?.aadhar_back)
         ? { uri: kycInfo.aadhar_back }
+        : isValidPath(kycInfo?.aadhaar_back_path)
+        ? { uri: kycInfo.aadhaar_back_path }
         : isValidPath(kycInfo?.adharbackend_path)
         ? { uri: kycInfo.adharbackend_path }
         : null,

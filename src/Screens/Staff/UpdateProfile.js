@@ -7,8 +7,8 @@ import Input from '../../Component/Input';
 import DropdownComponent from '../../Component/DropdownComponent';
 import Date_Picker from '../../Component/Date_Picker';
 import { ImageConstant } from '../../Constants/ImageConstant';
-import { POST_FORM_DATA } from '../../Backend/Backend';
-import { LAST_WORK_INFO } from '../../Backend/api_routes';
+import { POST_FORM_DATA, GET_WITH_TOKEN } from '../../Backend/Backend';
+import { LAST_WORK_INFO, CATEGORY } from '../../Backend/api_routes';
 import { validators } from '../../Backend/Validator';
 import { isValidForm } from '../../Backend/Utility';
 import SimpleToast from 'react-native-simple-toast';
@@ -20,7 +20,9 @@ import LocalizedStrings from '../../Constants/localization';
 const UpdateProfile = forwardRef((props, ref) => {
   const userDetail = useSelector(store => store?.userDetails);
   const navigation = useNavigation();
-  const [role, setRole] = useState('');
+  const [role, setRole] = useState([]);
+  const [roles, setRoles] = useState([]);
+  const [rolesLoading, setRolesLoading] = useState(false);
   const [joinDate, setJoinDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [salary, setSalary] = useState('');
@@ -36,9 +38,9 @@ const UpdateProfile = forwardRef((props, ref) => {
     const lastWorkInfo = userDetail?.last_exp || {};
     
     if (lastWorkInfo && Object.keys(lastWorkInfo).length > 0) {
-      // Load role - API returns string like "Cook" or "Chef"
       if (lastWorkInfo.role) {
-        setRole(lastWorkInfo.role);
+        const roleVal = lastWorkInfo.role;
+        setRole(Array.isArray(roleVal) ? roleVal : typeof roleVal === 'string' ? roleVal.split(',').map(s => s.trim()).filter(Boolean) : []);
       }
 
       // Load join date - API might return YYYY-MM-DD, DD/MM/YY format, or ISO format
@@ -125,6 +127,30 @@ const UpdateProfile = forwardRef((props, ref) => {
     }
   }, [userDetail?.last_exp]);
 
+  useEffect(() => {
+    GET_WITH_TOKEN(
+      CATEGORY,
+      success => {
+        setRolesLoading(false);
+        let rolesData = [];
+        if (success?.data && Array.isArray(success.data)) {
+          rolesData = success.data.map(role => ({
+            label: role?.name || role?.title || role?.category_name || String(role),
+            value: role?.id || role?.value || role?.name,
+          }));
+        } else if (Array.isArray(success)) {
+          rolesData = success.map(role => ({
+            label: role?.name || role?.title || role?.category_name || String(role),
+            value: role?.id || role?.value || role?.name,
+          }));
+        }
+        setRoles(rolesData);
+      },
+      () => setRolesLoading(false),
+      () => setRolesLoading(false),
+    );
+  }, []);
+
   const saveLastWorkExperience = () => {
     // Validate all required fields
     const error = {
@@ -150,7 +176,7 @@ const UpdateProfile = forwardRef((props, ref) => {
     const formattedJoinDate = joinDate ? moment(joinDate).format('DD/MM/YY') : '';
     const formattedEndDate = endDate ? moment(endDate).format('DD/MM/YY') : '';
 
-    formData.append('role', role);
+    formData.append('role', JSON.stringify(role));
     formData.append('join_date', formattedJoinDate);
     formData.append('end_date', formattedEndDate);
     formData.append('salary', salary);
@@ -202,15 +228,38 @@ const UpdateProfile = forwardRef((props, ref) => {
           <Typography style={styles.sectionTitle} type={Font?.Poppins_SemiBold} size={18}>{LocalizedStrings.staffSection?.UpdateProfile?.last_work_experience || "Last Work Experience"}</Typography>
         </View>
       
-      <Input 
-        title={'Role/Designation'} 
-        value={role}
-        onChange={(text) => {
-          setRole(text);
+      <DropdownComponent
+        title={'Role/Designation'}
+        placeholder={'Select Role (tap to select multiple)'}
+        width={'100%'}
+        style_dropdown={{ marginHorizontal: 0 }}
+        selectedTextStyleNew={{ marginLeft: 10 }}
+        marginHorizontal={0}
+        style_title={{ textAlign: 'left' }}
+        multiSelect={true}
+        selectedValues={role.map(r => roles.find(rl => rl.label === r)?.value || r)}
+        onChange={item => {
+          const val = item?.value || item?.label;
+          if (!val) return;
+          setRole(prev => prev.includes(val) ? prev.filter(v => v !== val) : [...prev, val]);
           if (errors.role) setErrors({...errors, role: null});
         }}
+        data={roles}
+        loading={rolesLoading}
         error={errors.role}
       />
+      {role.length > 0 && (
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginHorizontal: 16, marginBottom: 8 }}>
+          {role.map((r, i) => (
+            <View key={i} style={{ backgroundColor: '#FFF5F3', borderRadius: 16, paddingHorizontal: 12, paddingVertical: 5, marginRight: 8, marginBottom: 6, flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#D98579' }}>
+              <Typography size={12} color="#D98579">{r}</Typography>
+              <TouchableOpacity onPress={() => setRole(prev => prev.filter(v => v !== r))} style={{ marginLeft: 6 }}>
+                <Typography size={12} color="#999">✕</Typography>
+              </TouchableOpacity>
+            </View>
+          ))}
+        </View>
+      )}
       
         <View style={styles.row}>
         <View style={[styles.halfInput, { marginRight: 8 }]}>

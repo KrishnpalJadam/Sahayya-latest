@@ -357,9 +357,9 @@ const HouseHoldStaffProfile = ({ navigation, route }) => {
     return `${baseUrl}${path}`;
   };
 
-  const aadhaarFrontUrl = getDocUrl(data?.aadhar_front) || getDocUrl(kycInfo?.aadhar_front) || getDocUrl(kycInfo?.adharfront_path) || getDocUrl(data?.user_detail?.aadhar_front);
-  const aadhaarBackUrl = getDocUrl(data?.aadhar_back) || getDocUrl(kycInfo?.aadhar_back) || getDocUrl(kycInfo?.adharbackend_path) || getDocUrl(data?.user_detail?.aadhar_back);
-  const verificationCertUrl = getDocUrl(data?.verification_certificate) || getDocUrl(kycInfo?.verification_certificate) || getDocUrl(kycInfo?.police_clearance_certificate_path) || getDocUrl(data?.user_detail?.verification_certificate);
+  const aadhaarFrontUrl = getDocUrl(data?.aadhar_front) || getDocUrl(kycInfo?.aadhar_front) || getDocUrl(kycInfo?.aadhaar_front_path) || getDocUrl(data?.user_detail?.aadhar_front);
+  const aadhaarBackUrl = getDocUrl(data?.aadhar_back) || getDocUrl(kycInfo?.aadhar_back) || getDocUrl(kycInfo?.aadhaar_back_path) || getDocUrl(data?.user_detail?.aadhar_back);
+  const verificationCertUrl = getDocUrl(data?.verification_certificate) || getDocUrl(kycInfo?.verification_certificate) || getDocUrl(kycInfo?.police_verification_path) || getDocUrl(data?.user_detail?.verification_certificate);
 
   const openWhatsApp = async number => {
     if (contactViewLocked) {

@@ -66,7 +66,7 @@ const EditProfile = ({ navigation, route }) => {
   const [skillsLoading, setSkillsLoading] = useState(false);
 
   // Last Work Experience
-  const [lastRole, setLastRole] = useState('');
+  const [lastRole, setLastRole] = useState([]);
   const [joinDate, setJoinDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [salary, setSalary] = useState('');
@@ -321,7 +321,10 @@ const EditProfile = ({ navigation, route }) => {
 
     // Last Work Experience
     const lastExp = userDetail?.last_exp || {};
-    if (lastExp?.role) setLastRole(lastExp.role);
+    if (lastExp?.role) {
+      const roleVal = lastExp.role;
+      setLastRole(Array.isArray(roleVal) ? roleVal : typeof roleVal === 'string' ? roleVal.split(',').map(s => s.trim()).filter(Boolean) : []);
+    }
     if (lastExp?.join_date) {
       const parsedDate = moment(lastExp.join_date, [
         'YYYY-MM-DD',
@@ -738,7 +741,7 @@ const EditProfile = ({ navigation, route }) => {
       formData.append('total_experience', totalExperience.value);
 
     // Last Work Experience
-    if (lastRole) formData.append('role', lastRole);
+    if (lastRole.length > 0) formData.append('role', JSON.stringify(lastRole));
     if (joinDate) {
       const formattedJoinDate = moment(joinDate).format('DD/MM/YY');
       formData.append('join_date', formattedJoinDate);
@@ -795,7 +798,7 @@ const EditProfile = ({ navigation, route }) => {
           dispatch(userDetails(success.data));
         }
         setUpdating(false);
-        fetchProfile(); // Refresh profile data
+        fetchProfile();
         navigation.goBack();
       },
       error => {
@@ -821,6 +824,7 @@ const EditProfile = ({ navigation, route }) => {
         SimpleToast.show('Network error. Please try again.', SimpleToast.SHORT);
         setUpdating(false);
       },
+      { timeout: 60000 },
     );
   };
 
@@ -1256,17 +1260,34 @@ const EditProfile = ({ navigation, route }) => {
           </View>
           <DropdownComponent
             title={'Role/Designation (Optional)'}
-            placeholder={'Select Role'}
+            placeholder={'Select Role (tap to select multiple)'}
             width={'100%'}
             style_dropdown={{ marginHorizontal: 0 }}
             selectedTextStyleNew={{ marginLeft: 10 }}
             marginHorizontal={0}
             style_title={{ textAlign: 'left' }}
-            value={roles.find(r => r.label === lastRole) || null}
-            onChange={item => setLastRole(item.label)}
+            multiSelect={true}
+            selectedValues={lastRole.map(r => roles.find(rl => rl.label === r)?.value || r)}
+            onChange={item => {
+              const val = item?.value || item?.label;
+              if (!val) return;
+              setLastRole(prev => prev.includes(val) ? prev.filter(v => v !== val) : [...prev, val]);
+            }}
             data={roles}
             loading={rolesLoading}
           />
+          {lastRole.length > 0 && (
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginHorizontal: 16, marginBottom: 8 }}>
+              {lastRole.map((r, i) => (
+                <View key={i} style={{ backgroundColor: '#FFF5F3', borderRadius: 16, paddingHorizontal: 12, paddingVertical: 5, marginRight: 8, marginBottom: 6, flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#D98579' }}>
+                  <Typography size={12} color="#D98579">{r}</Typography>
+                  <TouchableOpacity onPress={() => setLastRole(prev => prev.filter(v => v !== r))} style={{ marginLeft: 6 }}>
+                    <Typography size={12} color="#999">✕</Typography>
+                  </TouchableOpacity>
+                </View>
+              ))}
+            </View>
+          )}
           <View style={styles.row}>
             <View style={styles.halfInput}>
               <Date_Picker

@@ -412,11 +412,27 @@ const ChoosePlan = ({ navigation, route }) => {
             const extra = subscription?.extra;
             let featureArray = [];
             if (Array.isArray(extra)) {
-              featureArray = extra.map(item => item?.feature || item).filter(Boolean);
+              featureArray = extra
+                .map(item => {
+                  const value =
+                    item && typeof item === 'object'
+                      ? item?.feature ?? item?.name ?? item?.label
+                      : item;
+                  return typeof value === 'string' || typeof value === 'number'
+                    ? String(value).trim()
+                    : '';
+                })
+                .filter(Boolean);
             } else if (extra && typeof extra === 'object') {
               featureArray = Object.keys(extra)
                 .filter(key => key !== 'key_word')
-                .map(key => extra[key]);
+                .map(key => {
+                  const value = extra[key];
+                  return typeof value === 'string' || typeof value === 'number'
+                    ? String(value).trim()
+                    : '';
+                })
+                .filter(Boolean);
             }
 
             return (
