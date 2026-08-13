@@ -106,7 +106,9 @@ const SiginUp = ({ navigation }) => {
         console.log('Signup Success Response:', response);
         setIsLoading(false);
         navigation?.navigate('Otp', {
-          type: 'signup',
+          // Half-onboarded accounts resume via the login path (fetchProfileAndProceed)
+          // so the app routes them back into the remaining onboarding steps.
+          type: response?.resume_onboarding ? 'login' : 'signup',
           mobile: mobile,
           countryCode: selectedCountry.dial_code,
           user_id: response?.user_id,
