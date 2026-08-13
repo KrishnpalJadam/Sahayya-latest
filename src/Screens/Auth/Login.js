@@ -163,6 +163,10 @@ const Login = ({ navigation }) => {
             </Typography>
           </TouchableOpacity>
         </View>
+
+        <Typography size={13} style={styles.welcomeText}>
+          Welcome again to Sahaya
+        </Typography>
       </View>
     </CommanView>
   );
@@ -190,5 +194,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF5F4',
     borderWidth: 1,
     borderColor: '#F1C3BC',
+  },
+  welcomeText: {
+    marginTop: 18,
+    textAlign: 'center',
+    color: '#8C8D8B',
   },
 });

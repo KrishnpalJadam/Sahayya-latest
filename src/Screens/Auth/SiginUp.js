@@ -289,6 +289,10 @@ const SiginUp = ({ navigation }) => {
             </Typography>
           </TouchableOpacity>
         </View>
+
+        <Typography size={13} style={styles.welcomeText}>
+          Welcome again to Sahaya
+        </Typography>
       </View>
 
       <LegalConsentModal
@@ -316,5 +320,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
     marginTop: 15,
+  },
+  welcomeText: {
+    marginTop: 16,
+    textAlign: 'center',
+    color: '#8C8D8B',
   },
 });
