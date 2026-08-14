@@ -121,17 +121,17 @@ const StaffProfileMain = ({ navigation }) => {
 
     // Get address from userDetails
     const addresses = userDetail?.addresses || [];
-    const presentAddress = addresses.find(addr => addr.address_type === 'present') || addresses[0] || {};
-    const permanentAddress = addresses.find(addr => addr.address_type === 'permanent') || addresses[1] || {};
+    const presentAddress = addresses.find(addr => addr.address_type === 'present' || addr.is_primary == 0) || {};
+    const permanentAddress = addresses.find(addr => addr.address_type === 'permanent' || addr.is_primary == 1) || {};
     const presentStreet = presentAddress?.street || 'Not Found';
     const presentCity = presentAddress?.city || 'Not Found';
     const presentState = presentAddress?.state || 'Not Found';
     const presentPincode = presentAddress?.pincode || 'Not Found';
     const presentGoogleLocation = presentAddress?.google_location || '';
-    const permStreet = permanentAddress?.street || presentAddress?.street || 'Not Found';
-    const permCity = permanentAddress?.city || presentAddress?.city || 'Not Found';
-    const permState = permanentAddress?.state || presentAddress?.state || 'Not Found';
-    const permPincode = permanentAddress?.pincode || presentAddress?.pincode || 'Not Found';
+    const permStreet = permanentAddress?.street || 'Not Found';
+    const permCity = permanentAddress?.city || 'Not Found';
+    const permState = permanentAddress?.state || 'Not Found';
+    const permPincode = permanentAddress?.pincode || 'Not Found';
 
     // Get Aadhaar details
     const aadhaarNumber = userDetail?.aadhar_number || 'Not Found';

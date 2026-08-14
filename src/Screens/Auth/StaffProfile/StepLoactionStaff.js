@@ -183,7 +183,7 @@ const StepLoactionStaff = forwardRef((props, ref) => {
 
     if (addresses && addresses.length > 0) {
       const currentAddress =
-        addresses.find(addr => addr.is_primary == 0) || addresses[0];
+        addresses.find(addr => addr.address_type === 'present' || addr.is_primary == 0);
       if (currentAddress) {
         const newStreet = currentAddress.street || '';
         const newCity = currentAddress.city || '';
@@ -207,7 +207,7 @@ const StepLoactionStaff = forwardRef((props, ref) => {
 
       // Find permanent address (is_primary = 1 or second address)
       const permanentAddress =
-        addresses.find(addr => addr.is_primary == 1) || addresses[1];
+        addresses.find(addr => addr.address_type === 'permanent' || addr.is_primary == 1);
       if (permanentAddress) {
         // Only update if values are actually different to prevent unnecessary re-renders
         const newStreet = permanentAddress.street || '';
