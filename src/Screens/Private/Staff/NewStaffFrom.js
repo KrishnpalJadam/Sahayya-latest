@@ -280,26 +280,33 @@ const NewStaffForm = ({ navigation, route }) => {
         }
       }
 
-      // Address from addresses array
+      // Address from addresses array - split present vs permanent by address_type
       if (data.addresses && data.addresses.length > 0) {
-        const address = data.addresses[0];
-        if (address && address.street) setStreet(address.street);
-        if (address && address.city) setCity(address.city);
-        if (address && address.state) setStateName(address.state);
-        if (address && address.pincode) setPincode(String(address.pincode));
-        if (address && address.area_locality) setAreaLocality(address.area_locality);
+        const presentAddr =
+          data.addresses.find(a => a.address_type === 'present') ||
+          data.addresses.find(a => a.google_location) ||
+          null;
+        const permAddr = data.addresses.find(a => a.address_type === 'permanent');
 
-        // Search all addresses for google_location (may not be in addresses[0])
-        let gl = null, latVal = null, longVal = null;
-        for (const addr of data.addresses) {
-          if (!gl && addr?.google_location) gl = addr.google_location;
-          if (!latVal && (addr?.lat || addr?.latitude)) latVal = String(addr.lat || addr.latitude);
-          if (!longVal && (addr?.long || addr?.longitude)) longVal = String(addr.long || addr.longitude);
+        // Present address (Google-based)
+        if (presentAddr) {
+          if (presentAddr.street) setStreet(presentAddr.street);
+          if (presentAddr.city) setCity(presentAddr.city);
+          if (presentAddr.state) setStateName(presentAddr.state);
+          if (presentAddr.pincode) setPincode(String(presentAddr.pincode));
+          if (presentAddr.area_locality) setAreaLocality(presentAddr.area_locality);
+          if (presentAddr.google_location) setGoogleLocation(presentAddr.google_location);
+          if (presentAddr.lat || presentAddr.latitude) setLat(String(presentAddr.lat || presentAddr.latitude));
+          if (presentAddr.long || presentAddr.longitude) setLong(String(presentAddr.long || presentAddr.longitude));
         }
-        if (gl) setGoogleLocation(gl);
-        if (latVal) setLat(latVal);
-        if (longVal) setLong(longVal);
-        if (!gl && address?.google_location) setGoogleLocation(address.google_location);
+
+        // Permanent address (Aadhaar)
+        if (permAddr) {
+          if (permAddr.street) setPermStreet(permAddr.street);
+          if (permAddr.city) setPermCity(permAddr.city);
+          if (permAddr.state) setPermStateName(permAddr.state);
+          if (permAddr.pincode) setPermPincode(String(permAddr.pincode));
+        }
       }
 
       // Relation
@@ -1441,10 +1448,10 @@ const NewStaffForm = ({ navigation, route }) => {
                 clearError('googleLocation');
 
                 if (location?.hasExtractedData) {
-                  if (!street && location.street) setStreet(location.street);
-                  if (!city && location.city) setCity(location.city);
-                  if (!stateName && location.state) setStateName(location.state);
-                  if (!pincode && location.pincode) setPincode(location.pincode);
+                  if (location.street) setStreet(location.street);
+                  if (location.city) setCity(location.city);
+                  if (location.state) setStateName(location.state);
+                  if (location.pincode) setPincode(location.pincode);
                 }
               }}
               error={errors.googleLocation}
