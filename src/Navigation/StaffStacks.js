@@ -72,13 +72,11 @@ const RootStack = () => {
         headerShown: false,
       }}
       initialRouteName={
-        !userDetail || Object.keys(userDetail).length === 0
-          ? 'TabNavigationForStaff'
-          : (userDetail?.aadhar__verify == 0 || userDetail?.aadhar__verify == null || userDetail?.aadhar__verify == false)
-            ? 'Aadhaar'
-            : userDetail?.step < 5
-              ? 'StepFirst'
-              : 'TabNavigationForStaff'
+        !userDetail?.aadhar__verify || userDetail?.aadhar__verify == 0
+          ? 'Aadhaar'
+          : !userDetail?.step || userDetail?.step < 5
+          ? 'StepFirst'
+          : 'TabNavigationForStaff'
       }
     >
       <Stack.Screen
