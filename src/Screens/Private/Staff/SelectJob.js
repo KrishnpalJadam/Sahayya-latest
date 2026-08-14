@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import {
   StyleSheet,
   View,
+  Image,
   FlatList,
   ActivityIndicator,
   Alert,
@@ -116,6 +117,13 @@ const SelectJob = ({ navigation }) => {
         </Typography>
       ) : null}
 
+      <View style={styles.hiresRow}>
+        <Image source={ImageConstant?.Users} style={styles.hiresIcon} />
+        <Typography type={Font.Poppins_Medium} style={styles.hiresText}>
+          {item.users_count || 0} {(item.users_count || 0) === 1 ? 'hire' : 'hires'}
+        </Typography>
+      </View>
+
       <Button
         title="Select This Job"
         main_style={styles.selectButton}
@@ -150,6 +158,7 @@ const SelectJob = ({ navigation }) => {
       />
 
       <View style={styles.container}>
+        <Image source={ImageConstant?.Briefcase} style={styles.topIcon} />
         <Typography type={Font.Poppins_Medium} style={styles.subtitle}>
           Choose which job you want to assign staff to
         </Typography>
@@ -279,5 +288,29 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingVertical: 12,
     paddingHorizontal: 30,
+  },
+  topIcon: {
+    width: 40,
+    height: 40,
+    marginBottom: 8,
+    tintColor: '#D98579',
+  },
+  hiresRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#F0F0F0',
+  },
+  hiresIcon: {
+    width: 16,
+    height: 16,
+    marginRight: 6,
+    tintColor: '#888',
+  },
+  hiresText: {
+    fontSize: 13,
+    color: '#888',
   },
 });
