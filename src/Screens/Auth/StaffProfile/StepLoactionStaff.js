@@ -584,24 +584,24 @@ const StepLoactionStaff = forwardRef((props, ref) => {
                 Permanent address is verified and cannot be edited after it is saved. Contact support if you need to update it.
               </Typography>
               <View style={styles.lockedRow}>
-                <Typography type={Font?.Poppins_SemiBold} size={12} color="#8A8A8A">House / Flat / Floor / Block</Typography>
-                <Typography type={Font?.Poppins_Regular} size={13} color="#111">{permanentStreet || '-'}</Typography>
+                <Typography type={Font?.Poppins_SemiBold} size={12} color="#8A8A8A" style={{ flex: 1, marginRight: 10 }}>House / Flat / Floor / Block</Typography>
+                <Typography type={Font?.Poppins_Regular} size={13} color="#111" style={{ flex: 1, textAlign: 'right' }}>{permanentStreet || '-'}</Typography>
               </View>
               <View style={styles.lockedRow}>
-                <Typography type={Font?.Poppins_SemiBold} size={12} color="#8A8A8A">Apartment / Building / Road / Area</Typography>
-                <Typography type={Font?.Poppins_Regular} size={13} color="#111">{permanentAreaLocality || '-'}</Typography>
+                <Typography type={Font?.Poppins_SemiBold} size={12} color="#8A8A8A" style={{ flex: 1, marginRight: 10 }}>Apartment / Building / Road / Area</Typography>
+                <Typography type={Font?.Poppins_Regular} size={13} color="#111" style={{ flex: 1, textAlign: 'right' }}>{permanentAreaLocality || '-'}</Typography>
               </View>
               <View style={styles.lockedRow}>
-                <Typography type={Font?.Poppins_SemiBold} size={12} color="#8A8A8A">City</Typography>
-                <Typography type={Font?.Poppins_Regular} size={13} color="#111">{permanentCity || '-'}</Typography>
+                <Typography type={Font?.Poppins_SemiBold} size={12} color="#8A8A8A" style={{ flex: 1, marginRight: 10 }}>City</Typography>
+                <Typography type={Font?.Poppins_Regular} size={13} color="#111" style={{ flex: 1, textAlign: 'right' }}>{permanentCity || '-'}</Typography>
               </View>
               <View style={styles.lockedRow}>
-                <Typography type={Font?.Poppins_SemiBold} size={12} color="#8A8A8A">State</Typography>
-                <Typography type={Font?.Poppins_Regular} size={13} color="#111">{permanentState || '-'}</Typography>
+                <Typography type={Font?.Poppins_SemiBold} size={12} color="#8A8A8A" style={{ flex: 1, marginRight: 10 }}>State</Typography>
+                <Typography type={Font?.Poppins_Regular} size={13} color="#111" style={{ flex: 1, textAlign: 'right' }}>{permanentState || '-'}</Typography>
               </View>
               <View style={styles.lockedRow}>
-                <Typography type={Font?.Poppins_SemiBold} size={12} color="#8A8A8A">Pincode</Typography>
-                <Typography type={Font?.Poppins_Regular} size={13} color="#111">{permanentPincode || '-'}</Typography>
+                <Typography type={Font?.Poppins_SemiBold} size={12} color="#8A8A8A" style={{ flex: 1, marginRight: 10 }}>Pincode</Typography>
+                <Typography type={Font?.Poppins_Regular} size={13} color="#111" style={{ flex: 1, textAlign: 'right' }}>{permanentPincode || '-'}</Typography>
               </View>
             </View>
           ) : (

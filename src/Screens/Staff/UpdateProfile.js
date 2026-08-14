@@ -303,14 +303,22 @@ const UpdateProfile = forwardRef((props, ref) => {
         error={errors.salary}
       />
       
-      <Input 
+      <DropdownComponent 
         title={'Working Hours'} 
+        placeholder={'Select working hours'}
+        data={Array.from({ length: 24 }, (_, i) => ({
+          label: `${i + 1} Hour${i === 0 ? '' : 's'}`,
+          value: `${i + 1}`
+        }))}
         value={workingHours}
-        onChange={(text) => {
-          setWorkingHours(text);
+        onChange={(item) => {
+          setWorkingHours(item.value);
           if (errors.workingHours) setErrors({...errors, workingHours: null});
         }}
         error={errors.workingHours}
+        width={'100%'}
+        style_dropdown={{ marginHorizontal: 0 }}
+        marginHorizontal={0}
       />
       
       <Input 
