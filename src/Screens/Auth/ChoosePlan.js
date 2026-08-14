@@ -15,7 +15,7 @@ import Typography from '../../Component/UI/Typography';
 import Button from '../../Component/Button';
 import { calculateGst } from '../../Utils/gst';
 import { POST_WITH_TOKEN, GET_WITH_TOKEN } from '../../Backend/Backend';
-import { SUBSCRIPTIONS_BY_ROLE, SUBSCRIPTIONS, SUBSCRIBE_PLAN, SUBSCRIPTION_USER_VERIFY, SUBSCRIPTION_USER_SUBSCRIBE, SUBSCRIPTION_USER_CREATE_ORDER } from '../../Backend/api_routes';
+import { SUBSCRIPTIONS_BY_ROLE, SUBSCRIPTIONS, SUBSCRIBE_PLAN, SUBSCRIPTION_USER_VERIFY, SUBSCRIPTION_USER_SUBSCRIBE, SUBSCRIPTION_USER_CREATE_ORDER, ReferralCode } from '../../Backend/api_routes';
 import { useSelector } from 'react-redux';
 import SimpleToast from 'react-native-simple-toast';
 import LocalizedStrings from '../../Constants/localization';
@@ -197,64 +197,99 @@ const ChoosePlan = ({ navigation, route }) => {
     const price = parseFloat(subscription.price);
     const { baseAmount, gstAmount, totalAmount } = calculateGst(price);
 
-    Alert.alert(
-      'Confirm Payment',
-      `${subscription.subscription_name}\n\nBase Price: ₹${baseAmount.toFixed(2)}\nGST (18%): ₹${gstAmount.toFixed(2)}\nTotal: ₹${totalAmount.toFixed(2)}\n\nDo you want to proceed?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Pay Now', onPress: () => processPayment(subscription) },
-      ],
-    );
+    setPaymentLoading(true);
+    let walletBalance = 0;
+    try {
+      const referralResponse = await requestWithRetry(() => getWithTokenRequest(ReferralCode), 1);
+      walletBalance = parseFloat(referralResponse?.data?.total_earnings || referralResponse?.data?.points_balance || '0');
+    } catch (e) {
+      console.log('Failed to fetch wallet balance', e);
+    }
+    setPaymentLoading(false);
+
+    if (walletBalance > 0) {
+      Alert.alert(
+        'Credit Discount Available',
+        `You have \u20B9${walletBalance.toFixed(2)} credits available.\n\nPlan Total (incl. GST): \u20B9${totalAmount.toFixed(2)}\n\nDo you want to use your credits for a discount?`,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'No', onPress: () => processPayment(subscription, false) },
+          { text: 'Yes, Use Credits', onPress: () => processPayment(subscription, true) },
+        ]
+      );
+    } else {
+      Alert.alert(
+        'Confirm Payment',
+        `${subscription.subscription_name}\n\nBase Price: \u20B9${baseAmount.toFixed(2)}\nGST (18%): \u20B9${gstAmount.toFixed(2)}\nTotal: \u20B9${totalAmount.toFixed(2)}\n\nDo you want to proceed?`,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Pay Now', onPress: () => processPayment(subscription, false) },
+        ],
+      );
+    }
   };
 
-  const processPayment = async subscription => {
+  const processPayment = async (subscription, useWallet = false) => {
     setPaymentLoading(true);
     setSelectedPlanId(subscription.id);
 
     try {
-      const price = parseFloat(subscription.price);
-      const { totalAmount } = calculateGst(price);
-
       POST_WITH_TOKEN(
         SUBSCRIPTION_USER_CREATE_ORDER,
-        { subscription_id: subscription.id },
+        { subscription_id: subscription.id, use_wallet: useWallet ? 1 : 0 },
         async (orderSuccess) => {
-          if (orderSuccess?.status && orderSuccess?.order_id) {
-            try {
-              let result;
-              try {
-                result = await initiatePayment({
-                  amount: Math.round(totalAmount * 100),
-                  currency: 'INR',
-                  orderId: orderSuccess.order_id,
-                  description: `${subscription.subscription_name} Membership (incl. GST)`,
-                  prefill: {
-                    name: userDetail?.first_name
-                      ? `${userDetail.first_name} ${userDetail.last_name || ''}`
-                      : userDetail?.name || '',
-                    email: userDetail?.email || '',
-                    contact: userDetail?.phone || userDetail?.mobile || userDetail?.phone_number || '',
-                  },
-                });
-              } catch (razorpayErr) {
-                result = { success: false, code: -99, description: 'Razorpay unavailable' };
-              }
+          if (orderSuccess?.status) {
+            // Check if it was fully paid by wallet (zero payment)
+            if (orderSuccess.message === 'Payment verified successfully and subscription activated.' || !orderSuccess.order_id) {
+               setPaymentLoading(false);
+               setSelectedPlanId(null);
+               SimpleToast.show('Subscription activated successfully using credits!', SimpleToast.LONG);
+               proceedToApp();
+               return;
+            }
 
-              if (result.success) {
-                verifyAndActivate(result, orderSuccess.subscription_user_id);
-              } else {
+            if (orderSuccess.order_id) {
+              try {
+                let result;
+                try {
+                  const finalAmount = parseFloat(orderSuccess.amount || '0');
+                  result = await initiatePayment({
+                    amount: Math.round(finalAmount * 100),
+                    currency: 'INR',
+                    orderId: orderSuccess.order_id,
+                    description: `${subscription.subscription_name} Membership (incl. GST)`,
+                    prefill: {
+                      name: userDetail?.first_name
+                        ? `${userDetail.first_name} ${userDetail.last_name || ''}`
+                        : userDetail?.name || '',
+                      email: userDetail?.email || '',
+                      contact: userDetail?.phone || userDetail?.mobile || userDetail?.phone_number || '',
+                    },
+                  });
+                } catch (razorpayErr) {
+                  result = { success: false, code: -99, description: 'Razorpay unavailable' };
+                }
+
+                if (result.success) {
+                  verifyAndActivate(result, orderSuccess.subscription_user_id);
+                } else {
+                  setPaymentLoading(false);
+                  setSelectedPlanId(null);
+                  if (result.code === 0 || result.code === 2) {
+                    SimpleToast.show('Payment cancelled', SimpleToast.SHORT);
+                  } else {
+                    SimpleToast.show(result.description || 'Payment failed.', SimpleToast.SHORT);
+                  }
+                }
+              } catch (paymentErr) {
                 setPaymentLoading(false);
                 setSelectedPlanId(null);
-                if (result.code === 0 || result.code === 2) {
-                  SimpleToast.show('Payment cancelled', SimpleToast.SHORT);
-                } else {
-                  SimpleToast.show(result.description || 'Payment failed.', SimpleToast.SHORT);
-                }
+                SimpleToast.show('Payment failed. Please try again.', SimpleToast.SHORT);
               }
-            } catch (paymentErr) {
+            } else {
               setPaymentLoading(false);
               setSelectedPlanId(null);
-              SimpleToast.show('Payment failed. Please try again.', SimpleToast.SHORT);
+              SimpleToast.show('Failed to create order (missing order_id).', SimpleToast.SHORT);
             }
           } else {
             setPaymentLoading(false);

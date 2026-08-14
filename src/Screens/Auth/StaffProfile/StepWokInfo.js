@@ -32,7 +32,7 @@ const StepWokInfo = forwardRef(({ navigation }, ref) => {
   const [availableSkills, setAvailableSkills] = useState([]); // All skills from API
   const [selectedSkills, setSelectedSkills] = useState([]); // User selected skills
   const [loading, setLoading] = useState(false);
-  const [selectedRole, setSelectedRole] = useState(null);
+  const [selectedRole, setSelectedRole] = useState([]);
   const [roles, setRoles] = useState([]); // Store roles from API
   const [rolesLoading, setRolesLoading] = useState(false);
   const [selectedLanguages, setSelectedLanguages] = useState([]); // Selected languages (array)
@@ -238,58 +238,35 @@ const StepWokInfo = forwardRef(({ navigation }, ref) => {
     const workInfo = userDetail?.user_work_info || userDetail?.work_info || {};
 
     if (workInfo?.primary_role && roles.length > 0) {
-      // Find role ID by matching the role name (e.g., "Spa", "Cook")
-      const roleObj = roles.find(
-        role =>
-          role.label === workInfo.primary_role ||
-          role.label?.toLowerCase() === workInfo.primary_role?.toLowerCase() ||
-          role.label?.includes(workInfo.primary_role) ||
-          workInfo.primary_role?.includes(role.label),
-      );
-
-      if (roleObj) {
-        const roleId = roleObj.value || roleObj.id;
-        setSelectedRole(roleId);
-      } else {
+      // Find role ID by matching the role name
+      const roleNames = Array.isArray(workInfo.primary_role) 
+          ? workInfo.primary_role 
+          : workInfo.primary_role.split(',').map(s => s.trim()).filter(Boolean);
+      
+      const roleIds = [];
+      roleNames.forEach(name => {
+         const roleObj = roles.find(r => 
+             r.label === name || 
+             r.label?.toLowerCase() === name.toLowerCase() || 
+             r.value === name || 
+             r.id === name
+         );
+         if (roleObj) roleIds.push(roleObj.value || roleObj.id);
+      });
+      
+      if (roleIds.length > 0) {
+        setSelectedRole(roleIds);
       }
-    } else if (workInfo?.primary_role && roles.length === 0) {
     }
   }, [roles, userDetail?.user_work_info, userDetail?.work_info]);
 
-  // Fetch skills when role is selected AND don't clear skills if they're already loaded from user_work_info
+  // Fetch skills when roles are selected
   useEffect(() => {
-    if (selectedRole && roles.length > 0) {
-      // Check if selectedRole is a role ID or name and find the ID
-      const roleObj = roles.find(
-        role =>
-          role.label === selectedRole ||
-          role.value === selectedRole ||
-          role.id === selectedRole ||
-          selectedRole === role.value ||
-          selectedRole === role.id,
-      );
-
-      if (roleObj) {
-        const roleId = roleObj.value || roleObj.id;
-        // Only fetch skills if we don't already have selected skills from user_work_info
-        if (selectedSkills.length === 0) {
-          fetchSkills(roleId);
-        }
-        // Set selectedRole to the ID for proper dropdown value
-        if (selectedRole !== roleId) {
-          setSelectedRole(roleId);
-        }
-      } else if (
-        typeof selectedRole === 'string' &&
-        selectedRole.match(/^\d+$/)
-      ) {
-        // If it's a numeric string (likely an ID) and no skills loaded yet
-        if (selectedSkills.length === 0) {
-          fetchSkills(selectedRole);
-        }
-      }
-    } else if (!selectedRole) {
-      // Clear available skills if no role is selected (but keep selectedSkills if loaded from API)
+    if (selectedRole && selectedRole.length > 0 && roles.length > 0) {
+      // Only fetch skills if we don't already have selected skills from user_work_info
+      // Or if the user changes roles
+      fetchSkills(selectedRole);
+    } else if (!selectedRole || selectedRole.length === 0) {
       setAvailableSkills([]);
     }
   }, [selectedRole, roles]);
@@ -352,93 +329,68 @@ const StepWokInfo = forwardRef(({ navigation }, ref) => {
     );
   };
 
-  // Fetch skills based on selected role_id using SUB_CATEGORY API
-  const fetchSkills = roleId => {
-    if (!roleId) {
+  // Fetch skills based on selected role_ids using SUB_CATEGORY API
+  const fetchSkills = async (roleIds) => {
+    if (!roleIds || roleIds.length === 0) {
+      setAvailableSkills([]);
       return;
     }
 
     setLoading(true);
-    // Use SUB_CATEGORY API with parent_id parameter
-    const skillsRoute = `${SUB_CATEGORY}?parent_id=${roleId}`;
+    let allSkills = [];
 
-    GET_WITH_TOKEN(
-      skillsRoute,
-      success => {
-        setLoading(false);
-        // Handle different possible response structures
-        if (success?.data && Array.isArray(success.data)) {
-          const skillNames = success.data.map(skill => {
-            return (
-              skill?.name ||
-              skill?.title ||
-              skill?.category_name ||
-              skill?.category ||
-              skill?.subcategory_name ||
-              skill?.skill_name ||
-              String(skill)
-            );
-          });
-          setAvailableSkills(skillNames);
-        } else if (success?.skills && Array.isArray(success.skills)) {
-          const skillNames = success.skills.map(skill => {
-            return (
-              skill?.name ||
-              skill?.title ||
-              skill?.category_name ||
-              skill?.category ||
-              skill?.subcategory_name ||
-              skill?.skill_name ||
-              String(skill)
-            );
-          });
-          setAvailableSkills(skillNames);
-        } else if (
-          success?.subcategories &&
-          Array.isArray(success.subcategories)
-        ) {
-          const skillNames = success.subcategories.map(skill => {
-            return (
-              skill?.name ||
-              skill?.title ||
-              skill?.category_name ||
-              skill?.category ||
-              skill?.subcategory_name ||
-              skill?.skill_name ||
-              String(skill)
-            );
-          });
-          setAvailableSkills(skillNames);
-        } else if (Array.isArray(success)) {
-          const skillNames = success.map(skill => {
-            return (
-              skill?.name ||
-              skill?.title ||
-              skill?.category_name ||
-              skill?.category ||
-              skill?.subcategory_name ||
-              skill?.skill_name ||
-              String(skill)
-            );
-          });
-          setAvailableSkills(skillNames);
-        } else {
-          setAvailableSkills([]);
+    for (const roleId of roleIds) {
+      try {
+        const skillsRoute = `${SUB_CATEGORY}?parent_id=${roleId}`;
+        const response = await new Promise((resolve, reject) => {
+          GET_WITH_TOKEN(skillsRoute, resolve, reject, () => resolve([]));
+        });
+
+        let skillsData = [];
+        if (response?.data && Array.isArray(response.data)) {
+          skillsData = response.data;
+        } else if (response?.skills && Array.isArray(response.skills)) {
+          skillsData = response.skills;
+        } else if (response?.subcategories && Array.isArray(response.subcategories)) {
+          skillsData = response.subcategories;
+        } else if (Array.isArray(response)) {
+          skillsData = response;
         }
-      },
-      error => {
-        setLoading(false);
-        setAvailableSkills([]);
-      },
-    );
+
+        const skillNames = skillsData.map(skill => {
+          return (
+            skill?.name ||
+            skill?.title ||
+            skill?.category_name ||
+            skill?.category ||
+            skill?.subcategory_name ||
+            skill?.skill_name ||
+            String(skill)
+          );
+        });
+        allSkills = [...allSkills, ...skillNames];
+      } catch (error) {
+        // Continue to next role even if one fails
+      }
+    }
+
+    // Remove duplicates
+    const uniqueSkills = [...new Set(allSkills)];
+    setAvailableSkills(uniqueSkills);
+    setLoading(false);
   };
 
   // Handle role selection
   const handleRoleChange = item => {
     if (item) {
-      // item.value should be the role_id
       const roleId = item.value || item.id || item.role_id;
-      setSelectedRole(roleId);
+      if (!roleId) return;
+      setSelectedRole(prev => 
+        prev.includes(roleId) ? prev.filter(id => id !== roleId) : [...prev, roleId]
+      );
+      if (errors.selectedRole) {
+        setErrors({ ...errors, selectedRole: null });
+      }
     }
   };
 
@@ -478,7 +430,7 @@ const StepWokInfo = forwardRef(({ navigation }, ref) => {
   const saveWorkInfo = () => {
     // Validate required fields (excluding optional voice note)
     const error = {
-      selectedRole: validators?.checkRequire('Primary Role', selectedRole),
+      selectedRole: selectedRole.length === 0 ? 'Primary Role is required' : null,
       // selectedSkills: selectedSkills.length === 0 ? 'Skills field is required.' : null,
       // selectedLanguages: selectedLanguages.length === 0 ? 'Languages field is required.' : null,
       totalExperience: validators?.checkRequire(
@@ -499,13 +451,14 @@ const StepWokInfo = forwardRef(({ navigation }, ref) => {
     // Build form data - matching Postman format
     const formData = new FormData();
 
-    // Primary Role/Service - find role name from roles array
-    if (selectedRole) {
-      const selectedRoleObj = roles.find(
-        role => role.value === selectedRole || role.id === selectedRole,
-      );
-      const primaryRoleName = selectedRoleObj?.label || selectedRole;
-      formData.append('primary_role', primaryRoleName);
+    // Primary Role/Service - find role names from roles array
+    if (selectedRole && selectedRole.length > 0) {
+      const selectedRoleNames = selectedRole.map(id => {
+        const roleObj = roles.find(r => r.value === id || r.id === id);
+        return roleObj ? roleObj.label || id : id;
+      });
+      
+      formData.append('primary_role', selectedRoleNames.join(', '));
     }
 
     // Skills as array: skills[0], skills[1], etc.
@@ -743,12 +696,29 @@ const StepWokInfo = forwardRef(({ navigation }, ref) => {
           selectedTextStyleNew={{ marginLeft: 10 }}
           marginHorizontal={0}
           style_title={{ textAlign: 'left' }}
-          value={selectedRole}
+          multiSelect={true}
+          selectedValues={selectedRole}
           onChange={handleRoleChange}
           data={roles}
           disable={rolesLoading}
           error={errors.selectedRole}
         />
+
+        {selectedRole && selectedRole.length > 0 && (
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 8, marginBottom: 16 }}>
+            {selectedRole.map((roleId, index) => {
+              const rName = roles.find(r => r.value === roleId || r.id === roleId)?.label || roleId;
+              return (
+                <View key={index} style={{ backgroundColor: '#FFF5F3', borderRadius: 16, paddingHorizontal: 12, paddingVertical: 5, marginRight: 8, marginBottom: 6, flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#D98579' }}>
+                  <Typography size={12} color="#D98579">{rName}</Typography>
+                  <TouchableOpacity onPress={() => handleRoleChange({ value: roleId })} style={{ marginLeft: 6 }}>
+                    <Typography size={12} color="#999">✕ </Typography>
+                  </TouchableOpacity>
+                </View>
+              );
+            })}
+          </View>
+        )}
 
         <Typography
           style={[styles.sectionTitle, { marginBottom: 8 }]}

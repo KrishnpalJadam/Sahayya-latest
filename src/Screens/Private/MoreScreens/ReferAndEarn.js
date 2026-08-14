@@ -294,14 +294,7 @@ const ReferAndEarn = ({ navigation }) => {
                   {'\u20B9'}{referralData?.total_earnings || '0.00'}
                 </Typography>
               </View>
-              <Button
-                title={creditLoading ? 'Applying...' : 'Redeem Credit'}
-                onPress={handleCreditApply}
-                linerColor={['#379AE6', '#3737E6']}
-                main_style={styles.ownerRedeemButton}
-                disabled={creditLoading || parseFloat(referralData?.total_earnings || '0') <= 0}
-                loader={creditLoading}
-              />
+
             </View>
           </>
         )}
