@@ -173,29 +173,31 @@ const StaffDashboard = ({ navigation }) => {
     <View style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
     <CommanView>
       <View style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 10, backgroundColor: '#FFFFFF' }}>
-        <TouchableOpacity
-          onPress={() => navigation.navigate('StaffWallet')}
-          style={{ flexDirection: 'row', alignItems: 'center' }}
-        >
-          <View style={{
-            height: 32, width: 32, borderRadius: 16,
-            borderWidth: 1.5, borderColor: '#D98579',
-            backgroundColor: '#FFFFFF',
-            justifyContent: 'center', alignItems: 'center',
-          }}>
-            <Typography type={Font?.Poppins_SemiBold} style={{ fontSize: 14, color: '#D98579' }}>
-              &#x2726;
-            </Typography>
-          </View>
-          <View style={{ marginLeft: 6 }}>
-            <Typography type={Font?.Poppins_Medium} style={{ fontSize: 11, color: '#555' }}>
-              Credits
-            </Typography>
-            <Typography type={Font?.Poppins_SemiBold} style={{ fontSize: 13, color: '#1a1a1a' }}>
-              {walletBalance || '0'}
-            </Typography>
-          </View>
-        </TouchableOpacity>
+        <View style={{ width: 75, alignItems: 'flex-start' }}>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('StaffWallet')}
+            style={{ flexDirection: 'row', alignItems: 'center' }}
+          >
+            <View style={{
+              height: 32, width: 32, borderRadius: 16,
+              borderWidth: 1.5, borderColor: '#D98579',
+              backgroundColor: '#FFFFFF',
+              justifyContent: 'center', alignItems: 'center',
+            }}>
+              <Typography type={Font?.Poppins_SemiBold} style={{ fontSize: 14, color: '#D98579' }}>
+                &#x2726;
+              </Typography>
+            </View>
+            <View style={{ marginLeft: 6 }}>
+              <Typography type={Font?.Poppins_Medium} style={{ fontSize: 10, color: '#555' }}>
+                Credits
+              </Typography>
+              <Typography type={Font?.Poppins_SemiBold} style={{ fontSize: 12, color: '#1a1a1a' }}>
+                {walletBalance || '0'}
+              </Typography>
+            </View>
+          </TouchableOpacity>
+        </View>
 
         <Typography
           type={Font?.Poppins_Medium}
@@ -204,7 +206,9 @@ const StaffDashboard = ({ navigation }) => {
           {LocalizedStrings.staffSection?.StaffDashboard?.title || 'Staff Dashboard'}
         </Typography>
 
-        <NotificationBell navigateTo="Notifications" />
+        <View style={{ width: 75, alignItems: 'flex-end' }}>
+          <NotificationBell navigateTo="Notifications" />
+        </View>
       </View>
       <View style={{ borderBottomWidth: 1, borderColor: '#EBEBEA' }} />
 

@@ -309,14 +309,14 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
   },
   acceptBtn: {
-    backgroundColor: '#27ae60', // Changed to green like user screenshot
+    backgroundColor: '#D98579', // Theme rose-gold color
     borderRadius: 30, // more rounded like screenshot
     paddingVertical: 14,
     alignItems: 'center',
     marginTop: 10,
   },
   acceptBtnDisabled: {
-    backgroundColor: '#A0DCA4', // Lighter green for disabled
+    backgroundColor: '#E8B6B0', // Lighter rose-gold for disabled
   },
   acceptBtnText: {
     color: '#fff',

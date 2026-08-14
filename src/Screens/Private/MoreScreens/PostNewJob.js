@@ -966,7 +966,7 @@ const PostNewJob = ({ navigation, route }) => {
     <CommanView>
       <HeaderForUser
         source_arrow={ImageConstant?.BackArrow}
-        title={LocalizedStrings.PostNewJob.title}
+        title={editId ? (LocalizedStrings.PostNewJob?.edit_job || 'Edit Job') : LocalizedStrings.PostNewJob.title}
         onPressLeftIcon={() => navigation?.goBack()}
         style_title={{ fontSize: 18 }}
       />
@@ -1005,7 +1005,7 @@ const PostNewJob = ({ navigation, route }) => {
 
         <View style={styles.card}>
           <SectionHeader
-            icon={ImageConstant?.Dollar}
+            iconText="₹"
             title={LocalizedStrings.PostNewJob.compensation}
           />
           <View style={{ flexDirection: 'row', alignItems: 'flex-end', width: '100%' }}>
@@ -1017,7 +1017,7 @@ const PostNewJob = ({ navigation, route }) => {
                 onChange={handleCompensationChange}
                 keyboardType="numeric"
                 error={errors.expectedCompensation}
-                prefixText={"\u20B9"}
+                prefixText={"\u20B9  "}
               />
             </View>
             <View style={{ flex: 1, marginLeft: 10 }}>
@@ -1258,29 +1258,45 @@ const PostNewJob = ({ navigation, route }) => {
         </View>
       </ScrollView>
 
-      <Button
-        title={
-          loading ? 'Posting...' : LocalizedStrings.PostNewJob.post_job_listing
-        }
-        onPress={editId ? UpdatePostJob : handlePostJob}
-        style={{ marginTop: 20 }}
-        disabled={loading}
-      />
+      <View style={{ paddingHorizontal: 20, paddingBottom: 20, paddingTop: 10 }}>
+        <Button
+          title={
+            loading ? 'Posting...' : LocalizedStrings.PostNewJob.post_job_listing
+          }
+          onPress={editId ? UpdatePostJob : handlePostJob}
+          main_style={{
+            borderRadius: 30,
+            shadowColor: '#D98579',
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.3,
+            shadowRadius: 8,
+            elevation: 5,
+          }}
+          style={{ height: 55, borderRadius: 30 }}
+          disabled={loading}
+        />
+      </View>
     </CommanView>
   );
 };
 
 export default PostNewJob;
 
-const SectionHeader = ({ icon, title }) => (
+const SectionHeader = ({ icon, title, iconText }) => (
   <View
     style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}
   >
-    <Image
-      source={icon}
-      tintColor={'#D98579'}
-      style={{ width: 19, height: 19, resizeMode: 'contain' }}
-    />
+    {iconText ? (
+      <View style={{ width: 19, height: 19, borderRadius: 10, backgroundColor: '#FFF0ED', alignItems: 'center', justifyContent: 'center' }}>
+        <Typography size={12} color="#D98579" type={Font?.Poppins_Bold}>{iconText}</Typography>
+      </View>
+    ) : (
+      <Image
+        source={icon}
+        tintColor={'#D98579'}
+        style={{ width: 19, height: 19, resizeMode: 'contain' }}
+      />
+    )}
     <Typography type={Font?.Poppins_Bold} size={18} style={{ marginLeft: 10 }}>
       {title}
     </Typography>
@@ -1289,11 +1305,18 @@ const SectionHeader = ({ icon, title }) => (
 
 const styles = StyleSheet.create({
   card: {
+    backgroundColor: '#fff',
     borderWidth: 1,
-    borderRadius: 8,
-    borderColor: '#EBEBEA',
+    borderRadius: 16,
+    borderColor: '#F2F2F2',
     padding: 20,
-    marginTop: 20,
+    marginTop: 15,
+    marginHorizontal: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 2,
   },
   inputText: {
     color: '#000',

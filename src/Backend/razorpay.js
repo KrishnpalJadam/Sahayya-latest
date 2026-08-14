@@ -5,7 +5,7 @@
  */
 import RazorpayCheckout from 'react-native-razorpay';
 
-const RAZORPAY_KEY = 'rzp_test_placeholder'; // Replace with actual key
+const RAZORPAY_KEY = 'rzp_test_Rcx3E3rF2dNmEc';
 
 /**
  * Initiate a Razorpay payment checkout.

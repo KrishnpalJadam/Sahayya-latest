@@ -422,10 +422,9 @@ const JobDetails = ({ navigation, route }) => {
           <View style={styles.row}>
             <View style={[styles.infoBox, { marginRight: 6 }]}>
               <View style={styles.iconContainer}>
-                <Image
-                  source={ImageConstant.Dollar}
-                  style={{ height: 24, width: 24, tintColor: '#FF9900' }}
-                />
+                <View style={{ width: 24, height: 24, borderRadius: 12, backgroundColor: '#FFF0ED', alignItems: 'center', justifyContent: 'center' }}>
+                  <Typography size={14} color="#D98579" type={Font?.Poppins_Bold}>₹</Typography>
+                </View>
               </View>
               <Typography type={Font.Poppins_SemiBold} style={styles.infoValue}>
                 {formatCompensation(jobData)}
@@ -486,7 +485,7 @@ const JobDetails = ({ navigation, route }) => {
                 style={{
                   height: 20,
                   width: 18,
-                  tintColor: '#4CAE4F',
+                  tintColor: '#D98579',
                   marginRight: 10,
                 }}
               />
@@ -542,7 +541,7 @@ const JobDetails = ({ navigation, route }) => {
                   style={{
                     height: 20,
                     width: 18,
-                    tintColor: '#4CAE4F',
+                    tintColor: '#D98579',
                     marginRight: 10,
                   }}
                 />
@@ -573,7 +572,7 @@ const JobDetails = ({ navigation, route }) => {
                 : (LocalizedStrings.staffSection?.JobDetails?.apply_now || 'Apply Now')
             }
             style={styles.applyBtn}
-            textStyle={styles.applyText}
+            title_style={styles.applyText}
             disabled={checkingLimit}
             onPress={handleApplyJob}
           />
@@ -646,7 +645,7 @@ const JobDetails = ({ navigation, route }) => {
                 title={applyLoading ? 'Submitting...' : 'Submit Application'}
                 onPress={handleSubmitApplication}
                 style={styles.submitBtn}
-                textStyle={styles.submitBtnText}
+                title_style={styles.submitBtnText}
                 disabled={applyLoading}
               />
             </ScrollView>
@@ -750,7 +749,8 @@ export default JobDetails;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingVertical: 16,
+    paddingVertical: 12,
+    minHeight: 50,
     paddingHorizontal: 16,
   },
   loadingContainer: {
@@ -896,7 +896,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#E87C6F',
     borderRadius: 12,
     marginTop: 10,
-    paddingVertical: 16,
+    minHeight: 50,
     shadowColor: '#000',
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -943,7 +943,7 @@ const styles = StyleSheet.create({
   submitBtn: {
     backgroundColor: '#E87C6F',
     borderRadius: 12,
-    paddingVertical: 16,
+    minHeight: 50,
     marginTop: 20,
     marginBottom: 10,
   },

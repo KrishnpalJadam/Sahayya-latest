@@ -851,10 +851,10 @@ const NewStaffForm = ({ navigation, route }) => {
       hasError = true;
     }
 
-    const cityError = validators.checkAlphabet('City', 2, 50, city);
+    const cityError = validators.checkName('City', 2, 50, city);
     if (cityError) { newErrors.city = cityError; hasError = true; }
 
-    const stateError = validators.checkAlphabet('State', 2, 50, stateName);
+    const stateError = validators.checkName('State', 2, 50, stateName);
     if (stateError) { newErrors.stateName = stateError; hasError = true; }
 
     if (!pincode || pincode.trim() === '' || !/^\d{6}$/.test(pincode)) {
@@ -1197,9 +1197,10 @@ const NewStaffForm = ({ navigation, route }) => {
 
         try {
           const result = await initiatePayment({
-            amount: success.amount,
-            currency: success.currency,
+            amount: success.amount || (price * 100),
+            currency: success.currency || 'INR',
             orderId: success.order_id,
+            key: success.razorpay_key || 'rzp_test_Rcx3E3rF2dNmEc',
             description: 'Extra Staff Limit Purchase',
             prefill: {
               name: userDetail?.first_name ? `${userDetail.first_name} ${userDetail.last_name || ''}` : userDetail?.name || '',

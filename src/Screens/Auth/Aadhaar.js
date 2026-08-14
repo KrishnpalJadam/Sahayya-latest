@@ -81,13 +81,6 @@ const Aadhaar = ({ navigation }) => {
       DELETE_ACCOUNT,
       {},
       success => {
-        // SimpleToast.show(
-        //   success?.message ||
-        //     LocalizedStrings.Settings?.accountDeletedSuccess ||
-        //     'Account deleted successfully',
-        //   SimpleToast.SHORT,
-        // );
-        // Logout user after account deletion
         Dispatch(isAuth(false));
         Dispatch(userDetails({}));
       },
@@ -129,11 +122,6 @@ const Aadhaar = ({ navigation }) => {
           borderRadius: 12,
         }}
       >
-        {/* <GooglePlacesInput
-        apiKey="AIzaSyC_NIogrb_hZ34PeXkYeb3KbAxjddn7wgk"
-        onPlaceSelected={()=>{}}
-        showIcon={true}
-      /> */}
         <Input
           showTitle
           placeholder={

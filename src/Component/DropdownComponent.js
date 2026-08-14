@@ -96,7 +96,7 @@ const DropdownComponent = ({
   };
   return (
     <>
-      <View style={[{ marginHorizontal: marginHorizontal, marginVertical: 10 }, MainBoxStyle]}>
+      <View style={[{ marginHorizontal: marginHorizontal, marginVertical: 10, zIndex: 1000 }, MainBoxStyle]}>
         {
           title && (
             <View
@@ -221,7 +221,6 @@ const styles = StyleSheet.create({
     borderColor:"#E0E0E0",
     backgroundColor: '#FAFAFA',
     borderRadius: 12,
-    marginHorizontal: 10,
     height: 56,
     paddingHorizontal: 4,
   },

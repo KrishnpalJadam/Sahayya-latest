@@ -273,7 +273,7 @@ const MyJobPosting = ({ navigation, route }) => {
         onPress={() => {
           navigation?.navigate('ListingJob', { id: item?.id });
         }}
-        title_style={{ color: '#242524' }}
+        title_style={{ color: '#242524', fontSize: 13 }}
       />
       <Button
         title={LocalizedStrings.MyJobPostings.manage_job}
@@ -286,7 +286,7 @@ const MyJobPosting = ({ navigation, route }) => {
         }}
         linerColor={['#F3F4F6', '#F3F4F6']}
         icon={ImageConstant?.ic_setting}
-        title_style={{ color: '#242524' }}
+        title_style={{ color: '#242524', fontSize: 13 }}
       />
     </View>
   );
@@ -370,16 +370,16 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#FFF5F5',
+    backgroundColor: '#FFECEB',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#FFE5E5',
+    borderColor: '#FFCDD2',
   },
   deleteIcon: {
     width: 16,
     height: 16,
-    tintColor: '#FF5724',
+    tintColor: '#E53935',
   },
   statusDot: {
     width: 10,

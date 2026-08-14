@@ -139,7 +139,7 @@ const Input = ({
           )}
 
           {prefixText && (
-            <Typography style={{ marginLeft: 15, marginRight: -5, fontSize: 14 / fontScale, fontFamily: Font.Poppins_Medium, color: Colors.black, alignSelf: 'center' }}>
+            <Typography style={{ marginLeft: 15, marginRight: 5, fontSize: 14 / fontScale, fontFamily: Font.Poppins_Medium, color: Colors.black, alignSelf: 'center' }}>
               {prefixText}
             </Typography>
           )}

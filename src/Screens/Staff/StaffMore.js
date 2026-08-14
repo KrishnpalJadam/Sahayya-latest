@@ -218,7 +218,7 @@ const StaffMore = ({ navigation }) => {
       </Typography>
       <View style={styles.optionsBox}>
         <Option
-           imageStyle={{tintColor:'rgba(140, 141, 139, 1)'}}
+           imageStyle={{}}
           title={LocalizedStrings.MoreOptions?.profile_settings || "Profile & Settings"}
           subtitle={LocalizedStrings.MoreOptions?.manage_personal || 'Manage your personal and household settings'}
           onPress={() => { navigation.navigate("StaffProfileMain") }}
@@ -233,7 +233,7 @@ const StaffMore = ({ navigation }) => {
 
         <Option
           Images={ImageConstant?.joblisting}
-          imageStyle={{tintColor:'rgba(140, 141, 139, 1)'}}
+          imageStyle={{}}
           title={LocalizedStrings.MoreOptions?.job_listings || "Job Listing"}
           subtitle={LocalizedStrings.MoreOptions?.discover_tasks || "See all active job postings"}
           onPress={() => navigation.navigate('JobListing')}
@@ -242,36 +242,36 @@ const StaffMore = ({ navigation }) => {
         <Option
           Images={ImageConstant?.Salary}
           title="My Advances"
-          imageStyle={{tintColor:'rgba(140, 141, 139, 1)'}}
+          imageStyle={{}}
           subtitle="View advances received and deduction history"
           onPress={() => navigation.navigate('StaffAdvanceView')}
         />
         <Option
           Images={ImageConstant?.lines}
           title="Payment History"
-          imageStyle={{tintColor:'rgba(140, 141, 139, 1)'}}
+          imageStyle={{}}
           subtitle="View all salary payments and dates"
           onPress={() => navigation.navigate('StaffPaymentHistory')}
         />
         <Option
           Images={ImageConstant?.bankTransfer}
           title="My Bank Accounts"
-          imageStyle={{tintColor:'rgba(140, 141, 139, 1)'}}
+          imageStyle={{}}
           subtitle="Add or manage your bank details for salary"
           onPress={() => navigation.navigate('BankAccounts')}
         />
         <Option
           Images={ImageConstant?.ic_help}
           title="Refer & Earn"
-          imageStyle={{tintColor:'rgba(140, 141, 139, 1)'}}
+          imageStyle={{}}
           subtitle="Share your referral code and earn credits"
           onPress={handleRefer}
         />
         <Option
-          Images={ImageConstant?.Dollar}
+          iconText="₹"
           title="Job Credits"
           isBorder={false}
-          imageStyle={{tintColor:'rgba(140, 141, 139, 1)'}}
+          imageStyle={{}}
           subtitle="View balance and purchase credits"
           onPress={() => navigation.navigate('StaffWallet')}
         />
@@ -319,7 +319,7 @@ const StaffMore = ({ navigation }) => {
         <Option
           Images={ImageConstant?.Users}
           title={LocalizedStrings.Settings?.delete || "Delete Account"}
-          imageStyle={{tintColor:'rgba(140, 141, 139, 1)'}}
+          imageStyle={{}}
           subtitle={LocalizedStrings.Settings?.deleteSubtitle || "Permanently remove your account. Data will be kept for records."}
           onPress={handleDeleteAccount}
         />
@@ -481,6 +481,7 @@ const Option = ({
   danger,
   isBorder = true,
   Images = ImageConstant?.staff,
+  iconText,
   imageStyle,
   onPress
 }) => (
@@ -490,11 +491,17 @@ const Option = ({
   >
     <View style={{ flex: 1, flexDirection: 'row' }}>
       <View style={{ flex: 0.1, justifyContent: 'center' }}>
-        <Image
-          source={Images}
-          style={{ width: 20, height: 20, ...imageStyle }}
-          resizeMode="center"
-        />
+        {iconText ? (
+          <View style={{ width: 20, height: 20, borderRadius: 10, backgroundColor: '#FFF0ED', alignItems: 'center', justifyContent: 'center' }}>
+            <Typography size={10} color="#D98579" type={Font?.Poppins_Bold}>{iconText}</Typography>
+          </View>
+        ) : (
+          <Image
+            source={Images}
+            style={{ width: 20, height: 20, ...imageStyle }}
+            resizeMode="center"
+          />
+        )}
       </View>
       <View style={{ flex: 0.8 }}>
         <Typography

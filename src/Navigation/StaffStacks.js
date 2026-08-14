@@ -2,7 +2,7 @@ import {
   CardStyleInterpolators,
   createStackNavigator,
 } from '@react-navigation/stack';
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { TabNavigationForStaff } from './TabNavigationForStaff';
 import QuitJob from './../Screens/Staff/QuitJob';
 import ApplyLeave from './../Screens/Staff/ApplyLeave';
@@ -55,7 +55,6 @@ const RootStack = () => {
       PROFILE,
       success => {
         console.log('90909', success?.data);
-
         Dispatch(userDetails(success?.data));
       },
       error => { },
@@ -66,15 +65,18 @@ const RootStack = () => {
   useEffect(() => {
     global.Profile();
   }, []);
+
   return (
     <Stack.Navigator
       screenOptions={{
         headerShown: false,
       }}
       initialRouteName={
-        !userDetail?.aadhar__verify || userDetail?.aadhar__verify == 0
+        userDetail?.is_staff_added == 1
+          ? 'TabNavigationForStaff'
+          : (!userDetail?.aadhar__verify || userDetail?.aadhar__verify == 0)
           ? 'Aadhaar'
-          : !userDetail?.step || userDetail?.step < 5
+          : (!userDetail?.step || userDetail?.step < 5)
           ? 'StepFirst'
           : 'TabNavigationForStaff'
       }

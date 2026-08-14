@@ -68,6 +68,14 @@ const StepWokInfo = forwardRef(({ navigation }, ref) => {
     );
   };
 
+  const toggleSelectAllDays = () => {
+    if (workingDays.length === DAYS_OPTIONS.length) {
+      setWorkingDays([]);
+    } else {
+      setWorkingDays(DAYS_OPTIONS.map(d => d.value));
+    }
+  };
+
   const isAllIndiaSelected = preferredWorkCities.includes('All India');
 
   const togglePreferredCity = (city) => {
@@ -431,14 +439,12 @@ const StepWokInfo = forwardRef(({ navigation }, ref) => {
     // Validate required fields (excluding optional voice note)
     const error = {
       selectedRole: selectedRole.length === 0 ? 'Primary Role is required' : null,
-      // selectedSkills: selectedSkills.length === 0 ? 'Skills field is required.' : null,
-      // selectedLanguages: selectedLanguages.length === 0 ? 'Languages field is required.' : null,
+      selectedSkills: selectedSkills.length === 0 ? 'At least one skill is required' : null,
+      selectedLanguages: selectedLanguages.length === 0 ? 'At least one language is required' : null,
       totalExperience: validators?.checkRequire(
         'Total Experience',
         totalExperience,
       ),
-      // education: validators?.checkRequire('Education', education),
-      // additionalInfo: validators?.checkRequire('Additional Info', additionalInfo),
     };
 
     setErrors(error);
@@ -972,13 +978,23 @@ const StepWokInfo = forwardRef(({ navigation }, ref) => {
           marginTop: 10,
         }}
       >
-        <Typography
-          style={[styles.sectionTitle, { marginBottom: 8 }]}
-          type={Font.Poppins_Medium}
-          size={16}
-        >
-          {'Working Days'}
-        </Typography>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+          <Typography
+            style={styles.sectionTitle}
+            type={Font.Poppins_Medium}
+            size={16}
+          >
+            {'Working Days'}
+          </Typography>
+          <TouchableOpacity
+            onPress={toggleSelectAllDays}
+            style={{ backgroundColor: '#FFF5F3', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12, borderWidth: 1, borderColor: '#D98579' }}
+          >
+            <Typography size={12} color="#D98579" type={Font?.Poppins_Medium}>
+              {workingDays.length === DAYS_OPTIONS.length ? 'Deselect All' : 'Select All'}
+            </Typography>
+          </TouchableOpacity>
+        </View>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
           {DAYS_OPTIONS.map((day) => {
             const isSelected = workingDays.includes(day.value);
@@ -1057,6 +1073,11 @@ const StepWokInfo = forwardRef(({ navigation }, ref) => {
       <DropdownComponent
         title={'Emergency Contact Relation'}
         placeholder={'Select relation (e.g. Father, Mother, Spouse)'}
+        width={'100%'}
+        marginHorizontal={0}
+        style_dropdown={{ marginHorizontal: 0 }}
+        selectedTextStyleNew={{ marginLeft: 10 }}
+        style_title={{ textAlign: 'left' }}
         data={[
           { label: 'Father', value: 'Father' },
           { label: 'Mother', value: 'Mother' },

@@ -109,7 +109,7 @@ const TicketList = ({ navigation }) => {
   );
 
   return (
-    <CommanView>
+    <View style={{ flex: 1, backgroundColor: '#fff' }}>
       <HeaderForUser
         title="Support Tickets"
         style_title={{ fontSize: 18 }}
@@ -177,11 +177,11 @@ const TicketList = ({ navigation }) => {
         onPress={() => navigation.navigate('CreateTicket')}
         activeOpacity={0.8}
       >
-        <Typography type={Font.Poppins_SemiBold} size={30} color="#fff" style={{ marginTop: 4 }}>
+        <Typography type={Font.Poppins_SemiBold} size={30} color="#fff" style={{ marginTop: -2 }}>
           +
         </Typography>
       </TouchableOpacity>
-    </CommanView>
+    </View>
   );
 };
 
@@ -205,7 +205,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: 16,
-    paddingBottom: 40,
+    paddingBottom: 100,
   },
   ticketCard: {
     backgroundColor: '#fff',

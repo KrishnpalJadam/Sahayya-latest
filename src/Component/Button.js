@@ -50,8 +50,8 @@ const Button = ({
             <Typography
               style={[
                 styles.text_style,
-                title_style,
                 { fontSize: 16 / fontScale },
+                title_style,
               ]}
             >
               {title}

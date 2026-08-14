@@ -254,7 +254,7 @@ const PolicyScreen = ({ route, navigation }) => {
     <View style={styles.container}>
       <HeaderForUser
         title={formattedSlug}
-        style_title={{ fontFamily: Font?.Manrope_SemiBold }}
+        style_title={{ fontFamily: Font?.Manrope_SemiBold, fontSize: 18 }}
         source_arrow={ImageConstant?.BackArrow}
         onPressLeftIcon={() => navigation?.goBack()}
         containerStyle={{ paddingHorizontal: 20 }}
@@ -345,7 +345,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   fallbackHeading: {
-    fontSize: 16,
+    fontSize: 18,
     fontFamily: Font?.Poppins_Bold,
     color: '#000',
     marginTop: 18,

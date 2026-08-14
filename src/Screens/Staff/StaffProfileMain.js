@@ -293,6 +293,28 @@ const StaffProfileMain = ({ navigation }) => {
                         </View>
                     )}
 
+                    <TouchableOpacity
+                        style={{
+                            marginTop: 16,
+                            width: '100%',
+                            backgroundColor: '#FFF5F3',
+                            borderWidth: 1,
+                            borderColor: '#D98579',
+                            borderRadius: 10,
+                            paddingVertical: 10,
+                            alignItems: 'center',
+                            flexDirection: 'row',
+                            justifyContent: 'center',
+                        }}
+                        onPress={() => navigation.navigate('EditProfile')}
+                        activeOpacity={0.8}
+                    >
+                        <Image source={ImageConstant.pencle} style={{ width: 16, height: 16, tintColor: '#D98579', marginRight: 8 }} />
+                        <Typography type={Font.Poppins_SemiBold} size={14} color="#D98579">
+                            Edit Profile
+                        </Typography>
+                    </TouchableOpacity>
+
                     {/* <View style={styles.actionRow}>
                         <TouchableOpacity style={styles.iconBtn}>
                             <Image source={ImageConstant.phone} style={styles.icon} />
@@ -366,32 +388,32 @@ const StaffProfileMain = ({ navigation }) => {
                 
                 <View style={styles.card}>
                     <Typography style={styles.cardTitle}>Documents</Typography>
-                    <View style={styles.documentRow}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 10, gap: 8 }}>
                         <TouchableOpacity 
-                            style={styles.docItem}
+                            style={{ flex: 1, padding: 12, borderRadius: 10, borderWidth: 1, borderColor: '#EBEBEA', backgroundColor: '#FAFAFA', alignItems: 'center' }}
                             onPress={() => aadhaarFront ? setPreviewImage(aadhaarFront) : null}
                         >
-                            <Typography style={styles.docLabel}>Aadhar Front</Typography>
-                            <Typography style={styles.docStatus}>
+                            <Typography style={{ fontFamily: Font.Poppins_Medium, fontSize: 13, color: '#333', textAlign: 'center' }}>Aadhaar Front</Typography>
+                            <Typography style={{ fontSize: 13, color: aadhaarFront ? '#D98579' : '#999', fontFamily: Font.Poppins_SemiBold, marginTop: 4 }}>
                                 {aadhaarFront ? 'View Card' : 'Not Uploaded'}
                             </Typography>
                         </TouchableOpacity>
                         <TouchableOpacity 
-                            style={styles.docItem}
+                            style={{ flex: 1, padding: 12, borderRadius: 10, borderWidth: 1, borderColor: '#EBEBEA', backgroundColor: '#FAFAFA', alignItems: 'center' }}
                             onPress={() => aadhaarBack ? setPreviewImage(aadhaarBack) : null}
                         >
-                            <Typography style={styles.docLabel}>Aadhar Back</Typography>
-                            <Typography style={styles.docStatus}>
+                            <Typography style={{ fontFamily: Font.Poppins_Medium, fontSize: 13, color: '#333', textAlign: 'center' }}>Aadhaar Back</Typography>
+                            <Typography style={{ fontSize: 13, color: aadhaarBack ? '#D98579' : '#999', fontFamily: Font.Poppins_SemiBold, marginTop: 4 }}>
                                 {aadhaarBack ? 'View Card' : 'Not Uploaded'}
                             </Typography>
                         </TouchableOpacity>
                     </View>
                     <TouchableOpacity 
-                        style={[styles.docItem, { marginTop: 10 }]}
+                        style={{ marginTop: 10, padding: 12, borderRadius: 10, borderWidth: 1, borderColor: '#EBEBEA', backgroundColor: '#FAFAFA', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}
                         onPress={() => policeVerification ? setPreviewImage(policeVerification) : null}
                     >
-                        <Typography style={styles.docLabel}>Police Verification</Typography>
-                        <Typography style={styles.docStatus}>
+                        <Typography style={{ fontFamily: Font.Poppins_Medium, fontSize: 13, color: '#333' }}>Police Verification</Typography>
+                        <Typography style={{ fontSize: 13, color: policeVerification ? '#D98579' : '#999', fontFamily: Font.Poppins_SemiBold }}>
                             {policeVerification ? 'View Certificate' : 'Not Uploaded'}
                         </Typography>
                     </TouchableOpacity>
@@ -965,7 +987,12 @@ const styles = StyleSheet.create({
         gap: 12,
     },
     docItem: {
-        width: '30%',
+        width: '48%',
+        padding: 12,
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: '#EBEBEA',
+        backgroundColor: '#FAFAFA',
         alignItems: 'center',
     },
     documentRow: {

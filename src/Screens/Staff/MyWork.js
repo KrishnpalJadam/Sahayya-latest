@@ -295,7 +295,7 @@ const MyWork = () => {
         source_arrow={ImageConstant?.BackArrow}
         style_title={styles.headerTitle}
         source_logo={ImageConstant?.notification}
-        Profile_icon={profileIcon}
+        
         onPressRightIcon={() => navigation.navigate('Notifications')}
       />
       <View style={styles.spacer} />
