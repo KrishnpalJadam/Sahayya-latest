@@ -1276,7 +1276,7 @@ const EditProfile = ({ navigation, route }) => {
             marginHorizontal={0}
             style_title={{ textAlign: 'left' }}
             multiSelect={true}
-            selectedValues={lastRole.map(r => roles.find(rl => rl.label === r)?.value || r)}
+            selectedValues={lastRole}
             onChange={item => {
               const val = item?.value || item?.label;
               if (!val) return;
@@ -1289,7 +1289,7 @@ const EditProfile = ({ navigation, route }) => {
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginHorizontal: 16, marginBottom: 8 }}>
               {lastRole.map((r, i) => (
                 <View key={i} style={{ backgroundColor: '#FFF5F3', borderRadius: 16, paddingHorizontal: 12, paddingVertical: 5, marginRight: 8, marginBottom: 6, flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#D98579' }}>
-                  <Typography size={12} color="#D98579">{r}</Typography>
+                  <Typography size={12} color="#D98579">{roles.find(rl => rl.value == r)?.label || r}</Typography>
                   <TouchableOpacity onPress={() => setLastRole(prev => prev.filter(v => v !== r))} style={{ marginLeft: 6 }}>
                     <Typography size={12} color="#999">✕</Typography>
                   </TouchableOpacity>
