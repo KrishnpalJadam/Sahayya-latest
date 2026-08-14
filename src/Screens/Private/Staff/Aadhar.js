@@ -45,8 +45,9 @@ const buildSafeStaffPayload = rawUser => {
   };
 };
 
-const Aadhar = () => {
+const Aadhar = ({ route }) => {
   const navigation = useNavigation();
+  const { job_id, job_compensation, job_title, job_compensation_type } = route?.params || {};
   const [adharNumber, setAdharNumber] = useState('');
   const [error, setError] = useState({});
   const [isLoading, setIsLoading] = useState(false);
@@ -85,6 +86,10 @@ const Aadhar = () => {
           adharNumber: adharNumber,
           userData: buildSafeStaffPayload(sucess?.data),
           otpAlreadySent: true,
+          job_id,
+          job_compensation,
+          job_title,
+          job_compensation_type,
         });
       },
       error => {

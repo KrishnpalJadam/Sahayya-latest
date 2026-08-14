@@ -43,16 +43,18 @@ const buildSafeStaffPayload = (baseUser = {}, verifiedUser = {}) => {
         : prevUser?.aadhar__verify,
     image: nextUser?.image || prevUser?.image,
     upi_id: nextUser?.upi_id || prevUser?.upi_id,
-    addresses: Array.isArray(nextUser?.addresses)
+    addresses: Array.isArray(nextUser?.addresses) && nextUser.addresses.length > 0
       ? nextUser.addresses
-      : Array.isArray(prevUser?.addresses)
+      : Array.isArray(prevUser?.addresses) && prevUser.addresses.length > 0
         ? prevUser.addresses
         : [],
     user_work_info:
       nextUser?.user_work_info ||
       nextUser?.userWorkInfo ||
+      nextUser?.work_info ||
       prevUser?.user_work_info ||
       prevUser?.userWorkInfo ||
+      prevUser?.work_info ||
       null,
     kyc_information:
       nextUser?.kyc_information ||
@@ -79,16 +81,24 @@ const buildSafeStaffPayload = (baseUser = {}, verifiedUser = {}) => {
     relation:
       nextUser?.relation ||
       prevUser?.relation ||
+      nextUser?.user_work_info?.emergency_contact_relation ||
+      prevUser?.user_work_info?.emergency_contact_relation ||
+      nextUser?.work_info?.emergency_contact_relation ||
+      prevUser?.work_info?.emergency_contact_relation ||
       null,
   };
 };
 
 const StaffVerifection = ({ navigation, route }) => {
-  const userData = route?.params?.userData;
-  const adharNumber = route?.params?.adharNumber;
-  const otpAlreadySent = route?.params?.otpAlreadySent || false;
-  const pendingApproval = route?.params?.pendingApproval || false;
-  const applicationId = route?.params?.applicationId || null;
+const userData = route?.params?.userData;
+const adharNumber = route?.params?.adharNumber;
+const otpAlreadySent = route?.params?.otpAlreadySent || false;
+const pendingApproval = route?.params?.pendingApproval || false;
+const applicationId = route?.params?.applicationId || null;
+const job_id = route?.params?.job_id || null;
+const job_compensation = route?.params?.job_compensation || 0;
+const job_title = route?.params?.job_title || '';
+const job_compensation_type = route?.params?.job_compensation_type || 'monthly';
 
   const [otp, setOtp] = useState('');
   const [Verify, setVerify] = useState(false);
@@ -227,6 +237,10 @@ const StaffVerifection = ({ navigation, route }) => {
           navigation.navigate('NewStaffFrom', {
             adharNumber: adharNumber,
             userData: mergedUserData,
+            job_id,
+            job_compensation,
+            job_title,
+            job_compensation_type,
           });
         };
 

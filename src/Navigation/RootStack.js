@@ -17,6 +17,7 @@ import NewStaffFrom from './../Screens/Private/Staff/NewStaffFrom';
 import StaffVerifection from './../Screens/Private/Staff/StaffVerifection';
 import HouseholdProfile from './../Screens/Private/MoreScreens/HouseholdProfile';
 import AadharOtp from './../Screens/Private/Staff/AadharOtp';
+import SelectJob from './../Screens/Private/Staff/SelectJob';
 import LeaveApplications from './../Screens/Leave/LeaveApplications';
 import ProfileManagement from '../Screens/Auth/ProfileSteps/ProfileManagement';
 import AttendanceScreen from '../Screens/Calender/AttendanceScreen';
@@ -121,6 +122,11 @@ const RootStack = () => {
       <Stack.Screen
         name="AadharOtp"
         component={AadharOtp}
+        options={{ ...commonOptions }}
+      />
+      <Stack.Screen
+        name="SelectJob"
+        component={SelectJob}
         options={{ ...commonOptions }}
       />
       <Stack.Screen

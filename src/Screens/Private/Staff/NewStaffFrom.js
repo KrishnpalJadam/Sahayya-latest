@@ -34,6 +34,10 @@ const NewStaffForm = ({ navigation, route }) => {
   const data = route?.params?.userData;
   const userDetail = useSelector(state => state.userDetails);
   const adharNumber = route?.params?.adharNumber;
+  const jobId = route?.params?.job_id || null;
+  const jobCompensation = route?.params?.job_compensation || 0;
+  const jobTitle = route?.params?.job_title || '';
+  const jobCompensationType = route?.params?.job_compensation_type || 'monthly';
   const kycInfo = data?.kyc_information || data?.kycInformation || {};
   const existingPoliceClearance =
     data?.verification_certificate ||
@@ -310,18 +314,19 @@ const NewStaffForm = ({ navigation, route }) => {
       }
 
       // Relation
-      if (data.relation) {
+      const contactRelation = data.relation || data.user_work_info?.emergency_contact_relation || data.work_info?.emergency_contact_relation;
+      if (contactRelation) {
         // Check if it's a string (name) or needs to be mapped to option
         const relationOption = relationOptions.find(
-          opt => opt.value === data.relation || opt.label === data.relation,
+          opt => opt.value === contactRelation || opt.label === contactRelation,
         );
         if (relationOption) {
           setRelation(relationOption);
         } else {
           // If relation is a name string, try to find or create option
           setRelation({
-            label: String(data.relation),
-            value: String(data.relation).toLowerCase(),
+            label: String(contactRelation),
+            value: String(contactRelation).toLowerCase(),
           });
         }
       }
@@ -329,8 +334,8 @@ const NewStaffForm = ({ navigation, route }) => {
       // UPI ID
       if (data.upi_id) setUpiId(data.upi_id);
 
-      if (data.user_work_info) {
-        const workInfo = data.user_work_info;
+      const workInfo = data.user_work_info || data.userWorkInfo || data.work_info;
+      if (workInfo) {
         if (workInfo.emergency_contact_name) setEmergencyContactName(workInfo.emergency_contact_name);
         if (workInfo.emergency_contact_number) setEmergencyContactNumber(workInfo.emergency_contact_number);
         if (workInfo.joining_date) setJoiningDate(workInfo.joining_date);
@@ -384,6 +389,13 @@ const NewStaffForm = ({ navigation, route }) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
+
+  // Auto-fill salary from job compensation if no salary set yet
+  useEffect(() => {
+    if (jobCompensation && jobCompensation > 0 && !salary) {
+      setSalary(String(jobCompensation));
+    }
+  }, [jobCompensation]);
 
   // Clear city and state when pincode is cleared
   useEffect(() => {
@@ -947,6 +959,11 @@ const NewStaffForm = ({ navigation, route }) => {
 
     formData.append('aadhar_number', aadharNumber?.trim() || '');
 
+    // Job assignment
+    if (jobId) {
+      formData.append('job_id', jobId);
+    }
+
     // Work Details - all optional (staff can be a fresher)
 
     // Role designation - only append if selected
@@ -1353,6 +1370,18 @@ const NewStaffForm = ({ navigation, route }) => {
             maxLength={10}
             error={errors.phoneNumber}
           />
+
+          {jobId && jobTitle ? (
+            <View style={{ backgroundColor: '#FFF8F6', padding: 14, borderRadius: 10, marginBottom: 15, borderWidth: 1, borderColor: '#D98579' }}>
+              <Typography size={12} color="#888" style={{ marginBottom: 4 }}>Assigned Job</Typography>
+              <Typography size={15} type={Font?.Poppins_SemiBold} color="#333">{jobTitle}</Typography>
+              {jobCompensation > 0 && (
+                <Typography size={13} color="#D98579" style={{ marginTop: 4 }}>
+                  ₹{parseFloat(jobCompensation).toLocaleString('en-IN')} / {jobCompensationType}
+                </Typography>
+              )}
+            </View>
+          ) : null}
 
           <Input
             editable={false}
