@@ -1,1 +1,1 @@
-Build triggered at: 2026-08-15 14:18:00 UTC - Enforce mandatory staff OTP verification and NewStaffFrom contract setup (Salary, Working Days, Joining Date) for all job application approvals
+Build triggered at: 2026-08-15 14:19:00 UTC - Restore full step-by-step Staff Approval Workflow: OTP Verification (StaffVerifection) -> Work Info & Hiring Form (NewStaffFrom with Salary, Joining Date, Working Days, Salary Closing Date)
