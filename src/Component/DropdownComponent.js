@@ -205,9 +205,11 @@ export default DropdownComponent;
 
 const styles = StyleSheet.create({
   img_style: {
-    height: 16,
-    width: 16,
-    marginLeft: 10,
+    height: 18,
+    width: 18,
+    marginRight: 8,
+    marginLeft: 0,
+    resizeMode: 'contain',
   },
   txt_style: {
     color: Colors.black,

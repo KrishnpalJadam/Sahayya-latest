@@ -955,11 +955,10 @@ const PostNewJob = ({ navigation, route }) => {
   };
 
   const compensationTypeOptions = [
-    // { label: 'Hourly', value: 'hourly' },
     { label: 'Monthly', value: 'monthly' },
-    // { label: 'Weekly', value: 'weekly' },
-    // { label: 'Daily', value: 'daily' },
-    { label: 'Year', value: 'Year' },
+    { label: 'Yearly', value: 'Year' },
+    { label: 'Daily', value: 'daily' },
+    { label: 'Hourly', value: 'hourly' },
   ];
 
   return (
@@ -1008,31 +1007,36 @@ const PostNewJob = ({ navigation, route }) => {
             iconText="₹"
             title={LocalizedStrings.PostNewJob.compensation}
           />
-          <View style={{ flexDirection: 'row', alignItems: 'flex-end', width: '100%' }}>
-            <View style={{ flex: 1 }}>
+          <Typography
+            style={{ fontSize: 14, fontFamily: Font.Poppins_Medium, color: '#565D6D', marginBottom: 6, marginTop: 4 }}
+          >
+            {LocalizedStrings.PostNewJob.expected_compensation}
+          </Typography>
+          <View style={{ flexDirection: 'row', alignItems: 'center', width: '100%' }}>
+            <View style={{ flex: 1.5 }}>
               <Input
-                // placeholder="Enter expected compensation"
-                title={LocalizedStrings.PostNewJob.expected_compensation}
+                title=""
+                placeholder="Amount"
                 value={expectedCompensation}
                 onChange={handleCompensationChange}
                 keyboardType="numeric"
                 error={errors.expectedCompensation}
                 prefixText={"\u20B9  "}
+                style_inputContainer={{ height: 52, borderRadius: 12, backgroundColor: '#FAFAFA' }}
               />
             </View>
             <View style={{ flex: 1, marginLeft: 10 }}>
               <DropdownComponent
-                title={' '}
-                // placeholder="Select Type"
-                MainBoxStyle={{ width: '100%' }}
-                style_title={{ textAlign: 'left' }}
+                title=""
+                MainBoxStyle={{ width: '100%', marginVertical: 0 }}
+                containerStyle={{ width: 140, minWidth: 130 }}
                 data={compensationTypeOptions}
                 value={compensationType?.value || compensationType}
                 onChange={item => handleCompensationTypeChange(item)}
                 disable={false}
                 marginHorizontal={0}
-                style_dropdown={{ marginHorizontal: 0 }}
-                selectedTextStyleNew={{ fontSize: 14, paddingLeft: 12 }}
+                style_dropdown={{ marginHorizontal: 0, height: 52, borderRadius: 12 }}
+                selectedTextStyleNew={{ fontSize: 14, paddingLeft: 8 }}
                 error={errors.compensationType}
               />
             </View>
@@ -1069,14 +1073,14 @@ const PostNewJob = ({ navigation, route }) => {
             title={LocalizedStrings.PostNewJob.working_schedule}
           />
           <View style={styles.timeRow}>
-            <View style={{ flex: 1, marginRight: 8 }}>
+            <View style={{ flex: 1, marginRight: 6 }}>
               <Typography style={styles.timeLabel}>Start Time</Typography>
               <TouchableOpacity
                 style={[styles.timePickerBox, errors.startTime && { borderColor: 'red' }]}
                 onPress={() => setShowStartTimePicker(true)}
               >
-                <Typography style={{ fontSize: 14, color: startTime ? '#000' : '#999', fontFamily: Font.Poppins_Medium, paddingLeft: 15 }}>
-                  {startTime ? formatTime(startTime) : 'Select Time'}
+                <Typography style={{ fontSize: 13, color: startTime ? '#000' : '#888', fontFamily: Font.Poppins_Medium, flex: 1 }} numberOfLines={1}>
+                  {startTime ? formatTime(startTime) : 'Select Start Time'}
                 </Typography>
                 <Image source={ImageConstant?.Calendar} style={styles.timeIcon} />
               </TouchableOpacity>
@@ -1096,14 +1100,14 @@ const PostNewJob = ({ navigation, route }) => {
                 onCancel={() => setShowStartTimePicker(false)}
               />
             </View>
-            <View style={{ flex: 1, marginLeft: 8 }}>
+            <View style={{ flex: 1, marginLeft: 6 }}>
               <Typography style={styles.timeLabel}>End Time</Typography>
               <TouchableOpacity
                 style={[styles.timePickerBox, errors.endTime && { borderColor: 'red' }]}
                 onPress={() => setShowEndTimePicker(true)}
               >
-                <Typography style={{ fontSize: 14, color: endTime ? '#000' : '#999', fontFamily: Font.Poppins_Medium, paddingLeft: 15 }}>
-                  {endTime ? formatTime(endTime) : 'Select Time'}
+                <Typography style={{ fontSize: 13, color: endTime ? '#000' : '#888', fontFamily: Font.Poppins_Medium, flex: 1 }} numberOfLines={1}>
+                  {endTime ? formatTime(endTime) : 'Select End Time'}
                 </Typography>
                 <Image source={ImageConstant?.Calendar} style={styles.timeIcon} />
               </TouchableOpacity>
@@ -1394,19 +1398,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    borderRadius: 10,
-    paddingVertical: 5,
-    backgroundColor: '#fff',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    backgroundColor: '#FAFAFA',
     borderWidth: 1,
-    borderColor: '#DDDDDD',
-    height: 60,
+    borderColor: '#E0E0E0',
+    height: 52,
   },
   timeIcon: {
-    width: 22,
-    height: 22,
+    width: 18,
+    height: 18,
     resizeMode: 'contain',
-    tintColor: 'gray',
-    marginRight: 10,
+    tintColor: '#D98579',
+    marginLeft: 4,
   },
   timeError: {
     color: 'red',
