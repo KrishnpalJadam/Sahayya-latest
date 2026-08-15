@@ -298,10 +298,10 @@ const StaffProfileMain = ({ navigation }) => {
                             marginTop: 16,
                             width: '100%',
                             backgroundColor: '#FFF5F3',
-                            borderWidth: 1,
+                            borderWidth: 1.5,
                             borderColor: '#D98579',
-                            borderRadius: 10,
-                            paddingVertical: 10,
+                            borderRadius: 12,
+                            paddingVertical: 12,
                             alignItems: 'center',
                             flexDirection: 'row',
                             justifyContent: 'center',
@@ -309,8 +309,8 @@ const StaffProfileMain = ({ navigation }) => {
                         onPress={() => navigation.navigate('EditProfile')}
                         activeOpacity={0.8}
                     >
-                        <Image source={ImageConstant.pencle} style={{ width: 16, height: 16, tintColor: '#D98579', marginRight: 8 }} />
-                        <Typography type={Font.Poppins_SemiBold} size={14} color="#D98579">
+                        <Image source={ImageConstant.pencle} style={{ width: 22, height: 22, tintColor: '#D98579', marginRight: 10, resizeMode: 'contain' }} />
+                        <Typography type={Font.Poppins_SemiBold} size={15} color="#D98579">
                             Edit Profile
                         </Typography>
                     </TouchableOpacity>
