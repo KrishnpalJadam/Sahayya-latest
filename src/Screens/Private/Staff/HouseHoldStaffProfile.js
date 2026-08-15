@@ -315,8 +315,6 @@ const HouseHoldStaffProfile = ({ navigation, route }) => {
     data?.user_detail?.dob ||
     data?.user_detail?.date_of_birth ||
     data?.staff?.dob ||
-    data?.staff?.date_of_birth ||
-    '';
   const lastExperience =
     data?.lastExp ||
     data?.last_exp ||
@@ -324,8 +322,69 @@ const HouseHoldStaffProfile = ({ navigation, route }) => {
     data?.user_detail?.lastExp ||
     data?.user_detail?.last_exp ||
     null;
+
+  const defaultCategoryMap = {
+    '1': 'Cook / Chef',
+    '2': 'Housekeeper / Maid',
+    '3': 'Driver',
+    '4': 'Nanny / Babysitter',
+    '5': 'Gardener',
+    '6': 'Elderly Care',
+    '7': 'Security Guard',
+    '8': 'Office Helper',
+    '9': 'Pet Caretaker',
+    '10': 'Patient Care',
+  };
+
+  const resolveRoleNames = (roleInput) => {
+    if (!roleInput) return '';
+
+    let rawTokens = [];
+    if (Array.isArray(roleInput)) {
+      rawTokens = roleInput;
+    } else if (typeof roleInput === 'string') {
+      try {
+        const parsed = JSON.parse(roleInput);
+        if (Array.isArray(parsed)) {
+          rawTokens = parsed;
+        } else {
+          rawTokens = [parsed];
+        }
+      } catch (e) {
+        rawTokens = roleInput.split(',');
+      }
+    } else {
+      rawTokens = [roleInput];
+    }
+
+    const cleanTokens = [];
+    rawTokens.forEach(t => {
+      const str = String(t?.value ?? t?.name ?? t?.label ?? t).replace(/[\[\]"']/g, '').trim();
+      if (str) {
+        str.split(',').forEach(s => {
+          const item = s.trim();
+          if (item) cleanTokens.push(item);
+        });
+      }
+    });
+
+    const uniqueTokens = [...new Set(cleanTokens)];
+
+    const resolved = uniqueTokens.map(tok => {
+      if (defaultCategoryMap[tok]) {
+        return defaultCategoryMap[tok];
+      }
+      return tok;
+    });
+
+    return resolved.filter(Boolean).join(', ');
+  };
+
+  const rawRoleStr = lastExperience?.role || lastExperience?.designation || lastExperience?.title;
+  const displayRoleNames = resolveRoleNames(rawRoleStr);
+
   const previousWorkSummary = [
-    lastExperience?.role || lastExperience?.designation || lastExperience?.title,
+    displayRoleNames,
     lastExperience?.salary ? `Salary: ₹${Number(lastExperience.salary).toLocaleString('en-IN')}` : '',
     lastExperience?.join_date && lastExperience?.end_date
       ? `${moment(lastExperience.join_date).format('DD MMM YYYY')} - ${moment(lastExperience.end_date).format('DD MMM YYYY')}`

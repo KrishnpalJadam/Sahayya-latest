@@ -197,7 +197,18 @@ const UpdateProfile = forwardRef((props, ref) => {
     const formattedJoinDate = joinDate ? moment(joinDate).format('DD/MM/YY') : '';
     const formattedEndDate = endDate ? moment(endDate).format('DD/MM/YY') : '';
 
-    formData.append('role', JSON.stringify(role));
+    const resolvedRoleNamesForSave = role.map(r => {
+      const rVal = (r?.value ?? r?.id ?? r);
+      const cleanVal = String(rVal).replace(/[\[\]"']/g, '').trim();
+      const roleObj = roles.find(rl =>
+        String(rl.value) === cleanVal ||
+        String(rl.id) === cleanVal ||
+        String(rl.label).toLowerCase() === cleanVal.toLowerCase()
+      );
+      return roleObj?.label || cleanVal;
+    }).filter(Boolean);
+
+    formData.append('role', JSON.stringify(resolvedRoleNamesForSave.length > 0 ? resolvedRoleNamesForSave : role));
     formData.append('join_date', formattedJoinDate);
     formData.append('end_date', formattedEndDate);
     formData.append('salary', salary);
