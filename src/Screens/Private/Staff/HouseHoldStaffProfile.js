@@ -314,6 +314,7 @@ const HouseHoldStaffProfile = ({ navigation, route }) => {
     data?.date_of_birth ||
     data?.user_detail?.dob ||
     data?.user_detail?.date_of_birth ||
+    '';
   const displayEmergencyRelation =
     data?.relation ||
     data?.user_work_info?.emergency_contact_relation ||
