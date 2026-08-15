@@ -71,15 +71,7 @@ const RootStack = () => {
       screenOptions={{
         headerShown: false,
       }}
-      initialRouteName={
-        userDetail?.is_staff_added == 1
-          ? 'TabNavigationForStaff'
-          : (!userDetail?.aadhar__verify || userDetail?.aadhar__verify == 0)
-          ? 'Aadhaar'
-          : (!userDetail?.step || userDetail?.step < 5)
-          ? 'StepFirst'
-          : 'TabNavigationForStaff'
-      }
+      initialRouteName="TabNavigationForStaff"
     >
       <Stack.Screen
         name="TabNavigationForStaff"

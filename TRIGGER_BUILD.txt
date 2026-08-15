@@ -1,1 +1,1 @@
-Build triggered at: 2026-08-15 18:02:30 UTC - Fix Voice Note file picker to open System Audio/Files Manager instead of Photo Gallery
+Build triggered at: 2026-08-15 18:04:40 UTC - Remove step checkers on app launch/login so users open directly to Dashboard (TabNavigation)

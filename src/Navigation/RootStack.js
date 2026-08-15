@@ -51,7 +51,7 @@ const RootStack = () => {
       screenOptions={{
         headerShown: false,
       }}
-      initialRouteName={userDetails?.step < 4 ? 'Step1' : 'TabNavigation'}
+      initialRouteName="TabNavigation"
     >
       <Stack.Screen
         name="TabNavigation"
