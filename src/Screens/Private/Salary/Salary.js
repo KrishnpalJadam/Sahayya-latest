@@ -271,7 +271,7 @@ const StaffManagement = ({ navigation, route }) => {
       },
       error => {
         console.log('fetchSalaryDetails error ---->', error);
-        SimpleToast.show(error?.data?.message, SimpleToast.SHORT);
+        SimpleToast.show(error?.message || error?.data?.message || 'Failed to load staff salary details', SimpleToast.SHORT);
       },
       fail => {
         console.log('fetchSalaryDetails network fail ---->', fail);
