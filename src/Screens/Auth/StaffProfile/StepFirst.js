@@ -8,6 +8,7 @@ import Button from '../../../Component/Button';
 import Typography from '../../../Component/UI/Typography';
 import { useDispatch, useSelector } from 'react-redux';
 import { isAuth, userDetails } from '../../../Redux/action';
+import StepBasicInfoStaff from './StepBasicInfoStaff';
 import KYCVerificationStaff from './KYCVerificationStaff';
 import StepLoactionStaff from './StepLoactionStaff';
 import StepWokInfo from './StepWokInfo';
@@ -16,12 +17,15 @@ import { POST_WITH_TOKEN } from '../../../Backend/Backend';
 import { DELETE_ACCOUNT } from '../../../Backend/api_routes';
 import LocalizedStrings from '../../../Constants/localization';
 import SimpleToast from 'react-native-simple-toast';
+
 const StepFirst = () => {
   const userTypes = useSelector(store => store?.userType);
   const userDetail = useSelector(store => store?.userDetails);
-  const [activeTab, setActiveTab] = useState(1); // Start from KYC step (skip basic info since Aadhaar provides it)
+  const [activeTab, setActiveTab] = useState(1); // Step 1: Basic Info (Photo, Name, Gender, DOB)
   const [loader, setLoader] = useState(false);
   const [kycImages, setKycImages] = useState(null);
+  
+  const basicInfoRef = useRef(null);
   const kycRef = useRef(null);
   const locationRef = useRef(null);
   const workInfoRef = useRef(null);
@@ -32,68 +36,31 @@ const StepFirst = () => {
     switch (activeTab) {
       case 1:
         return (
-          <>
-            <KYCVerificationStaff
-              ref={kycRef}
-              userDetail={userDetail}
-              prefillFromProfile={false}
-            />
-          </>
+          <StepBasicInfoStaff ref={basicInfoRef} />
         );
       case 2:
         return (
-          <>
-            <StepLoactionStaff ref={locationRef} />
-          </>
+          <KYCVerificationStaff
+            ref={kycRef}
+            userDetail={userDetail}
+            prefillFromProfile={false}
+          />
         );
       case 3:
         return (
-          <>
-            <StepWokInfo ref={workInfoRef} />
-          </>
+          <StepLoactionStaff ref={locationRef} />
         );
       case 4:
         return (
-          <>
-            <UpdateProfile ref={lastWorkRef} />
-          </>
+          <StepWokInfo ref={workInfoRef} />
+        );
+      case 5:
+        return (
+          <UpdateProfile ref={lastWorkRef} />
         );
       default:
         return null;
     }
-  };
-
-  const confirmLogout = () => {
-    POST_WITH_TOKEN(
-      DELETE_ACCOUNT,
-      {},
-      success => {
-        // SimpleToast.show(
-        //   success?.message ||
-        //     LocalizedStrings.Settings?.accountDeletedSuccess ||
-        //     'Account deleted successfully',
-        //   SimpleToast.SHORT,
-        // );
-        // Logout user after account deletion
-        Dispatch(isAuth(false));
-        Dispatch(userDetails({}));
-      },
-      error => {
-        SimpleToast.show(
-          error?.message ||
-          LocalizedStrings.Settings?.accountDeleteFailed ||
-          'Failed to delete account',
-          SimpleToast.SHORT,
-        );
-      },
-      fail => {
-        SimpleToast.show(
-          LocalizedStrings.Settings?.networkError ||
-          'Network error. Please try again.',
-          SimpleToast.SHORT,
-        );
-      },
-    );
   };
 
   return (
@@ -128,20 +95,33 @@ const StepFirst = () => {
       {renderContent()}
       <Button
         title={
-          activeTab == 4
-            ? LocalizedStrings.EditProfile?.Save_Changes || 'Save & Proceed'
+          activeTab == 5
+            ? LocalizedStrings.EditProfile?.Save_Changes || 'Save & Complete'
             : LocalizedStrings.Auth?.next || 'Next'
         }
         onPress={async () => {
           if (activeTab == 1) {
-            // Save KYC images to parent state before component unmounts
+            // Save Basic Info (Photo, Name, Gender, DOB) and move to next step
+            try {
+              setLoader(true);
+              await basicInfoRef.current?.saveBasicInfo();
+              setActiveTab(2);
+            } catch (error) {
+              SimpleToast.show(
+                error?.message || 'Please fill all required basic information fields.',
+                SimpleToast.SHORT,
+              );
+            } finally {
+              setLoader(false);
+            }
+          } else if (activeTab == 2) {
+            // Save KYC images and details
             const images = kycRef.current?.getUploadedImages?.();
             if (images) setKycImages(images);
-            // Save KYC and move to next step
             try {
               setLoader(true);
               await kycRef.current?.saveKYC();
-              setActiveTab(2);
+              setActiveTab(3);
             } catch (error) {
               SimpleToast.show(
                 error?.message || 'Failed to save KYC details. Please fill all required fields.',
@@ -150,26 +130,26 @@ const StepFirst = () => {
             } finally {
               setLoader(false);
             }
-          } else if (activeTab == 2) {
-            // Save addresses and move to next step
+          } else if (activeTab == 3) {
+            // Save addresses
             try {
               setLoader(true);
               await locationRef.current?.saveAddresses();
-              setActiveTab(3);
+              setActiveTab(4);
             } catch (error) {
               SimpleToast.show(
-                error?.message || 'Please fill all required address fields and pin your location on the map.',
+                error?.message || 'Please fill all required address fields.',
                 SimpleToast.SHORT,
               );
             } finally {
               setLoader(false);
             }
-          } else if (activeTab == 3) {
-            // Save work info and move to next step
+          } else if (activeTab == 4) {
+            // Save work info
             try {
               setLoader(true);
               await workInfoRef.current?.saveWorkInfo();
-              setActiveTab(4);
+              setActiveTab(5);
             } catch (error) {
               SimpleToast.show(
                 error?.message || 'Failed to save work info. Please fill all required fields.',
@@ -178,7 +158,7 @@ const StepFirst = () => {
             } finally {
               setLoader(false);
             }
-          } else if (activeTab == 4) {
+          } else if (activeTab == 5) {
             // Final step — save last work experience
             try {
               setLoader(true);
@@ -195,7 +175,7 @@ const StepFirst = () => {
             }
           }
         }}
-        style={{ width: 150, alignSelf: 'flex-end' }}
+        style={{ width: 150, alignSelf: 'flex-end', marginVertical: 10 }}
         disabled={loader}
         loader={loader}
       />
@@ -210,40 +190,5 @@ const styles = StyleSheet.create({
     fontFamily: Font?.Manrope_Bold,
     fontSize: 16,
     marginBottom: 10,
-  },
-  tabContainer: {
-    borderRadius: 40,
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    borderBottomWidth: 1,
-    borderColor: '#f7f7f7',
-    backgroundColor: '#f7f7f7',
-    overflow: 'scroll',
-    color: ' #8C8D8B',
-    marginTop: 20,
-    padding: 5,
-    overflow: 'hidden',
-  },
-  tab: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    overflow: 'scroll',
-    flexDirection: 'row',
-  },
-  tabText: {
-    fontFamily: Font?.Manrope_SemiBold,
-    fontSize: 14,
-    color: '#666',
-  },
-  activeTab: {
-    borderRadius: 30,
-    height: 50,
-    justifyContent: 'center',
-    backgroundColor: 'white',
-    alignItems: 'center',
-  },
-  activeTabText: {
-    color: 'black',
   },
 });
