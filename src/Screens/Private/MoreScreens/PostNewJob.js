@@ -645,7 +645,12 @@ const PostNewJob = ({ navigation, route }) => {
       },
       error => {
         console.log('Job Post Error:', JSON.stringify(error, null, 2));
-        const errMsg = error?.message || error?.error || error?.errors?.title?.[0] || 'Failed to post job';
+        const validationErrors = error?.errors;
+        let errMsg = error?.message || 'Failed to post job';
+        if (validationErrors && typeof validationErrors === 'object') {
+          const firstError = Object.values(validationErrors).flat()[0];
+          if (firstError) errMsg = firstError;
+        }
         SimpleToast.show(errMsg, SimpleToast.SHORT);
         setLoading(false);
       },
@@ -1013,13 +1018,13 @@ const PostNewJob = ({ navigation, route }) => {
           >
             {LocalizedStrings.PostNewJob.expected_compensation}
           </Typography>
-          <View style={{ flexDirection: 'row', alignItems: 'center', width: '100%' }}>
-            <View style={{ flex: 1.5 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'flex-start', width: '100%' }}>
+            <View style={{ flex: 1.3 }}>
               <Input
                 title=""
                 showTitle={false}
                 mainStyle={{ marginVertical: 0 }}
-                placeholder="Amount (e.g. 15000)"
+                placeholder="e.g. 15000"
                 value={expectedCompensation}
                 onChange={handleCompensationChange}
                 keyboardType="numeric"
@@ -1028,18 +1033,17 @@ const PostNewJob = ({ navigation, route }) => {
                 style_inputContainer={{ height: 52, borderRadius: 12, backgroundColor: '#FAFAFA' }}
               />
             </View>
-            <View style={{ flex: 1, marginLeft: 10 }}>
+            <View style={{ flex: 1, marginLeft: 8 }}>
               <DropdownComponent
                 title=""
                 MainBoxStyle={{ width: '100%', marginVertical: 0 }}
-                containerStyle={{ width: 140, minWidth: 130 }}
                 data={compensationTypeOptions}
                 value={compensationType?.value || compensationType}
                 onChange={item => handleCompensationTypeChange(item)}
                 disable={false}
                 marginHorizontal={0}
-                style_dropdown={{ marginHorizontal: 0, height: 52, borderRadius: 12, backgroundColor: '#FAFAFA' }}
-                selectedTextStyleNew={{ fontSize: 14, paddingLeft: 8 }}
+                style_dropdown={{ marginHorizontal: 0, height: 52, borderRadius: 12, backgroundColor: '#FAFAFA', paddingHorizontal: 8 }}
+                selectedTextStyleNew={{ fontSize: 13, paddingLeft: 2 }}
                 error={errors.compensationType}
               />
             </View>

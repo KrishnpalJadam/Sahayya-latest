@@ -204,13 +204,14 @@ const HouseHoldStaffProfile = ({ navigation, route }) => {
   };
 
   useEffect(() => {
-    if (isFocused && paramData?.id) {
+    const targetId = paramData?.id || paramData?.user_id || paramData?.staff_id;
+    if (isFocused && targetId) {
       if (isReadOnlyPreview) {
         setContactViewLocked(true);
         setContactViewLoading(true);
       }
       GET_WITH_TOKEN(
-        `${StaffAvailableDetail}/${paramData.id}?refresh=${Date.now()}`,
+        `${StaffAvailableDetail}/${targetId}?refresh=${Date.now()}`,
         success => {
           console.log('StaffAvailableDetail response:', JSON.stringify(success));
           setContactViewLocked(!!success?.contact_view_locked);
@@ -438,17 +439,21 @@ const HouseHoldStaffProfile = ({ navigation, route }) => {
       SimpleToast.show('Phone number not available', SimpleToast.SHORT);
       return;
     }
-    const phone = number.replace(/\D/g, '');
-    const url = `whatsapp://send?phone=91${phone}`;
-    const supported = await Linking.canOpenURL(url);
-    if (!supported) {
-      SimpleToast.show('WhatsApp not installed', SimpleToast.SHORT);
-      return;
+    try {
+      const phone = String(number).replace(/\D/g, '');
+      const url = `whatsapp://send?phone=91${phone}`;
+      const supported = await Linking.canOpenURL(url).catch(() => false);
+      if (!supported) {
+        SimpleToast.show('WhatsApp not installed', SimpleToast.SHORT);
+        return;
+      }
+      await Linking.openURL(url);
+    } catch (e) {
+      SimpleToast.show('Could not open WhatsApp', SimpleToast.SHORT);
     }
-    Linking.openURL(url);
   };
 
-  const handleCall = number => {
+  const handleCall = async number => {
     if (contactViewLocked) {
       showUpgradeAlert();
       return;
@@ -457,7 +462,12 @@ const HouseHoldStaffProfile = ({ navigation, route }) => {
       SimpleToast.show('Phone number not available', SimpleToast.SHORT);
       return;
     }
-    Linking.openURL(`tel:+91${number}`);
+    try {
+      const phone = String(number).replace(/\D/g, '');
+      await Linking.openURL(`tel:+91${phone}`);
+    } catch (e) {
+      SimpleToast.show('Could not open phone dialer', SimpleToast.SHORT);
+    }
   };
 
   const resetModal = () => {

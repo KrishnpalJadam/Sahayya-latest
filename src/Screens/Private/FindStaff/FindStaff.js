@@ -343,7 +343,7 @@ const FindStaff = ({ navigation, route }) => {
             isJobSeeking: (item?.is_job_seeking === true || item?.is_job_seeking === 1 || item?.is_available === true || item?.is_available === 1),
             distanceKm: parseCoordinateValue(item?._distance_km ?? item?.distance_km ?? item?.distanceKm),
             _similarity: item?._similarity || 0,
-            raw: item,
+            raw: { ...item, id: item?.id || item?.user_id || item?.staff_id },
           };
         }).filter(c => c.isJobSeeking);
 
@@ -802,10 +802,17 @@ const FindStaff = ({ navigation, route }) => {
                 title={LocalizedStrings.FindStaff.Contact || 'Connect'}
                 style={{ width: '90%', margin: 'auto' }}
                 onPress={() => {
-                  if (!isPremium) {
-                    showUpgradeAlert();
-                  } else {
-                    navigation.navigate('HouseHoldStaffProfile', { item: c.raw, fromFindStaffAI: true });
+                  try {
+                    const staffItem = c?.raw ? { ...c.raw } : {};
+                    if (!staffItem.id && c?.id) staffItem.id = c.id;
+                    if (!isPremium) {
+                      showUpgradeAlert();
+                    } else {
+                      navigation.navigate('HouseHoldStaffProfile', { item: staffItem, fromFindStaffAI: true });
+                    }
+                  } catch (e) {
+                    console.log('Contact click error:', e);
+                    SimpleToast.show('Could not open profile', SimpleToast.SHORT);
                   }
                 }}
               />
