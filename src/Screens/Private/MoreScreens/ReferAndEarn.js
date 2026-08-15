@@ -283,19 +283,25 @@ const ReferAndEarn = ({ navigation }) => {
         ) : (
           <>
             <Typography type={Font?.Poppins_Medium} size={16}>
-              Your Earnings
+              Your Earnings & Credits
             </Typography>
             <View style={styles.earningsRow}>
               <View style={styles.ownerEarnings}>
                 <Typography type={Font?.Poppins_Regular} size={12} color="#8C8D8B">
-                  Available Credit
+                  Available Credit / Earnings
                 </Typography>
                 <Typography type={Font?.Poppins_SemiBold} size={24} color="#16A34A">
                   {'\u20B9'}{referralData?.total_earnings || '0.00'}
                 </Typography>
               </View>
-
             </View>
+            <Button
+              title={creditLoading ? 'Redeeming...' : 'Redeem Credit'}
+              onPress={handleCreditApply}
+              main_style={[styles.redeemButton, { marginTop: 15 }]}
+              disabled={creditLoading}
+              loader={creditLoading}
+            />
           </>
         )}
       </View>

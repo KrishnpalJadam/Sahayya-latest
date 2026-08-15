@@ -203,7 +203,7 @@ const Dashboard = ({ navigation }) => {
           onPress={() => navigation.navigate('StaffActionScreen', { staff: item })}
         >
           <Image source={{ uri: getProfileImage ? getProfileImage(item.image) : item.image }} style={styles.avatar} />
-          <View>
+          <View style={{ flex: 1, marginRight: 20 }}>
             <Typography type={Font?.Poppins_SemiBold} size={16}>
               {`${item?.first_name || ''} ${item?.last_name || ''}`.trim() || item.name}
             </Typography>

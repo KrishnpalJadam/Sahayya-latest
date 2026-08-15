@@ -1,1 +1,1 @@
-Build triggered at: 2026-08-15 21:10:00 UTC - Fix salary decimal validation & formatting UX issue
+Build triggered at: 2026-08-15 21:17:10 UTC - Fix TC-048 (Terminate modal role overflow), TC-049 (Dashboard staff card role overflow), and TC-050 (Houseowner Redeem Credit button)

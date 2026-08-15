@@ -1565,7 +1565,7 @@ const HouseHoldStaffProfile = ({ navigation, route }) => {
                 source={profileImageUrl ? { uri: profileImageUrl } : ImageConstant.user}
                 style={{ width: 50, height: 50, borderRadius: 25 }}
               />
-              <View style={{ marginLeft: 12 }}>
+              <View style={{ marginLeft: 12, flex: 1 }}>
                 <Typography type={Font.Poppins_SemiBold} size={15}>
                   {fullName}
                 </Typography>
