@@ -314,14 +314,22 @@ const HouseHoldStaffProfile = ({ navigation, route }) => {
     data?.date_of_birth ||
     data?.user_detail?.dob ||
     data?.user_detail?.date_of_birth ||
-    data?.staff?.dob ||
-  const lastExperience =
-    data?.lastExp ||
-    data?.last_exp ||
-    data?.last_work_experience ||
-    data?.user_detail?.lastExp ||
-    data?.user_detail?.last_exp ||
-    null;
+  const displayEmergencyRelation =
+    data?.relation ||
+    data?.user_work_info?.emergency_contact_relation ||
+    data?.user_work_info?.relation ||
+    data?.work_info?.emergency_contact_relation ||
+    data?.work_info?.relation ||
+    data?.emergency_contact_relation ||
+    data?.user_detail?.relation ||
+    data?.user_detail?.emergency_contact_relation ||
+    data?.staff?.relation ||
+    data?.staff?.emergency_contact_relation ||
+    data?.staff?.user_work_info?.emergency_contact_relation ||
+    data?.staff?.work_info?.emergency_contact_relation ||
+    workInfo?.emergency_contact_relation ||
+    workInfo?.relation ||
+    '';
 
   const defaultCategoryMap = {
     '1': 'Cook / Chef',
@@ -934,8 +942,8 @@ const HouseHoldStaffProfile = ({ navigation, route }) => {
                 Emergency Contact Relation
               </Typography>
               <Typography style={styles.value}>
-                {(data?.relation)
-                  ? (!contactViewLocked ? data?.relation : '**********')
+                {displayEmergencyRelation
+                  ? (!contactViewLocked ? displayEmergencyRelation : '**********')
                   : 'Not Available'}
               </Typography>
             </View>

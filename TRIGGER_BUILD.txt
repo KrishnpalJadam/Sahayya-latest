@@ -1,1 +1,1 @@
-Build triggered at: 2026-08-15 14:31:00 UTC - Remove camera icon overlay badge from staff profile picture on HouseHoldStaffProfile
+Build triggered at: 2026-08-15 14:34:00 UTC - Fix Emergency Contact Relation missing issue on Houseowner Staff Profile by checking all nested data paths
