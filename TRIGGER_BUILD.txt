@@ -1,1 +1,1 @@
-Build triggered at: 2026-08-16 02:13:50 UTC - Restore mandatory Aadhaar OTP verification screen in Staff signup flow
+Build triggered at: 2026-08-16 02:43:15 UTC - Overhaul Previous Work Experience UI card layout in HouseHoldStaffProfile.js

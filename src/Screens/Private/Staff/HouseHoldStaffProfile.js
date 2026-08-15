@@ -393,14 +393,13 @@ const HouseHoldStaffProfile = ({ navigation, route }) => {
   const lastExperience = data?.last_exp || data?.lastWorkExperience || {};
   const rawRoleStr = lastExperience?.role || lastExperience?.designation || lastExperience?.title;
   const displayRoleNames = resolveRoleNames(rawRoleStr);
-
-  const previousWorkSummary = [
-    displayRoleNames,
-    lastExperience?.salary ? `Salary: ₹${Number(lastExperience.salary).toLocaleString('en-IN')}` : '',
-    lastExperience?.join_date && lastExperience?.end_date
-      ? `${moment(lastExperience.join_date).format('DD MMM YYYY')} - ${moment(lastExperience.end_date).format('DD MMM YYYY')}`
-      : '',
-  ].filter(Boolean).join('\n');
+  const prevRole = displayRoleNames || (typeof data?.role === 'string' ? data.role : '');
+  const prevSalary = lastExperience?.salary ? `₹${Number(lastExperience.salary).toLocaleString('en-IN')}` : '';
+  const prevDate = (lastExperience?.join_date && lastExperience?.end_date)
+    ? `${moment(lastExperience.join_date).format('DD MMM YYYY')} – ${moment(lastExperience.end_date).format('DD MMM YYYY')}`
+    : lastExperience?.join_date
+    ? `From ${moment(lastExperience.join_date).format('DD MMM YYYY')}`
+    : '';
   const reviews =
     data?.reviews_received ||
     data?.reviewsReceived ||
@@ -875,14 +874,46 @@ const HouseHoldStaffProfile = ({ navigation, route }) => {
               <Typography style={styles.cardTitle}>
                 Previous Work Experience
               </Typography>
-              <View style={styles.rowNoBorder}>
-                <Image source={ImageConstant.Briefcase} style={styles.icon} />
-                <View style={styles.textBox}>
-                  <Typography style={styles.value}>
-                    {previousWorkSummary || 'Not Available'}
-                  </Typography>
+              {prevRole || prevSalary || prevDate ? (
+                <>
+                  {prevRole ? (
+                    <View style={prevSalary || prevDate ? styles.row : styles.rowNoBorder}>
+                      <Image source={ImageConstant.Briefcase} style={styles.icon} />
+                      <View style={styles.textBox}>
+                        <Typography style={styles.label}>Role / Designation</Typography>
+                        <Typography style={styles.value}>{prevRole}</Typography>
+                      </View>
+                    </View>
+                  ) : null}
+
+                  {prevSalary ? (
+                    <View style={prevDate ? styles.row : styles.rowNoBorder}>
+                      <Image source={ImageConstant.Salary || ImageConstant.Dollar || ImageConstant.cash} style={[styles.icon, { resizeMode: 'contain', tintColor: '#D98579' }]} />
+                      <View style={styles.textBox}>
+                        <Typography style={styles.label}>Last Drawn Salary</Typography>
+                        <Typography style={styles.value}>{prevSalary}</Typography>
+                      </View>
+                    </View>
+                  ) : null}
+
+                  {prevDate ? (
+                    <View style={styles.rowNoBorder}>
+                      <Image source={ImageConstant.date} style={styles.icon} />
+                      <View style={styles.textBox}>
+                        <Typography style={styles.label}>Working Period</Typography>
+                        <Typography style={styles.value}>{prevDate}</Typography>
+                      </View>
+                    </View>
+                  ) : null}
+                </>
+              ) : (
+                <View style={styles.rowNoBorder}>
+                  <Image source={ImageConstant.Briefcase} style={styles.icon} />
+                  <View style={styles.textBox}>
+                    <Typography style={styles.value}>Not Available</Typography>
+                  </View>
                 </View>
-              </View>
+              )}
             </View>
 
             <View style={styles.card}>
