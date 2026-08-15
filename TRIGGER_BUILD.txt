@@ -1,1 +1,1 @@
-Build triggered at: 2026-08-15 22:53:20 UTC - Include user manual fixes in HouseHoldStaffProfile.js
+Build triggered at: 2026-08-16 02:13:50 UTC - Restore mandatory Aadhaar OTP verification screen in Staff signup flow

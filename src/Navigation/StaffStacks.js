@@ -66,18 +66,30 @@ const RootStack = () => {
     global.Profile();
   }, []);
 
-  // Check if staff profile onboarding is completed
+  // Check staff profile onboarding status & Aadhaar verification
+  const isAadhaarVerified =
+    userDetail?.is_verified == 1 ||
+    userDetail?.aadhar__verify == 1 ||
+    userDetail?.aadhaar_verify == 1 ||
+    Boolean(userDetail?.aadhar_number || userDetail?.aadhaar_number);
+
   const isProfileComplete =
     userDetail?.is_staff_added == 1 ||
     (userDetail?.step && Number(userDetail?.step) >= 5) ||
     Boolean(userDetail?.user_work_info || userDetail?.work_info);
+
+  const initialRoute = isProfileComplete
+    ? 'TabNavigationForStaff'
+    : !isAadhaarVerified
+    ? 'Aadhaar'
+    : 'StepFirst';
 
   return (
     <Stack.Navigator
       screenOptions={{
         headerShown: false,
       }}
-      initialRouteName={isProfileComplete ? 'TabNavigationForStaff' : 'StepFirst'}
+      initialRouteName={initialRoute}
     >
       <Stack.Screen
         name="TabNavigationForStaff"
