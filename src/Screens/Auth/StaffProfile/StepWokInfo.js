@@ -244,29 +244,30 @@ const StepWokInfo = forwardRef(({ navigation }, ref) => {
   // Match and load role when both workInfo and roles are available
   useEffect(() => {
     const workInfo = userDetail?.user_work_info || userDetail?.work_info || {};
+    const primaryRoleValue = workInfo?.primary_role || userDetail?.primary_role || userDetail?.user_detail?.primary_role;
 
-    if (workInfo?.primary_role && roles.length > 0) {
-      // Find role ID by matching the role name
-      const roleNames = Array.isArray(workInfo.primary_role) 
-          ? workInfo.primary_role 
-          : workInfo.primary_role.split(',').map(s => s.trim()).filter(Boolean);
+    if (primaryRoleValue && roles.length > 0) {
+      const roleNames = Array.isArray(primaryRoleValue) 
+          ? primaryRoleValue 
+          : String(primaryRoleValue).split(',').map(s => s.trim()).filter(Boolean);
       
       const roleIds = [];
       roleNames.forEach(name => {
          const roleObj = roles.find(r => 
              r.label === name || 
-             r.label?.toLowerCase() === name.toLowerCase() || 
-             r.value === name || 
-             r.id === name
+             r.label?.toLowerCase() === String(name).toLowerCase() || 
+             String(r.value) === String(name) || 
+             String(r.id) === String(name)
          );
          if (roleObj) roleIds.push(roleObj.value || roleObj.id);
+         else roleIds.push(name);
       });
       
       if (roleIds.length > 0) {
         setSelectedRole(roleIds);
       }
     }
-  }, [roles, userDetail?.user_work_info, userDetail?.work_info]);
+  }, [roles, userDetail?.user_work_info, userDetail?.work_info, userDetail?.primary_role]);
 
   // Fetch skills when roles are selected
   useEffect(() => {
