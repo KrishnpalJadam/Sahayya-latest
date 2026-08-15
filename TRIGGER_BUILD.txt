@@ -1,1 +1,1 @@
-Build triggered at: 2026-08-16 03:27:25 UTC - Restrict Terms & Policy Acceptance modal to Dashboard only (suppress on onboarding steps like Aadhaar screen)
+Build triggered at: 2026-08-16 03:37:06 UTC - Hardcode test Aadhaar 916087677101 with test OTP 123456 across backend and frontend

@@ -43,7 +43,9 @@ const Aadhaar = ({ navigation }) => {
         data,
         sucess => {
           setIsLoading(false);
-          SimpleToast.show(sucess?.message || 'OTP Sent', SimpleToast.SHORT);
+          const isTestNumber = mobile === '916087677101' || mobile === '916087677100';
+          const msg = isTestNumber ? 'OTP Sent (Test OTP: 123456)' : (sucess?.message || 'OTP Sent');
+          SimpleToast.show(msg, SimpleToast.LONG);
           const userId = sucess?.data?.user_id || sucess?.data?.id;
           navigation?.navigate('AadharOtp', { 
             mobile: mobile,
