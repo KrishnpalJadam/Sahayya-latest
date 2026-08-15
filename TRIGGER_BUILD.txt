@@ -1,1 +1,1 @@
-Build triggered at: 2026-08-15 18:20:30 UTC - Include user manual profile, validation, location, and staff form updates
+Build triggered at: 2026-08-15 18:26:40 UTC - Include user manual syntax fix in ListingJob.js for release APK build

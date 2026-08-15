@@ -27,44 +27,7 @@ const getProfileImage = (img) => {
   if (img.startsWith('http')) return img;
   const baseUrl = API.replace('/api/', '');
   return `${baseUrl}${img}`;
-};},
-  {
-    id: 2,
-    name: 'Robert Williams',
-    initials: 'RW',
-    type: 'Sick Leave',
-    dates: '2024-07-01 → 2024-07-09',
-    reason: 'Recovering from a severe flu, doctor recommended rest.',
-    status: 'Approved',
-  },
-  {
-    id: 3,
-    name: 'Maria Garcia',
-    initials: 'MG',
-    type: 'Casual Leave',
-    dates: '2024-07-25 → 2024-07-30',
-    reason: 'Attending a cousin’s wedding ceremony.',
-    status: 'Pending',
-  },
-  {
-    id: 4,
-    name: 'David Lee',
-    initials: 'DL',
-    type: 'Sick Leave',
-    dates: '2024-07-08 → 2024-07-16',
-    reason: 'Expecting the arrival of a new family member.',
-    status: 'Rejected',
-  },
-  {
-    id: 5,
-    name: 'Sophia Chen',
-    initials: 'SC',
-    type: 'Annual Leave',
-    dates: '2024-07-23 → 2024-07-26',
-    reason: 'Home renovation project.',
-    status: 'Pending',
-  },
-];
+};
 
 export default function ListingJob({ navigation, route }) {
   const [listAppJob, setListAppList] = useState([]);
