@@ -46,8 +46,8 @@ const terminationReasons = [
 ];
 
 const getProfileImage = (img) => {
-  if (!img || isPlaceholderImage(img)) return null;
-  if (typeof img === 'string' && img.startsWith('http')) return img;
+  if (!img || typeof img !== 'string' || isPlaceholderImage(img)) return null;
+  if (img.startsWith('http')) return img;
   const baseUrl = (API && typeof API === 'string') ? API.replace('/api/', '') : '';
   return `${baseUrl}${img}`;
 };
@@ -272,9 +272,9 @@ const HouseHoldStaffProfile = ({ navigation, route }) => {
   }
 
   // Address: try addresses array, then single address object, then nested structures, then flat fields
-  const allAddresses = data?.addresses || [];
-  const presentAddr = allAddresses.find(a => a.address_type === 'present') || allAddresses[0] || {};
-  const permanentAddr = allAddresses.find(a => a.address_type === 'permanent') || allAddresses[1] || {};
+  const allAddresses = Array.isArray(data?.addresses) ? data.addresses : [];
+  const presentAddr = allAddresses.find(a => a?.address_type === 'present') || allAddresses[0] || {};
+  const permanentAddr = allAddresses.find(a => a?.address_type === 'permanent') || allAddresses[1] || {};
   const addr = presentAddr;
   const addrStreet = addr?.street || data?.street || data?.street_address || '';
   const addrLocality = addr?.area_locality || addr?.locality || addr?.area || data?.locality || data?.area || '';
@@ -390,6 +390,7 @@ const HouseHoldStaffProfile = ({ navigation, route }) => {
     return resolved.filter(Boolean).join(', ');
   };
 
+  const lastExperience = data?.last_exp || data?.lastWorkExperience || {};
   const rawRoleStr = lastExperience?.role || lastExperience?.designation || lastExperience?.title;
   const displayRoleNames = resolveRoleNames(rawRoleStr);
 
@@ -418,10 +419,10 @@ const HouseHoldStaffProfile = ({ navigation, route }) => {
   // KYC Document image URLs
   const kycInfo = data?.kycInformation || data?.kyc_information || {};
   const getDocUrl = (path) => {
-    if (!path || isPlaceholderImage(path)) {
+    if (!path || typeof path !== 'string' || isPlaceholderImage(path)) {
       return null;
     }
-    if (typeof path === 'string' && path.startsWith('http')) return path;
+    if (path.startsWith('http')) return path;
     const baseUrl = (API && typeof API === 'string') ? API.replace('/api/', '') : '';
     return `${baseUrl}${path}`;
   };
@@ -1580,7 +1581,7 @@ const HouseHoldStaffProfile = ({ navigation, route }) => {
                   {fullName}
                 </Typography>
                 <Typography type={Font.Poppins_Regular} size={12} color="#888">
-                  {data?.user_work_info?.primary_role || 'Staff'}
+                  {displayRole || 'Staff'}
                 </Typography>
               </View>
             </View>
