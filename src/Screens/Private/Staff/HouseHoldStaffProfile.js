@@ -1028,7 +1028,7 @@ const HouseHoldStaffProfile = ({ navigation, route }) => {
             )}
             {data?.user_work_info?.salary && (
               <View style={styles.row}>
-                <Image source={ImageConstant.Dollar} style={styles.icon} />
+                <Image source={ImageConstant.Salary || ImageConstant.cash} style={[styles.icon, { resizeMode: 'contain', tintColor: '#D98579' }]} />
                 <View style={styles.textBox}>
                   <Typography style={styles.label}>Salary</Typography>
                   <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '95%' }}>
@@ -1656,7 +1656,9 @@ const HouseHoldStaffProfile = ({ navigation, route }) => {
               onPress={handleSubmitTerminate}
               title={isBlacklist ? "Confirm & Blacklist" : "Confirm Termination"}
               loader={submitLoading}
-              main_style={{ width: '100%', marginTop: 16, marginBottom: 10, backgroundColor: isBlacklist ? '#DE3B40' : '#D98579' }}
+              linerColor={isBlacklist ? ['#DC2626', '#991B1B'] : ['#D98579', '#D98579']}
+              style={{ height: 48, borderRadius: 12, marginVertical: 0 }}
+              main_style={{ width: '100%', marginTop: 16, marginBottom: 10 }}
             />
             </ScrollView>
           </View>

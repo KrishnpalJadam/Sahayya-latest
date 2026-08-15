@@ -1,1 +1,1 @@
-Build triggered at: 2026-08-15 14:34:00 UTC - Fix Emergency Contact Relation missing issue on Houseowner Staff Profile by checking all nested data paths
+Build triggered at: 2026-08-15 17:07:00 UTC - Release build with complete UI redesign, mandatory OTP hiring workflow, salary icon fix, and backend staff document upload fix
