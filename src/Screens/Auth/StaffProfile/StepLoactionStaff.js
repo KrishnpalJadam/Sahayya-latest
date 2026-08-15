@@ -228,10 +228,12 @@ const StepLoactionStaff = forwardRef((props, ref) => {
         setPermanentLat(prev => (prev !== newLat ? newLat : prev));
         setPermanentLong(prev => (prev !== newLong ? newLong : prev));
         setPermanentId(prev => (prev !== newId ? newId : prev));
-        if (permanentAddress?.id) {
-          setPermanentLocked(true);
-        }
+        setPermanentLocked(true);
+      } else {
+        setPermanentLocked(true);
       }
+    } else {
+      setPermanentLocked(true);
     }
 
     // Update ref after processing
@@ -369,29 +371,7 @@ const StepLoactionStaff = forwardRef((props, ref) => {
       ),
     };
 
-    if (!permanentLocked) {
-      error.permanentStreet = validators?.checkRequire(
-        'Permanent Street',
-        permanentStreet,
-      );
-      error.permanentCity = validators?.checkRequire('Permanent City', permanentCity);
-      error.permanentState = validators?.checkRequire(
-        'Permanent State',
-        permanentState,
-      );
-      error.permanentPincode = validators?.checkRequire(
-        'Permanent Pincode',
-        permanentPincode,
-      );
-      error.permanentAreaLocality = validators?.checkRequire(
-        'Permanent Area / Locality',
-        permanentAreaLocality,
-      );
-      error.permanentGoogleLocation = validators?.checkRequire(
-        'Permanent Google Location',
-        permanentGoogleLocation,
-      );
-    }
+    // Permanent address is verified from Aadhaar and non-editable - skip permanent validation
 
     setErrors(error);
 
@@ -569,143 +549,38 @@ const StepLoactionStaff = forwardRef((props, ref) => {
             <Typography type={Font?.Poppins_SemiBold} size={18}>
               {LocalizedStrings.EditProfile?.Permanent_Address || 'Permanent Address'}
             </Typography>
-            {permanentLocked && (
-              <View style={styles.lockedBadge}>
-                <Typography type={Font?.Poppins_Medium} size={11} color="#1F6E43">
-                  Saved
-                </Typography>
-              </View>
-            )}
+            <View style={styles.lockedBadge}>
+              <Typography type={Font?.Poppins_Medium} size={11} color="#1F6E43">
+                Aadhaar Verified
+              </Typography>
+            </View>
           </View>
 
-          {permanentLocked ? (
-            <View style={styles.lockedCard}>
-              <Typography size={12} color="#555555" style={styles.lockedNote}>
-                Permanent address is verified and cannot be edited after it is saved. Contact support if you need to update it.
-              </Typography>
-              <View style={styles.lockedRow}>
-                <Typography type={Font?.Poppins_SemiBold} size={12} color="#8A8A8A" style={{ flex: 1, marginRight: 10 }}>House / Flat / Floor / Block</Typography>
-                <Typography type={Font?.Poppins_Regular} size={13} color="#111" style={{ flex: 1, textAlign: 'right' }}>{permanentStreet || '-'}</Typography>
-              </View>
-              <View style={styles.lockedRow}>
-                <Typography type={Font?.Poppins_SemiBold} size={12} color="#8A8A8A" style={{ flex: 1, marginRight: 10 }}>Apartment / Building / Road / Area</Typography>
-                <Typography type={Font?.Poppins_Regular} size={13} color="#111" style={{ flex: 1, textAlign: 'right' }}>{permanentAreaLocality || '-'}</Typography>
-              </View>
-              <View style={styles.lockedRow}>
-                <Typography type={Font?.Poppins_SemiBold} size={12} color="#8A8A8A" style={{ flex: 1, marginRight: 10 }}>City</Typography>
-                <Typography type={Font?.Poppins_Regular} size={13} color="#111" style={{ flex: 1, textAlign: 'right' }}>{permanentCity || '-'}</Typography>
-              </View>
-              <View style={styles.lockedRow}>
-                <Typography type={Font?.Poppins_SemiBold} size={12} color="#8A8A8A" style={{ flex: 1, marginRight: 10 }}>State</Typography>
-                <Typography type={Font?.Poppins_Regular} size={13} color="#111" style={{ flex: 1, textAlign: 'right' }}>{permanentState || '-'}</Typography>
-              </View>
-              <View style={styles.lockedRow}>
-                <Typography type={Font?.Poppins_SemiBold} size={12} color="#8A8A8A" style={{ flex: 1, marginRight: 10 }}>Pincode</Typography>
-                <Typography type={Font?.Poppins_Regular} size={13} color="#111" style={{ flex: 1, textAlign: 'right' }}>{permanentPincode || '-'}</Typography>
-              </View>
+          <View style={styles.lockedCard}>
+            <Typography size={12} color="#555555" style={styles.lockedNote}>
+              Permanent address is auto-fetched from Aadhaar verification and is non-editable. Contact support if you need to update it.
+            </Typography>
+            <View style={styles.lockedRow}>
+              <Typography type={Font?.Poppins_SemiBold} size={12} color="#8A8A8A" style={{ flex: 1, marginRight: 10 }}>House / Flat / Floor / Block</Typography>
+              <Typography type={Font?.Poppins_Regular} size={13} color="#111" style={{ flex: 1, textAlign: 'right' }}>{permanentStreet || userDetail?.permanent_street || '-'}</Typography>
             </View>
-          ) : (
-            <>
-          <Typography size={12} color="#707070" style={styles.addressIntro}>
-            Choose the exact location first, then complete your address details.
-          </Typography>
-
-          <MapLocationPicker
-            title="Pin your exact location"
-            location={{
-              google_location: permanentGoogleLocation,
-              lat: permanentLat,
-              long: permanentLong,
-              street: permanentStreet,
-              area_locality: permanentAreaLocality,
-              city: permanentCity,
-              state: permanentState,
-              pincode: permanentPincode,
-            }}
-            selectedLabel={[permanentAreaLocality, permanentCity, permanentState].filter(Boolean).join(', ')}
-            onConfirm={handlePermanentPlaceSelected}
-            error={errors?.permanentGoogleLocation}
-          />
-
-          {permanentGoogleLocation ? (
-            <View style={styles.addressDetails}>
-              <Typography type={Font.Poppins_SemiBold} size={15}>
-                Complete address
-              </Typography>
-              <Input
-                title="House / Flat / Floor / Block"
-                placeholder="e.g. Flat 12B, 3rd Floor"
-                value={permanentStreet}
-                onChange={text => {
-                  permanentTypedRef.current = true;
-                  setPermanentStreet(text);
-                  if (errors.permanentStreet) setErrors({...errors, permanentStreet: null});
-                }}
-                error={errors.permanentStreet}
-              />
-              <Input
-                title="Apartment / Building / Road / Area"
-                placeholder="e.g. Phase 1, Model Town"
-                value={permanentAreaLocality}
-                onChange={text => {
-                  permanentTypedRef.current = true;
-                  setPermanentAreaLocality(text);
-                  if (errors.permanentAreaLocality) setErrors({...errors, permanentAreaLocality: null});
-                }}
-                error={errors.permanentAreaLocality}
-              />
-              <View style={styles.row}>
-                <View style={styles.cityContainer}>
-                  <Input
-                    title={LocalizedStrings.EditProfile?.City || 'City'}
-                    placeholder="Auto-filled, or enter city"
-                    value={permanentCity}
-                    onChange={text => {
-                      permanentTypedRef.current = true;
-                      setPermanentCity(text);
-                      if (errors.permanentCity) setErrors({...errors, permanentCity: null});
-                    }}
-                    error={errors.permanentCity}
-                  />
-                </View>
-                <View style={styles.stateContainer}>
-                  <Input
-                    title={LocalizedStrings.EditProfile?.State || 'State'}
-                    placeholder="Auto-filled, or enter state"
-                    value={permanentState}
-                    onChange={text => {
-                      permanentTypedRef.current = true;
-                      setPermanentState(text);
-                      if (errors.permanentState) setErrors({...errors, permanentState: null});
-                    }}
-                    error={errors.permanentState}
-                  />
-                </View>
-              </View>
-              <Input
-                title={LocalizedStrings.EditProfile?.Pincode || LocalizedStrings.StaffProfile?.Pincode || 'Pincode'}
-                placeholder="Enter 6-digit pincode"
-                keyboardType="numeric"
-                value={permanentPincode}
-                onChange={text => {
-                  const numericValue = text.replace(/[^0-9]/g, '');
-                  permanentTypedRef.current = true;
-                  setPermanentPincode(numericValue);
-                  if (errors.permanentPincode) setErrors({...errors, permanentPincode: null});
-                }}
-                error={errors.permanentPincode}
-                maxLength={6}
-              />
+            <View style={styles.lockedRow}>
+              <Typography type={Font?.Poppins_SemiBold} size={12} color="#8A8A8A" style={{ flex: 1, marginRight: 10 }}>Apartment / Building / Road / Area</Typography>
+              <Typography type={Font?.Poppins_Regular} size={13} color="#111" style={{ flex: 1, textAlign: 'right' }}>{permanentAreaLocality || userDetail?.permanent_area || '-'}</Typography>
             </View>
-          ) : (
-            <View style={styles.mapFirstHint}>
-              <Typography size={11} color="#777777">
-                Address fields will appear after you confirm the pin.
-              </Typography>
+            <View style={styles.lockedRow}>
+              <Typography type={Font?.Poppins_SemiBold} size={12} color="#8A8A8A" style={{ flex: 1, marginRight: 10 }}>City</Typography>
+              <Typography type={Font?.Poppins_Regular} size={13} color="#111" style={{ flex: 1, textAlign: 'right' }}>{permanentCity || userDetail?.permanent_city || '-'}</Typography>
             </View>
-          )}
-            </>
-          )}
+            <View style={styles.lockedRow}>
+              <Typography type={Font?.Poppins_SemiBold} size={12} color="#8A8A8A" style={{ flex: 1, marginRight: 10 }}>State</Typography>
+              <Typography type={Font?.Poppins_Regular} size={13} color="#111" style={{ flex: 1, textAlign: 'right' }}>{permanentState || userDetail?.permanent_state || '-'}</Typography>
+            </View>
+            <View style={styles.lockedRow}>
+              <Typography type={Font?.Poppins_SemiBold} size={12} color="#8A8A8A" style={{ flex: 1, marginRight: 10 }}>Pincode</Typography>
+              <Typography type={Font?.Poppins_Regular} size={13} color="#111" style={{ flex: 1, textAlign: 'right' }}>{permanentPincode || userDetail?.permanent_pincode || '-'}</Typography>
+            </View>
+          </View>
         </View>
       </View>
     </>
