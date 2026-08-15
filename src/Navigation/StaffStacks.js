@@ -66,12 +66,14 @@ const RootStack = () => {
     global.Profile();
   }, []);
 
-  // Check staff profile onboarding status & Aadhaar verification
+  // Check staff profile onboarding status & Aadhaar OTP verification
   const isAadhaarVerified =
-    userDetail?.is_verified == 1 ||
     userDetail?.aadhar__verify == 1 ||
-    userDetail?.aadhaar_verify == 1 ||
-    Boolean(userDetail?.aadhar_number || userDetail?.aadhaar_number);
+    userDetail?.aadhar__verify === true ||
+    userDetail?.is_aadhar_verified == 1 ||
+    userDetail?.is_aadhar_verified === true ||
+    userDetail?.user_detail?.aadhar__verify == 1 ||
+    userDetail?.user_detail?.is_aadhar_verified == 1;
 
   const isProfileComplete =
     userDetail?.is_staff_added == 1 ||
