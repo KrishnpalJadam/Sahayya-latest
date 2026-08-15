@@ -5,7 +5,6 @@ import {
   Image,
   FlatList,
   ActivityIndicator,
-  Alert,
 } from 'react-native';
 import CommanView from '../../../Component/CommanView';
 import HeaderForUser from '../../../Component/HeaderForUser';
@@ -16,7 +15,6 @@ import { Font } from '../../../Constants/Font';
 import { GET_WITH_TOKEN } from '../../../Backend/Backend';
 import { Joblist_Admin, ListJob } from '../../../Backend/api_routes';
 import { useSelector } from 'react-redux';
-import SimpleToast from 'react-native-simple-toast';
 
 const SelectJob = ({ navigation }) => {
   const [jobs, setJobs] = useState([]);
@@ -69,15 +67,17 @@ const SelectJob = ({ navigation }) => {
         <Typography type={Font.Poppins_SemiBold} style={styles.jobTitle}>
           {item.title || 'Untitled Job'}
         </Typography>
-        <View style={[
-          styles.statusBadge,
-          { backgroundColor: item.status === 'open' ? '#E8F5E9' : '#FFF3E0' }
-        ]}>
+        <View
+          style={[
+            styles.statusBadge,
+            { backgroundColor: item.status === 'open' ? '#E8F5E9' : '#FFF3E0' },
+          ]}
+        >
           <Typography
             type={Font.Poppins_Medium}
             style={[
               styles.statusText,
-              { color: item.status === 'open' ? '#4CAF50' : '#FF9800' }
+              { color: item.status === 'open' ? '#2E7D32' : '#E65100' },
             ]}
           >
             {(item.status || 'open').charAt(0).toUpperCase() + (item.status || 'open').slice(1)}
@@ -88,7 +88,7 @@ const SelectJob = ({ navigation }) => {
       <View style={styles.jobDetails}>
         <View style={styles.detailRow}>
           <Typography type={Font.Poppins_Regular} style={styles.detailLabel}>Salary:</Typography>
-          <Typography type={Font.Poppins_Medium} style={styles.detailValue}>
+          <Typography type={Font.Poppins_SemiBold} style={styles.detailValue}>
             {formatPrice(item.compensation || item.expected_compensation)}
             {item.compensation_type ? ` / ${item.compensation_type}` : ''}
           </Typography>
@@ -96,7 +96,7 @@ const SelectJob = ({ navigation }) => {
         {item.city && item.state && (
           <View style={styles.detailRow}>
             <Typography type={Font.Poppins_Regular} style={styles.detailLabel}>Location:</Typography>
-            <Typography type={Font.Poppins_Regular} style={styles.detailValue}>
+            <Typography type={Font.Poppins_Regular} style={styles.detailValueText}>
               {item.city}, {item.state}
             </Typography>
           </View>
@@ -104,7 +104,7 @@ const SelectJob = ({ navigation }) => {
         {item.commitment_type && (
           <View style={styles.detailRow}>
             <Typography type={Font.Poppins_Regular} style={styles.detailLabel}>Type:</Typography>
-            <Typography type={Font.Poppins_Regular} style={styles.detailValue}>
+            <Typography type={Font.Poppins_Regular} style={styles.detailValueText}>
               {item.commitment_type}
             </Typography>
           </View>
@@ -117,23 +117,28 @@ const SelectJob = ({ navigation }) => {
         </Typography>
       ) : null}
 
-      <View style={styles.hiresRow}>
-        <Image source={ImageConstant?.Users} style={styles.hiresIcon} />
-        <Typography type={Font.Poppins_Medium} style={styles.hiresText}>
-          {item.users_count || 0} {(item.users_count || 0) === 1 ? 'hire' : 'hires'}
-        </Typography>
+      <View style={styles.actionRow}>
+        <View style={styles.hiresContainer}>
+          <Image source={ImageConstant?.Users} style={styles.hiresIcon} />
+          <Typography type={Font.Poppins_Medium} style={styles.hiresText}>
+            {item.users_count || 0} {(item.users_count || 0) === 1 ? 'hire' : 'hires'}
+          </Typography>
+        </View>
+        <Button
+          title="Select This Job"
+          style={styles.selectBtnInner}
+          title_style={styles.selectBtnText}
+          onPress={() => handleSelectJob(item)}
+        />
       </View>
-
-      <Button
-        title="Select This Job"
-        main_style={styles.selectButton}
-        onPress={() => handleSelectJob(item)}
-      />
     </View>
   );
 
   const renderEmpty = () => (
     <View style={styles.emptyContainer}>
+      <View style={styles.emptyIconCircle}>
+        <Image source={ImageConstant?.Briefcase} style={styles.emptyIcon} />
+      </View>
       <Typography type={Font.Poppins_SemiBold} style={styles.emptyTitle}>
         No Job Postings Found
       </Typography>
@@ -142,7 +147,8 @@ const SelectJob = ({ navigation }) => {
       </Typography>
       <Button
         title="Post a Job"
-        main_style={styles.postJobButton}
+        style={styles.postJobBtnInner}
+        title_style={styles.postJobBtnText}
         onPress={() => navigation.navigate('PostNewJob')}
       />
     </View>
@@ -157,11 +163,16 @@ const SelectJob = ({ navigation }) => {
         style_title={{ fontSize: 18 }}
       />
 
-      <View style={styles.container}>
+      <View style={styles.topBanner}>
         <Image source={ImageConstant?.Briefcase} style={styles.topIcon} />
-        <Typography type={Font.Poppins_Medium} style={styles.subtitle}>
-          Choose which job you want to assign staff to
-        </Typography>
+        <View style={styles.topBannerTextContainer}>
+          <Typography type={Font.Poppins_SemiBold} style={styles.topBannerTitle}>
+            Assign Job to Staff
+          </Typography>
+          <Typography type={Font.Poppins_Regular} style={styles.topBannerSubtitle}>
+            Choose which job posting you want to assign your staff member to
+          </Typography>
+        </View>
       </View>
 
       {loading ? (
@@ -185,14 +196,37 @@ const SelectJob = ({ navigation }) => {
 export default SelectJob;
 
 const styles = StyleSheet.create({
-  container: {
-    paddingHorizontal: 16,
-    paddingTop: 10,
+  topBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFF5F3',
+    borderWidth: 1,
+    borderColor: '#F5C6C0',
+    borderRadius: 14,
+    marginHorizontal: 16,
+    marginTop: 10,
+    marginBottom: 4,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
   },
-  subtitle: {
-    fontSize: 13,
-    color: '#888',
-    marginBottom: 8,
+  topIcon: {
+    width: 28,
+    height: 28,
+    tintColor: '#D98579',
+    marginRight: 12,
+    resizeMode: 'contain',
+  },
+  topBannerTextContainer: {
+    flex: 1,
+  },
+  topBannerTitle: {
+    fontSize: 14,
+    color: '#111',
+  },
+  topBannerSubtitle: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: 2,
   },
   loaderContainer: {
     flex: 1,
@@ -200,31 +234,32 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   listContent: {
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingTop: 10,
     paddingBottom: 30,
   },
   card: {
     backgroundColor: '#fff',
-    padding: 15,
-    marginBottom: 12,
-    borderRadius: 12,
+    padding: 16,
+    marginBottom: 14,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#EBEBEA',
     elevation: 2,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    borderColor: '#EBEBEA',
-    borderWidth: 1,
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
   },
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 12,
   },
   jobTitle: {
     fontSize: 16,
-    color: '#333',
+    color: '#111',
     flex: 1,
   },
   statusBadge: {
@@ -235,82 +270,114 @@ const styles = StyleSheet.create({
   },
   statusText: {
     fontSize: 11,
+    fontWeight: '600',
   },
   jobDetails: {
     marginBottom: 8,
   },
   detailRow: {
     flexDirection: 'row',
-    marginBottom: 4,
+    alignItems: 'center',
+    marginBottom: 6,
   },
   detailLabel: {
     fontSize: 13,
-    color: '#888',
-    width: 80,
+    color: '#777',
+    width: 70,
   },
   detailValue: {
+    fontSize: 13,
+    color: '#D98579',
+    flex: 1,
+  },
+  detailValueText: {
     fontSize: 13,
     color: '#333',
     flex: 1,
   },
   description: {
     fontSize: 12,
-    color: '#999',
-    marginBottom: 12,
-  },
-  selectButton: {
-    backgroundColor: '#D98579',
-    borderRadius: 8,
-    paddingVertical: 12,
-    alignItems: 'center',
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 30,
-    marginTop: 60,
-  },
-  emptyTitle: {
-    fontSize: 18,
-    color: '#333',
-    marginBottom: 10,
-    textAlign: 'center',
-  },
-  emptySubtitle: {
-    fontSize: 14,
     color: '#888',
-    textAlign: 'center',
-    marginBottom: 20,
+    marginBottom: 10,
+    fontStyle: 'italic',
   },
-  postJobButton: {
-    backgroundColor: '#D98579',
-    borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 30,
+  actionRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 10,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#F2F2F0',
   },
-  topIcon: {
-    width: 40,
-    height: 40,
-    marginBottom: 8,
-    tintColor: '#D98579',
-  },
-  hiresRow: {
+  hiresContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 8,
-    paddingTop: 8,
-    borderTopWidth: 1,
-    borderTopColor: '#F0F0F0',
   },
   hiresIcon: {
     width: 16,
     height: 16,
     marginRight: 6,
     tintColor: '#888',
+    resizeMode: 'contain',
   },
   hiresText: {
+    fontSize: 12,
+    color: '#777',
+  },
+  selectBtnInner: {
+    height: 38,
+    width: 135,
+    marginVertical: 0,
+    borderRadius: 10,
+  },
+  selectBtnText: {
     fontSize: 13,
-    color: '#888',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    marginTop: 50,
+  },
+  emptyIconCircle: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: '#FFF5F3',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#F5C6C0',
+  },
+  emptyIcon: {
+    width: 34,
+    height: 34,
+    tintColor: '#D98579',
+    resizeMode: 'contain',
+  },
+  emptyTitle: {
+    fontSize: 17,
+    color: '#111',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  emptySubtitle: {
+    fontSize: 13,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 20,
+    lineHeight: 18,
+  },
+  postJobBtnInner: {
+    height: 42,
+    width: 150,
+    marginVertical: 0,
+    borderRadius: 10,
+  },
+  postJobBtnText: {
+    fontSize: 14,
   },
 });
