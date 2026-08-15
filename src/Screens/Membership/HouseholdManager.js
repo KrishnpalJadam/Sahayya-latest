@@ -15,7 +15,7 @@ import { ImageConstant } from '../../Constants/ImageConstant';
 import Button from '../../Component/Button';
 import { calculateGst } from '../../Utils/gst';
 import { POST_WITH_TOKEN, GET_WITH_TOKEN } from '../../Backend/Backend';
-import { SUBSCRIPTIONS_BY_ROLE, SUBSCRIPTIONS, SUBSCRIBE_PLAN, SUBSCRIPTION_USER_CURRENT, SUBSCRIPTION_USER_SUBSCRIBE, SUBSCRIPTION_USER_CREATE_ORDER, SUBSCRIPTION_USER_VERIFY, ReferralCode } from '../../Backend/api_routes';
+import { SUBSCRIPTIONS_BY_ROLE, SUBSCRIPTIONS, SUBSCRIBE_PLAN, SUBSCRIPTION_USER_CURRENT, SUBSCRIPTION_USER_SUBSCRIBE, SUBSCRIPTION_USER_CREATE_ORDER, SUBSCRIPTION_USER_VERIFY, ReferralCode, PROFILE } from '../../Backend/api_routes';
 import { useSelector } from 'react-redux';
 import SimpleToast from 'react-native-simple-toast';
 import LocalizedStrings from '../../Constants/localization';
@@ -33,6 +33,7 @@ const HouseholdManager = ({ navigation }) => {
 
   const [subscriptions, setSubscriptions] = useState([]);
   const [currentPlan, setCurrentPlan] = useState(null);
+  const [userProfile, setUserProfile] = useState(null);
   const [currentPlanLoading, setCurrentPlanLoading] = useState(true);
   const [loading, setLoading] = useState(true);
   const [paymentLoading, setPaymentLoading] = useState(false);
@@ -66,9 +67,24 @@ const HouseholdManager = ({ navigation }) => {
     fetchCurrentPlan();
     fetchSubscriptions();
     fetchWalletBalance();
+    fetchUserProfile();
     // Membership data is loaded once whenever this screen is mounted.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const fetchUserProfile = () => {
+    GET_WITH_TOKEN(
+      PROFILE,
+      res => {
+        const u = res?.data || res?.user || res;
+        if (u && typeof u === 'object') {
+          setUserProfile(u);
+        }
+      },
+      () => {},
+      () => {},
+    );
+  };
 
   const fetchWalletBalance = () => {
     GET_WITH_TOKEN(
@@ -261,9 +277,9 @@ const HouseholdManager = ({ navigation }) => {
                 prefill: {
                   name: userDetail?.first_name
                     ? `${userDetail.first_name} ${userDetail.last_name || ''}`
-                    : userDetail?.name || '',
-                  email: userDetail?.email || '',
-                  contact: userDetail?.phone || userDetail?.mobile || '',
+                    : userDetail?.name || userProfile?.name || 'Customer',
+                  email: userDetail?.email || userDetail?.user?.email || userDetail?.data?.email || userProfile?.email || userProfile?.user?.email || '',
+                  contact: userDetail?.phone || userDetail?.mobile || userDetail?.phone_number || userProfile?.phone_number || userProfile?.phone || '',
                 },
               });
 

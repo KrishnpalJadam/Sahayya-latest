@@ -228,8 +228,8 @@ export const initiatePayment = async (options) => {
     order_id: orderId, // Include order ID if provided from backend
     prefill: {
       name: prefill.name || 'Customer',
-      email: prefill.email || 'customer@example.com',
-      contact: contactNumber || '9999999999',
+      email: (prefill.email && String(prefill.email).trim()) ? String(prefill.email).trim() : '',
+      contact: contactNumber || '',
     },
     notes: notes,
     theme: theme,

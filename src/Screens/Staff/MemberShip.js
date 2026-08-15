@@ -7,7 +7,7 @@ import { Font } from '../../Constants/Font'
 import Typography from '../../Component/UI/Typography'
 import Button from '../../Component/Button'
 import { POST_WITH_TOKEN, GET_WITH_TOKEN } from '../../Backend/Backend'
-import { SUBSCRIPTIONS_BY_ROLE, SUBSCRIPTIONS, SUBSCRIBE_PLAN, SUBSCRIPTION_USER_CURRENT, SUBSCRIPTION_USER_SUBSCRIBE, SUBSCRIPTION_USER_CREATE_ORDER, SUBSCRIPTION_USER_VERIFY } from '../../Backend/api_routes'
+import { SUBSCRIPTIONS_BY_ROLE, SUBSCRIPTIONS, SUBSCRIBE_PLAN, SUBSCRIPTION_USER_CURRENT, SUBSCRIPTION_USER_SUBSCRIBE, SUBSCRIPTION_USER_CREATE_ORDER, SUBSCRIPTION_USER_VERIFY, PROFILE } from '../../Backend/api_routes'
 import { useSelector } from 'react-redux'
 import SimpleToast from 'react-native-simple-toast'
 import LocalizedStrings from '../../Constants/localization'
@@ -25,14 +25,30 @@ const MemberShip = ({ navigation }) => {
     const [paymentLoading, setPaymentLoading] = useState(false);
     const [selectedPlanId, setSelectedPlanId] = useState(null);
     const [currentSub, setCurrentSub] = useState(null);
+    const [userProfile, setUserProfile] = useState(null);
     const [currentSubLoading, setCurrentSubLoading] = useState(true);
 
     useEffect(() => {
+        fetchUserProfile();
         fetchSubscriptions();
         fetchCurrentSubscription();
         // Membership data is loaded once whenever this screen is mounted.
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    const fetchUserProfile = () => {
+        GET_WITH_TOKEN(
+            PROFILE,
+            res => {
+                const u = res?.data || res?.user || res;
+                if (u && typeof u === 'object') {
+                    setUserProfile(u);
+                }
+            },
+            () => {},
+            () => {},
+        );
+    };
 
     const fetchCurrentSubscription = () => {
         setCurrentSubLoading(true);
@@ -175,9 +191,9 @@ const MemberShip = ({ navigation }) => {
                                 prefill: {
                                     name: userDetail?.first_name
                                         ? `${userDetail.first_name} ${userDetail.last_name || ''}`
-                                        : userDetail?.name || '',
-                                    email: userDetail?.email || '',
-                                    contact: userDetail?.phone || userDetail?.mobile || '',
+                                        : userDetail?.name || userProfile?.name || 'Customer',
+                                    email: userDetail?.email || userDetail?.user?.email || userDetail?.data?.email || userProfile?.email || userProfile?.user?.email || '',
+                                    contact: userDetail?.phone || userDetail?.mobile || userDetail?.phone_number || userProfile?.phone_number || userProfile?.phone || '',
                                 },
                             });
 

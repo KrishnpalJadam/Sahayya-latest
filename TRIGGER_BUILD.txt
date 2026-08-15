@@ -1,1 +1,1 @@
-Build triggered at: 2026-08-15 17:07:00 UTC - Release build with complete UI redesign, mandatory OTP hiring workflow, salary icon fix, and backend staff document upload fix
+Build triggered at: 2026-08-15 17:21:00 UTC - Auto-fill user email in Razorpay checkout prefill during plan purchase
