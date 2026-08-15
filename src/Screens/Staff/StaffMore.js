@@ -169,12 +169,9 @@ const StaffMore = ({ navigation }) => {
       {/* Profile Card */}
       <View style={styles.profileCard}>
         <Image source={userImage} style={styles.avatar} />
-        <View>
+        <View style={{ flex: 1, marginRight: 10 }}>
           <Typography type={Font?.Poppins_Medium} size={15}>
             {userName}
-          </Typography>
-          <Typography type={Font?.Poppins_Regular} size={11}>
-            {userRole}
           </Typography>
         </View>
         <TouchableOpacity style={styles.editBtn} onPress={() => {

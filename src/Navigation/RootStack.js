@@ -46,12 +46,19 @@ const Stack = createStackNavigator();
 
 const RootStack = () => {
   const userDetails = useSelector(state => state?.userDetails);
+
+  // Check if household profile onboarding is completed
+  const isHouseholdComplete =
+    userDetails?.is_profile_completed == 1 ||
+    (userDetails?.step && Number(userDetails?.step) >= 4) ||
+    Boolean(userDetails?.addresses && userDetails?.addresses?.length > 0);
+
   return (
     <Stack.Navigator
       screenOptions={{
         headerShown: false,
       }}
-      initialRouteName="TabNavigation"
+      initialRouteName={isHouseholdComplete ? 'TabNavigation' : 'Step1'}
     >
       <Stack.Screen
         name="TabNavigation"

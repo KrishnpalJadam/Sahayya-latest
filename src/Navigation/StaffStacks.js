@@ -66,12 +66,18 @@ const RootStack = () => {
     global.Profile();
   }, []);
 
+  // Check if staff profile onboarding is completed
+  const isProfileComplete =
+    userDetail?.is_staff_added == 1 ||
+    (userDetail?.step && Number(userDetail?.step) >= 5) ||
+    Boolean(userDetail?.user_work_info || userDetail?.work_info);
+
   return (
     <Stack.Navigator
       screenOptions={{
         headerShown: false,
       }}
-      initialRouteName="TabNavigationForStaff"
+      initialRouteName={isProfileComplete ? 'TabNavigationForStaff' : 'StepFirst'}
     >
       <Stack.Screen
         name="TabNavigationForStaff"

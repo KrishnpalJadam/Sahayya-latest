@@ -250,10 +250,7 @@ const StaffProfileMain = ({ navigation }) => {
         <CommanView>
             <HeaderForUser
                 title={LocalizedStrings.StaffProfile?.title || "Staff Profile"}
-                source_logo={ImageConstant?.pencle}
-                Profile_icon={userDetail?.image && userDetail.image}
                 style_title={styles.headerTitle}
-                onPressRightIcon={() => navigation.navigate('EditProfile')}
                 source_arrow={ImageConstant?.BackArrow}
                 onPressLeftIcon={() => navigation?.goBack()}
             />
@@ -272,7 +269,6 @@ const StaffProfileMain = ({ navigation }) => {
                         </TouchableOpacity>
                     </View>
                     <Typography style={styles.name} size={22}>{userName}</Typography>
-                    <Typography style={styles.role}>{userRole}</Typography>
 
                     <View style={styles.flexRow}>
                         <Image source={ImageConstant.phone} style={styles.icon} />

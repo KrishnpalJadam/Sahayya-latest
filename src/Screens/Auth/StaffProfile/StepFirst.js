@@ -166,6 +166,8 @@ const StepFirst = () => {
                 'Profile completed successfully',
                 SimpleToast.SHORT,
               );
+              if (global.Profile) global.Profile();
+              Dispatch(userDetails({ ...userDetail, is_staff_added: 1, step: 5 }));
             } catch (error) {
               console.log('Final step error:', error);
             } finally {

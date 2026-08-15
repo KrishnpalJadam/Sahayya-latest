@@ -1,1 +1,1 @@
-Build triggered at: 2026-08-15 21:17:10 UTC - Fix TC-048 (Terminate modal role overflow), TC-049 (Dashboard staff card role overflow), and TC-050 (Houseowner Redeem Credit button)
+Build triggered at: 2026-08-15 21:39:30 UTC - Remove role subtitles from More Options / Staff Profile cards and remove top header pencil edit icon
