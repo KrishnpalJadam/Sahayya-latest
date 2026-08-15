@@ -1,1 +1,1 @@
-Build triggered at: 2026-08-15 21:59:55 UTC - Fix FindStaff contact crash and PostNewJob compensation layout
+Build triggered at: 2026-08-15 22:37:15 UTC - Set 3-letter short forms (Mon, Yrl, Dly, Hrl) and fix popup container padding in DropdownComponent.js

@@ -45,13 +45,13 @@ const DropdownComponent = ({
         <View
           style={{
             flexDirection: 'row',
-            height: 50,
+            height: 44,
             alignItems: 'center',
             justifyContent: 'space-between',
             backgroundColor: isSelected ? '#FFF5F3' : 'white',
-            paddingHorizontal: 16,
+            paddingHorizontal: 10,
             borderRadius: 8,
-            marginHorizontal: 6,
+            marginHorizontal: 4,
             marginVertical: 2,
           }}>
           <Typography style={{ flex: 1 }} type={Font.Poppins_Medium} size={14}>
@@ -59,8 +59,8 @@ const DropdownComponent = ({
           </Typography>
           {multiSelect ? (
             <View style={{
-              height: 22,
-              width: 22,
+              height: 20,
+              width: 20,
               borderRadius: 6,
               borderWidth: 2,
               borderColor: isSelected ? '#D98579' : '#CCCCCC',
@@ -69,14 +69,14 @@ const DropdownComponent = ({
               justifyContent: 'center',
             }}>
               {isSelected && (
-                <Typography size={14} color="white" type={Font.Poppins_SemiBold}>
+                <Typography size={12} color="white" type={Font.Poppins_SemiBold}>
                   ✓
                 </Typography>
               )}
             </View>
           ) : (
             <Image
-              style={{ height: 20, width: 20, marginStart: 20, resizeMode: 'contain' }}
+              style={{ height: 18, width: 18, marginStart: 8, resizeMode: 'contain' }}
               source={
                 isSelected ? ImageConstant.radioButtonOn : ImageConstant.radioButtonOff
               }

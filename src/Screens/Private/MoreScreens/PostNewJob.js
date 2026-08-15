@@ -66,7 +66,7 @@ const PostNewJob = ({ navigation, route }) => {
 
   // Compensation
   const [expectedCompensation, setExpectedCompensation] = useState('');
-  const [compensationType, setCompensationType] = useState({ label: 'Monthly', value: 'monthly' });
+  const [compensationType, setCompensationType] = useState({ label: 'Mon', value: 'monthly' });
 
   // Location
   const [selectedAddress, setSelectedAddress] = useState(null);
@@ -960,10 +960,10 @@ const PostNewJob = ({ navigation, route }) => {
   };
 
   const compensationTypeOptions = [
-    { label: 'Monthly', value: 'monthly' },
-    { label: 'Yearly', value: 'Year' },
-    { label: 'Daily', value: 'daily' },
-    { label: 'Hourly', value: 'hourly' },
+    { label: 'Mon', value: 'monthly' },
+    { label: 'Yrl', value: 'Year' },
+    { label: 'Dly', value: 'daily' },
+    { label: 'Hrl', value: 'hourly' },
   ];
 
   return (
@@ -1037,6 +1037,7 @@ const PostNewJob = ({ navigation, route }) => {
               <DropdownComponent
                 title=""
                 MainBoxStyle={{ width: '100%', marginVertical: 0 }}
+                containerStyle={{ width: 135, minWidth: 120 }}
                 data={compensationTypeOptions}
                 value={compensationType?.value || compensationType}
                 onChange={item => handleCompensationTypeChange(item)}
