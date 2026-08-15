@@ -250,14 +250,19 @@ const UpdateProfile = forwardRef((props, ref) => {
       />
       {role.length > 0 && (
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginHorizontal: 16, marginBottom: 8 }}>
-          {role.map((r, i) => (
-            <View key={i} style={{ backgroundColor: '#FFF5F3', borderRadius: 16, paddingHorizontal: 12, paddingVertical: 5, marginRight: 8, marginBottom: 6, flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#D98579' }}>
-              <Typography size={12} color="#D98579">{roles.find(rl => rl.value == r)?.label || r}</Typography>
-              <TouchableOpacity onPress={() => setRole(prev => prev.filter(v => v !== r))} style={{ marginLeft: 6 }}>
-                <Typography size={12} color="#999">✕</Typography>
-              </TouchableOpacity>
-            </View>
-          ))}
+          {role.map((r, i) => {
+            const rVal = r?.value ?? r?.id ?? r;
+            const roleObj = roles.find(rl => String(rl.value) === String(rVal) || String(rl.id) === String(rVal) || rl.label === String(rVal));
+            const roleLabel = roleObj?.label || r?.label || String(rVal);
+            return (
+              <View key={i} style={{ backgroundColor: '#FFF5F3', borderRadius: 16, paddingHorizontal: 12, paddingVertical: 5, marginRight: 8, marginBottom: 6, flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#D98579' }}>
+                <Typography size={12} color="#D98579">{roleLabel}</Typography>
+                <TouchableOpacity onPress={() => setRole(prev => prev.filter(v => (v?.value ?? v?.id ?? v) !== rVal))} style={{ marginLeft: 6 }}>
+                  <Typography size={12} color="#999">✕</Typography>
+                </TouchableOpacity>
+              </View>
+            );
+          })}
         </View>
       )}
       
