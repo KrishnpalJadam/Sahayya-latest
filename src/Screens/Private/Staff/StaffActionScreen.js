@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Image, TouchableOpacity, Linking, Platform } from 'react-native';
+import { View, StyleSheet, Image, TouchableOpacity, Linking, ScrollView } from 'react-native';
 import CommanView from '../../../Component/CommanView';
 import HeaderForUser from '../../../Component/HeaderForUser';
 import Typography from '../../../Component/UI/Typography';
@@ -76,10 +76,6 @@ const StaffActionScreen = ({ navigation, route }) => {
   };
 
   const navigateToTerminate = () => {
-    // We can navigate to the full profile which contains the terminate modal, 
-    // or we can build a standalone terminate logic here.
-    // The user said: "terminate staff okkey woah terminat wallai sai connect hoga"
-    // Let's pass a param to HouseHoldStaffProfile to auto-open terminate modal
     navigation.navigate('HouseHoldStaffProfile', { item: staff, autoOpenTerminate: true });
   };
 
@@ -87,84 +83,104 @@ const StaffActionScreen = ({ navigation, route }) => {
     <CommanView>
       <HeaderForUser
         title="Staff Options"
+        style_title={{ fontSize: 18, fontFamily: Font.Poppins_SemiBold }}
         source_arrow={ImageConstant?.BackArrow}
         onPressLeftIcon={() => navigation.goBack()}
         source_logo={ImageConstant?.notification}
         onPressRightIcon={() => navigation.navigate('Notification')}
       />
 
-      <View style={styles.container}>
-        {/* Profile Section */}
-        <View style={styles.profileSection}>
-          <View style={styles.avatarContainer}>
+      <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        {/* Profile Card */}
+        <View style={styles.profileCard}>
+          <TouchableOpacity style={styles.viewProfileBadge} onPress={navigateToProfile} activeOpacity={0.7}>
+            <Typography size={12} color="#D98579" type={Font.Poppins_Medium}>View Profile</Typography>
+          </TouchableOpacity>
+
+          <View style={styles.avatarWrapper}>
             <Image 
               source={profileImageUrl ? { uri: profileImageUrl } : ImageConstant.user} 
               style={styles.avatar} 
             />
-            {/* View Profile Button on top right of the avatar area */}
-            <TouchableOpacity style={styles.viewProfileBtn} onPress={navigateToProfile}>
-              <Typography size={12} color="#D98579" type={Font.Poppins_Medium}>View Profile</Typography>
-            </TouchableOpacity>
           </View>
           
-          <Typography size={22} type={Font.Poppins_SemiBold} style={{ marginTop: 15 }}>
+          <Typography size={20} type={Font.Poppins_Bold} color="#1A1A1A" style={{ marginTop: 12, textAlign: 'center' }}>
             {fullName}
           </Typography>
-          <Typography size={14} type={Font.Poppins_Regular} color="#666">
-            {displayRole}
-          </Typography>
 
-          {/* Call & WhatsApp Buttons */}
+          <View style={styles.roleBadge}>
+            <Typography size={12} type={Font.Poppins_Medium} color="#D98579">
+              {displayRole}
+            </Typography>
+          </View>
+
+          {/* Call & WhatsApp Communication Buttons */}
           <View style={styles.communicationRow}>
-            <TouchableOpacity style={styles.commBtn} onPress={handleCall}>
-              <Image source={ImageConstant.phone} style={styles.commIcon} />
+            <TouchableOpacity style={styles.callBtn} onPress={handleCall} activeOpacity={0.8}>
+              <Image source={ImageConstant.phone} style={styles.callIcon} />
+              <Typography size={13} type={Font.Poppins_Medium} color="#D98579" style={{ marginLeft: 6 }}>
+                Call
+              </Typography>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.commBtn} onPress={openWhatsApp}>
-              <Image source={ImageConstant.WhatsApp} style={[styles.commIcon, { tintColor: null }]} />
+
+            <TouchableOpacity style={styles.waBtn} onPress={openWhatsApp} activeOpacity={0.8}>
+              <Image source={ImageConstant.WhatsApp} style={styles.waIcon} />
+              <Typography size={13} type={Font.Poppins_Medium} color="#16A34A" style={{ marginLeft: 6 }}>
+                WhatsApp
+              </Typography>
             </TouchableOpacity>
           </View>
         </View>
 
-        {/* Action Buttons Section */}
+        {/* Quick Actions Section */}
         <View style={styles.actionSection}>
-          <Typography size={18} type={Font.Poppins_SemiBold} style={{ marginBottom: 15, marginLeft: 5 }}>
+          <Typography size={16} type={Font.Poppins_Bold} color="#1A1A1A" style={styles.sectionHeading}>
             Quick Actions
           </Typography>
 
-          <TouchableOpacity style={styles.actionCard} onPress={navigateToSalary}>
-            <View style={[styles.iconWrapper, { backgroundColor: '#E0F2FE' }]}>
-              <Typography size={20} color="#0284C7" type={Font.Poppins_Bold}>₹</Typography>
+          {/* Pay Salary Card */}
+          <TouchableOpacity style={styles.actionCard} onPress={navigateToSalary} activeOpacity={0.75}>
+            <View style={[styles.iconCircle, { backgroundColor: '#F0F9FF' }]}>
+              <Typography size={18} color="#0284C7" type={Font.Poppins_Bold}>₹</Typography>
             </View>
             <View style={styles.actionTextWrapper}>
-              <Typography size={16} type={Font.Poppins_Medium}>Pay Salary</Typography>
-              <Typography size={12} type={Font.Poppins_Regular} color="#888">Manage advances and monthly pay</Typography>
+              <Typography size={15} type={Font.Poppins_SemiBold} color="#1A1A1A">Pay Salary</Typography>
+              <Typography size={12} type={Font.Poppins_Regular} color="#777" style={{ marginTop: 2 }}>
+                Manage advances and monthly pay
+              </Typography>
             </View>
-            <Image source={ImageConstant.Arrow} style={styles.arrowIcon} />
+            <Typography size={20} color="#BBB" type={Font.Poppins_Regular}>›</Typography>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.actionCard} onPress={navigateToAttendance}>
-            <View style={[styles.iconWrapper, { backgroundColor: '#DCFCE7' }]}>
+          {/* Attendance Statistics Card */}
+          <TouchableOpacity style={styles.actionCard} onPress={navigateToAttendance} activeOpacity={0.75}>
+            <View style={[styles.iconCircle, { backgroundColor: '#F0FDF4' }]}>
               <Image source={ImageConstant.date} style={[styles.actionIcon, { tintColor: '#16A34A' }]} />
             </View>
             <View style={styles.actionTextWrapper}>
-              <Typography size={16} type={Font.Poppins_Medium}>Attendance Statistics</Typography>
-              <Typography size={12} type={Font.Poppins_Regular} color="#888">View and mark daily attendance</Typography>
+              <Typography size={15} type={Font.Poppins_SemiBold} color="#1A1A1A">Attendance Statistics</Typography>
+              <Typography size={12} type={Font.Poppins_Regular} color="#777" style={{ marginTop: 2 }}>
+                View and mark daily attendance
+              </Typography>
             </View>
-            <Image source={ImageConstant.Arrow} style={styles.arrowIcon} />
+            <Typography size={20} color="#BBB" type={Font.Poppins_Regular}>›</Typography>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.actionCard} onPress={navigateToTerminate}>
-            <View style={[styles.iconWrapper, { backgroundColor: '#FEE2E2' }]}>
+          {/* Terminate Staff Card */}
+          <TouchableOpacity style={styles.actionCard} onPress={navigateToTerminate} activeOpacity={0.75}>
+            <View style={[styles.iconCircle, { backgroundColor: '#FEF2F2' }]}>
               <Image source={ImageConstant.close} style={[styles.actionIcon, { tintColor: '#DC2626' }]} />
             </View>
             <View style={styles.actionTextWrapper}>
-              <Typography size={16} type={Font.Poppins_Medium}>Terminate Staff</Typography>
-              <Typography size={12} type={Font.Poppins_Regular} color="#888">Remove staff and settle dues</Typography>
+              <Typography size={15} type={Font.Poppins_SemiBold} color="#DC2626">Terminate Staff</Typography>
+              <Typography size={12} type={Font.Poppins_Regular} color="#777" style={{ marginTop: 2 }}>
+                Remove staff and settle dues
+              </Typography>
             </View>
-            <Image source={ImageConstant.Arrow} style={styles.arrowIcon} />
+            <Typography size={20} color="#BBB" type={Font.Poppins_Regular}>›</Typography>
           </TouchableOpacity>
         </View>
-      </View>
+      </ScrollView>
     </CommanView>
   );
 };
@@ -172,106 +188,134 @@ const StaffActionScreen = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9F9F9',
+    backgroundColor: '#F8F9FA',
   },
-  profileSection: {
-    alignItems: 'center',
-    paddingVertical: 30,
-    backgroundColor: '#fff',
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 3,
-    marginBottom: 20,
-    position: 'relative',
+  scrollContent: {
+    padding: 16,
+    paddingBottom: 30,
   },
-  avatarContainer: {
-    position: 'relative',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '100%',
-  },
-  avatar: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: '#eee',
-    borderWidth: 2,
-    borderColor: '#D98579',
-  },
-  viewProfileBtn: {
-    position: 'absolute',
-    top: 0,
-    right: 20,
-    backgroundColor: '#FFF0EE',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+  profileCard: {
+    backgroundColor: '#FFFFFF',
     borderRadius: 20,
+    padding: 20,
+    alignItems: 'center',
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#F0E5E2',
+    shadowColor: '#D98579',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 3,
+    position: 'relative',
+  },
+  viewProfileBadge: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    backgroundColor: '#FFF5F3',
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 16,
     borderWidth: 1,
     borderColor: '#D98579',
+  },
+  avatarWrapper: {
+    marginTop: 10,
+  },
+  avatar: {
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    backgroundColor: '#F0F0F0',
+    borderWidth: 2.5,
+    borderColor: '#D98579',
+  },
+  roleBadge: {
+    backgroundColor: '#FFF5F3',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginTop: 6,
   },
   communicationRow: {
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 20,
-    gap: 20,
+    gap: 12,
+    width: '100%',
   },
-  commBtn: {
-    width: 120,
-    height: 45,
-    borderWidth: 1,
-    borderColor: '#D98579',
-    borderRadius: 10,
+  callBtn: {
+    flex: 1,
+    height: 44,
+    flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#D98579',
+    backgroundColor: '#FFF5F3',
   },
-  commIcon: {
-    width: 22,
-    height: 22,
+  callIcon: {
+    width: 18,
+    height: 18,
     tintColor: '#D98579',
     resizeMode: 'contain',
   },
+  waBtn: {
+    flex: 1,
+    height: 44,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#25D366',
+    backgroundColor: '#F0FDF4',
+  },
+  waIcon: {
+    width: 18,
+    height: 18,
+    resizeMode: 'contain',
+  },
   actionSection: {
-    paddingHorizontal: 15,
+    marginTop: 5,
+  },
+  sectionHeading: {
+    marginBottom: 12,
+    marginLeft: 4,
   },
   actionCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
-    padding: 15,
-    borderRadius: 15,
-    marginBottom: 15,
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderRadius: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#F0F0F0',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
     elevation: 2,
   },
-  iconWrapper: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+  iconCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 15,
+    marginRight: 14,
   },
   actionIcon: {
-    width: 24,
-    height: 24,
+    width: 22,
+    height: 22,
     resizeMode: 'contain',
   },
   actionTextWrapper: {
     flex: 1,
-  },
-  arrowIcon: {
-    width: 16,
-    height: 16,
-    tintColor: '#ccc',
-    transform: [{ rotate: '180deg' }],
   },
 });
 

@@ -1,1 +1,1 @@
-Build triggered at: 2026-08-15 14:26:00 UTC - Align Ticket Details Send button and text input in 1 perfectly level row
+Build triggered at: 2026-08-15 14:30:00 UTC - Overhaul Staff Options screen UI, fix right chevrons, and refine top right notification bell icon

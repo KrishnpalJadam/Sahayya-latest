@@ -121,6 +121,44 @@ const HeaderForUser = ({
           </TouchableOpacity>
         )}
       </View>
+        <Typography
+          type={Font.Poppins_Medium}
+          style={[styles.txt_style, style_title]}
+        >
+          {title}
+        </Typography>
+        {Lang_icon && (
+          <TouchableOpacity onPress={onPressLangIcon} style={{ right: 15 }}>
+            <Image
+              source={Lang_icon}
+              style={[styles.back_img, { tintColor: '#fff' }, back_img]}
+            />
+          </TouchableOpacity>
+        )}
+
+        {source_logo && (
+          <TouchableOpacity onPress={onPressRightIcon} style={{ right: 10 }}>
+            <Image source={source_logo} style={[styles.back_img, back_img]} />
+          </TouchableOpacity>
+        )}
+
+        {Profile_icon && (
+          <TouchableOpacity onPress={onPressProfileIcon}>
+            <Image
+              source={
+                Profile_icon && !isPlaceholderImage(Profile_icon)
+                  ? { uri: Profile_icon }
+                  : ImageConstant.user
+              }
+              style={[
+                styles.back_img,
+                { height: 35, width: 35, borderRadius: 40, resizeMode: 'cover' },
+                back_img,
+              ]}
+            />
+          </TouchableOpacity>
+        )}
+      </View>
     </View>
   );
 };
@@ -137,21 +175,23 @@ const styles = StyleSheet.create({
   },
   backContainer: {
     flexDirection: 'row',
-    //paddingTop: heightPercentageToDP(7),
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingVertical: 10,
+    paddingHorizontal: 16,
+    width: '100%',
   },
   back_img: {
-    height: 30,
-    width: 30,
-    resizeMode: 'center',
+    height: 24,
+    width: 24,
+    resizeMode: 'contain',
   },
   txt_style: {
     color: Colors?.black,
-    fontSize: 15,
+    fontSize: 16,
     textAlign: 'center',
     flex: 1,
+    fontFamily: Font.Poppins_SemiBold,
   },
   walletContainer: {
     flexDirection: 'row',
