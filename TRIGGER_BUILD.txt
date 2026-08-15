@@ -1,1 +1,1 @@
-Build triggered at: 2026-08-16 02:46:15 UTC - Remove phone is_verified check from isAadhaarVerified to strictly enforce Aadhaar OTP screen in staff signup
+Build triggered at: 2026-08-16 03:27:25 UTC - Restrict Terms & Policy Acceptance modal to Dashboard only (suppress on onboarding steps like Aadhaar screen)
