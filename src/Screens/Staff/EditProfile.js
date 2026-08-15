@@ -233,23 +233,35 @@ const EditProfile = ({ navigation, route }) => {
 
   const loadProfileData = () => {
     // Basic Information
-    if (userDetail?.first_name) setFirstName(userDetail.first_name);
-    if (userDetail?.last_name) setLastName(userDetail.last_name);
-    if (userDetail?.gender) {
+    const fn = userDetail?.first_name || '';
+    const isPlaceholderFn = !fn || fn.toLowerCase() === 'user' || fn.toLowerCase() === 'staff member';
+    
+    if (!isPlaceholderFn) {
+      setFirstName(fn);
+      if (userDetail?.last_name) setLastName(userDetail.last_name);
+    } else if (userDetail?.name && userDetail.name.toLowerCase() !== 'user' && userDetail.name.toLowerCase() !== 'staff member') {
+      const parts = userDetail.name.trim().split(' ');
+      setFirstName(parts[0]);
+      if (parts.length > 1) setLastName(parts.slice(1).join(' '));
+    } else {
+      if (fn) setFirstName(fn);
+      if (userDetail?.last_name) setLastName(userDetail.last_name);
+    }
+
+    const userGender = userDetail?.gender || userDetail?.user_detail?.gender;
+    if (userGender) {
       setGender({
         label:
-          userDetail.gender.charAt(0).toUpperCase() +
-          userDetail.gender.slice(1),
-        value: userDetail.gender,
+          userGender.charAt(0).toUpperCase() +
+          userGender.slice(1),
+        value: userGender,
       });
     }
 
-
-
-    if (userDetail?.dob) {
-      const parsedDate = moment(userDetail.dob).toDate();
-
-      setDob(parsedDate);
+    const userDob = userDetail?.dob || userDetail?.user_detail?.dob;
+    if (userDob) {
+      const parsedDate = moment(userDob).toDate();
+      if (parsedDate && !isNaN(parsedDate.getTime())) setDob(parsedDate);
     }
     if (userDetail?.phone_number) {
       const countryCode = userDetail?.country_code || '+91';
