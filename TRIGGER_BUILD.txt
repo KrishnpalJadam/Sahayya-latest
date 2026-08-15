@@ -1,1 +1,1 @@
-Build triggered at: 2026-08-16 03:44:30 UTC - Add visible Testing OTP 123456 banner to AadharOtp.js screen
+Build triggered at: 2026-08-16 04:50:38 UTC - Auto-fill Aadhaar name and permanent address in signup profile steps (StepBasicInfoStaff & StepLoactionStaff)

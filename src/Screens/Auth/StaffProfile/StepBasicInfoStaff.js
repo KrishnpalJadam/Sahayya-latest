@@ -49,20 +49,20 @@ const StepBasicInfoStaff = forwardRef((props, ref) => {
 
       if (userEm) setEmail(userEm);
       
-      const isPlaceholderFn = !rawFn || rawFn.toLowerCase() === 'user' || rawFn.toLowerCase() === 'staff member';
+      const isPlaceholderName = (str) => !str || str.toLowerCase() === 'user' || str.toLowerCase() === 'staff member';
 
-      if (rawFn && !isPlaceholderFn) {
+      if (!isPlaceholderName(rawFn)) {
         setFirstName(rawFn);
-        if (rawLn) setLastName(rawLn);
-      } else if (rawFullName && rawFullName.toLowerCase() !== 'user' && rawFullName.toLowerCase() !== 'staff member') {
+        if (rawLn && !isPlaceholderName(rawLn)) setLastName(rawLn);
+      } else if (!isPlaceholderName(rawFullName)) {
         const parts = rawFullName.trim().split(' ');
         setFirstName(parts[0]);
         if (parts.length > 1) {
           setLastName(parts.slice(1).join(' '));
         }
       } else {
-        if (rawFn) setFirstName(rawFn);
-        if (rawLn) setLastName(rawLn);
+        setFirstName('');
+        setLastName('');
       }
 
       // Gender prefill from Aadhaar / Profile

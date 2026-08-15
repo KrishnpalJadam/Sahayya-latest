@@ -167,18 +167,8 @@ const StepLoactionStaff = forwardRef((props, ref) => {
   const isInitialMount = useRef(true);
   // Load existing addresses from userDetail - only run when addresses actually change
   useEffect(() => {
-    // Skip on initial mount if no addresses
     if (isInitialMount.current) {
       isInitialMount.current = false;
-      if (addresses.length === 0) {
-        previousAddressesStringRef.current = addressesString;
-        return;
-      }
-    }
-
-    // Skip if addresses haven't changed (same content)
-    if (addressesString === previousAddressesStringRef.current) {
-      return; // No change, exit early
     }
 
     if (addresses && addresses.length > 0) {
