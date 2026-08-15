@@ -1900,6 +1900,7 @@ const NewStaffForm = ({ navigation, route }) => {
             <GooglePlacesInput
               title="Search City"
               placeholder="Type city name for suggestions..."
+              clearOnSelect={true}
               onPlaceSelected={location => {
                 if (isAllIndiaSelected) return;
                 const city = location?.city || location?.data?.description?.split(',')[0];

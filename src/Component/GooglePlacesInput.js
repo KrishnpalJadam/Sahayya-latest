@@ -24,6 +24,7 @@ const GooglePlacesInput = ({
   selectedLong = '',
   autoLocate = true,
   mapHeight = 180,
+  clearOnSelect = false,
 }) => {
   const ref = useRef();
   const [selectedCoords, setSelectedCoords] = useState(null);
@@ -141,7 +142,14 @@ const GooglePlacesInput = ({
     }
     
     onPlaceSelected?.(extractedData);
-  }, [onPlaceSelected, showMap]);
+
+    if (clearOnSelect) {
+      setTimeout(() => {
+        ref.current?.setAddressText?.('');
+        ref.current?.clear?.();
+      }, 50);
+    }
+  }, [onPlaceSelected, showMap, clearOnSelect]);
 
   const handleMapDrag = useCallback(({latitude, longitude}) => {
     const google_location = `https://maps.google.com/?q=${latitude},${longitude}`;

@@ -1,1 +1,1 @@
-Build triggered at: 2026-08-15 13:15:00 UTC - Fix compensation input vs dropdown vertical misalignment
+Build triggered at: 2026-08-15 13:35:00 UTC - Auto-clear Search City input field immediately upon city selection
