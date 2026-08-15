@@ -1,1 +1,1 @@
-Build triggered at: 2026-08-15 12:50:00 UTC - Release APK build with all UI overhauls & Aadhaar fixes
+Build triggered at: 2026-08-15 13:15:00 UTC - Fix compensation input vs dropdown vertical misalignment

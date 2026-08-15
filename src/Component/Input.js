@@ -79,7 +79,7 @@ const Input = ({
   return (
     <>
       <View ref={containerRef} collapsable={false} style={[styles.container, mainStyle]}>
-        {showTitle && (
+        {showTitle && Boolean(title || titleTo) && (
           <View style={styles.titleContainer}>
             <Typography
               style={[

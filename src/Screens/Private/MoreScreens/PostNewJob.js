@@ -1016,6 +1016,8 @@ const PostNewJob = ({ navigation, route }) => {
             <View style={{ flex: 1.5 }}>
               <Input
                 title=""
+                showTitle={false}
+                mainStyle={{ marginVertical: 0 }}
                 placeholder="Amount"
                 value={expectedCompensation}
                 onChange={handleCompensationChange}
