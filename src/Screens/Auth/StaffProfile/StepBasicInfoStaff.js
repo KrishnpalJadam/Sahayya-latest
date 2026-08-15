@@ -40,47 +40,55 @@ const StepBasicInfoStaff = forwardRef((props, ref) => {
 
   useEffect(() => {
     if (userDetail && Object.keys(userDetail).length > 0) {
-      // First Name & Last Name
-      const fn = userDetail?.first_name || '';
-      const isPlaceholderFn = !fn || fn.toLowerCase() === 'user' || fn.toLowerCase() === 'staff member';
-      if (!isPlaceholderFn) {
-        setFirstName(fn);
-        if (userDetail?.last_name) setLastName(userDetail.last_name);
-      } else if (userDetail?.name && userDetail.name.toLowerCase() !== 'user' && userDetail.name.toLowerCase() !== 'staff member') {
-        const parts = userDetail.name.trim().split(' ');
+      // First Name & Last Name prefill from Aadhaar / Profile
+      const rawFn = userDetail?.first_name || userDetail?.user_detail?.first_name || '';
+      const rawLn = userDetail?.last_name || userDetail?.user_detail?.last_name || '';
+      const rawFullName = userDetail?.name || userDetail?.user_detail?.name || userDetail?.kycInformation?.name || '';
+      
+      const isPlaceholderFn = !rawFn || rawFn.toLowerCase() === 'user' || rawFn.toLowerCase() === 'staff member';
+
+      if (rawFn && !isPlaceholderFn) {
+        setFirstName(rawFn);
+        if (rawLn) setLastName(rawLn);
+      } else if (rawFullName && rawFullName.toLowerCase() !== 'user' && rawFullName.toLowerCase() !== 'staff member') {
+        const parts = rawFullName.trim().split(' ');
         setFirstName(parts[0]);
-        if (parts.length > 1) setLastName(parts.slice(1).join(' '));
+        if (parts.length > 1) {
+          setLastName(parts.slice(1).join(' '));
+        }
       } else {
-        if (fn) setFirstName(fn);
-        if (userDetail?.last_name) setLastName(userDetail.last_name);
+        if (rawFn) setFirstName(rawFn);
+        if (rawLn) setLastName(rawLn);
       }
 
-      // Gender
-      const userGender = userDetail?.gender || userDetail?.user_detail?.gender;
+      // Gender prefill from Aadhaar / Profile
+      const userGender = userDetail?.gender || userDetail?.user_detail?.gender || userDetail?.kycInformation?.gender;
       if (userGender) {
+        const cleanGender = String(userGender).trim().toLowerCase();
         setGender({
-          label: userGender.charAt(0).toUpperCase() + userGender.slice(1),
-          value: userGender.toLowerCase(),
+          label: cleanGender.charAt(0).toUpperCase() + cleanGender.slice(1),
+          value: cleanGender,
         });
       }
 
-      // DOB
-      const userDob = userDetail?.dob || userDetail?.user_detail?.dob;
+      // DOB prefill from Aadhaar / Profile
+      const userDob = userDetail?.dob || userDetail?.date_of_birth || userDetail?.user_detail?.dob || userDetail?.kycInformation?.dob;
       if (userDob) {
         const parsedDate = moment(userDob).toDate();
         if (parsedDate && !isNaN(parsedDate.getTime())) setDob(parsedDate);
       }
 
       // Profile Picture
-      if (userDetail?.image) {
-        const imgUrl = String(userDetail.image).toLowerCase();
+      const imgPath = userDetail?.image || userDetail?.profile_picture || userDetail?.user_detail?.profile_picture;
+      if (imgPath) {
+        const imgUrl = String(imgPath).toLowerCase();
         const isDefault =
           imgUrl.includes('noimage') ||
           imgUrl.includes('no_image') ||
           imgUrl.includes('default') ||
           imgUrl.includes('placeholder');
         if (!isDefault) {
-          setProfileImage({ uri: userDetail.image });
+          setProfileImage({ uri: imgPath });
         }
       }
     }
