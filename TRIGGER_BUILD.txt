@@ -1,1 +1,1 @@
-Build triggered at: 2026-08-16 03:37:06 UTC - Hardcode test Aadhaar 916087677101 with test OTP 123456 across backend and frontend
+Build triggered at: 2026-08-16 03:44:30 UTC - Add visible Testing OTP 123456 banner to AadharOtp.js screen

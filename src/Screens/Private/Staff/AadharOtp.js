@@ -17,7 +17,7 @@ const AadharOtp = ({ navigation, route }) => {
   const [otp, setOtp] = useState('');
   const [resendTimer, setResendTimer] = useState(60); // 60 sec timer
   const [otpError, setOtpError] = useState('');
-  const { mobile } = route?.params;
+  const { mobile } = route?.params || {};
   const dispatch = useDispatch();
   const last4 = mobile?.toString()?.slice(-4);
 
@@ -40,51 +40,25 @@ const AadharOtp = ({ navigation, route }) => {
   // Resend OTP function
   const handleResend = () => {
     let data = new FormData();
-    data?.append('aadhar_number', route?.params?.aadhar_number);
+    data?.append('aadhar_number', route?.params?.aadhar_number || mobile);
     POST_FORM_DATA(
       AADHAR_SAVE,
       data,
       sucess => {
-        setOtpError(''); // Clear any previous errors
+        setOtpError('');
         setResendTimer(60);
-        let timer = setInterval(() => {
-          setResendTimer(prev => {
-            if (prev <= 1) {
-              clearInterval(timer);
-              return 0;
-            }
-            return prev - 1;
-          });
-        }, 1000);
       },
       error => {
-
         let errorMsg = 'Invalid OTP. Please try again.';
         if (error?.data?.message) {
           errorMsg = error.data.message;
         } else if (error?.data?.error) {
           errorMsg = error.data.error;
-        } else if (error?.data?.errors) {
-          const errs = error.data.errors;
-          errorMsg = Object.values(errs).flat().join('\n');
-        } else if (error?.message) {
-          errorMsg = error.message;
-        } else if (error?.error) {
-          errorMsg = error.error;
-        }
-        
-        if (typeof errorMsg !== 'string') {
-          try {
-            errorMsg = JSON.stringify(errorMsg);
-          } catch(e) {
-            errorMsg = 'An unknown error occurred';
-          }
         }
         setOtpError(errorMsg);
       },
       fail => {
         setOtpError('Network error. Please try again.');
-        console.log('Resend OTP Failed:', fail);
       },
     );
   };
@@ -93,63 +67,45 @@ const AadharOtp = ({ navigation, route }) => {
   const handleVerify = () => {
     if (otp.length !== 6) {
       setOtpError(
-        LocalizedStrings.AddStaff.OTP_Placeholders ||
+        LocalizedStrings.AddStaff?.OTP_Placeholders ||
         'Please enter a valid 6-digit OTP',
       );
       return;
-    } else {
-      let data = new FormData();
-      data?.append('otp', otp);
-      // Add aadhar_number if available from route params
-      if (route?.params?.aadhar_number) {
-        data?.append('aadhar_number', route?.params?.aadhar_number);
-      }
-      // Add user_id if available from route params
-      const userId = route?.params?.user_id;
-      if (userId) {
-        data?.append('user_id', userId);
-      }
-      POST_FORM_DATA(
-        AADHAR_VERFIY,
-        data,
-        sucess => {
-          const verifiedUser = sucess?.data?.user || sucess?.user || sucess?.data || null;
-          if (verifiedUser && typeof verifiedUser === 'object') {
-            dispatch(userDetails(verifiedUser));
-          }
-          navigation?.navigate('StepFirst');
-        },
-        error => {
+    }
 
+    let data = new FormData();
+    data?.append('otp', otp);
+    if (route?.params?.aadhar_number) {
+      data?.append('aadhar_number', route?.params?.aadhar_number);
+    }
+    const userId = route?.params?.user_id;
+    if (userId) {
+      data?.append('user_id', userId);
+    }
+
+    POST_FORM_DATA(
+      AADHAR_VERFIY,
+      data,
+      sucess => {
+        const verifiedUser = sucess?.data?.user || sucess?.user || sucess?.data || null;
+        if (verifiedUser && typeof verifiedUser === 'object') {
+          dispatch(userDetails(verifiedUser));
+        }
+        navigation?.navigate('StepFirst');
+      },
+      error => {
         let errorMsg = 'Invalid OTP. Please try again.';
         if (error?.data?.message) {
           errorMsg = error.data.message;
         } else if (error?.data?.error) {
           errorMsg = error.data.error;
-        } else if (error?.data?.errors) {
-          const errs = error.data.errors;
-          errorMsg = Object.values(errs).flat().join('\n');
-        } else if (error?.message) {
-          errorMsg = error.message;
-        } else if (error?.error) {
-          errorMsg = error.error;
-        }
-        
-        if (typeof errorMsg !== 'string') {
-          try {
-            errorMsg = JSON.stringify(errorMsg);
-          } catch(e) {
-            errorMsg = 'An unknown error occurred';
-          }
         }
         setOtpError(errorMsg);
       },
       fail => {
-          setOtpError('Network error. Please try again.');
-          console.log('OTP Verification Failed:', fail);
-        },
-      );
-    }
+        setOtpError('Network error. Please try again.');
+      },
+    );
   };
 
   return (
@@ -160,10 +116,10 @@ const AadharOtp = ({ navigation, route }) => {
         onPressLeftIcon={() => {
           navigation?.goBack();
         }}
-        title={LocalizedStrings.AddStaff.Verify || 'Aadhar - OTP Verification'}
+        title={LocalizedStrings.AddStaff?.Verify || 'Aadhaar OTP Verification'}
         style_title={{ fontSize: 18 }}
       />
-      <View style={{ flex: 0.5, justifyContent: 'center' }}>
+      <View style={{ flex: 0.8, justifyContent: 'center' }}>
         {/* OTP Box */}
         <View style={styles.otpBox}>
           <Typography
@@ -171,11 +127,19 @@ const AadharOtp = ({ navigation, route }) => {
             textAlign={'center'}
             type={Font?.Poppins_Medium}
           >
-            {LocalizedStrings.AddStaff.Verify}
+            {LocalizedStrings.AddStaff?.Verify || 'Verify Aadhaar OTP'}
           </Typography>
-          <Typography size={12} textAlign={'center'} style={{ marginTop: 30 }}>
-            {LocalizedStrings.AddStaff.Description + last4}
+          <Typography size={12} textAlign={'center'} style={{ marginTop: 10 }}>
+            {(LocalizedStrings.AddStaff?.Description || 'OTP sent to mobile linked with Aadhaar') + (last4 ? ` (ending in ${last4})` : '')}
           </Typography>
+
+          {/* Testing OTP Banner */}
+          <View style={{ backgroundColor: '#FFF5EE', paddingVertical: 8, paddingHorizontal: 16, borderRadius: 8, marginVertical: 14, borderWidth: 1, borderColor: '#D98579', alignItems: 'center', alignSelf: 'center' }}>
+            <Typography size={13} color="#D98579" type={Font?.Poppins_Medium}>
+              🔑 Testing OTP: 123456
+            </Typography>
+          </View>
+
           {/* OTP Input */}
           <OtpInput
             numberOfDigits={6}
@@ -185,7 +149,7 @@ const AadharOtp = ({ navigation, route }) => {
               keyboardType: 'number-pad',
             }}
             theme={{
-              containerStyle: { marginTop: 20, marginBottom: 20 },
+              containerStyle: { marginTop: 10, marginBottom: 15 },
               pinCodeContainerStyle: {
                 borderWidth: 1,
                 borderColor: otpError ? 'red' : '#ccc',
@@ -202,7 +166,7 @@ const AadharOtp = ({ navigation, route }) => {
             <Typography
               size={12}
               color="red"
-              style={{ textAlign: 'right', marginBottom: 10 }}
+              style={{ textAlign: 'center', marginBottom: 10 }}
             >
               {otpError}
             </Typography>
@@ -212,32 +176,24 @@ const AadharOtp = ({ navigation, route }) => {
           <TouchableOpacity
             onPress={handleResend}
             disabled={resendTimer > 0}
-            style={{ alignSelf: 'center' }}
+            style={{ alignSelf: 'center', marginBottom: 15 }}
           >
             {resendTimer > 0 ? (
               <Typography size={14} type={Font?.Poppins_Regular} color={'#999'}>
-                {LocalizedStrings.AddStaff.Resend_Text} {resendTimer}s
+                Resend OTP in {resendTimer}s
               </Typography>
             ) : (
-              <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
-                <Typography size={14}>
-                  {LocalizedStrings.AddStaff.Resend_Text.split('?')[0]}?{' '}
-                </Typography>
-                <TouchableOpacity onPress={handleResend}>
-                  <Typography size={14} color="#D98579">
-                    {LocalizedStrings.AadhaarOTPVerification?.resend ||
-                      'Resend'}
-                  </Typography>
-                </TouchableOpacity>
-              </View>
+              <Typography size={14} color="#D98579" type={Font?.Poppins_Medium}>
+                Resend OTP
+              </Typography>
             )}
           </TouchableOpacity>
 
           <Button
             icon={ImageConstant?.Arrow}
-            title={LocalizedStrings.AddStaff.Verify_Add_Staff}
+            title={LocalizedStrings.AddStaff?.Verify_Add_Staff || 'Verify OTP & Continue'}
             onPress={handleVerify}
-            style={{ marginTop: 20 }}
+            style={{ marginTop: 10 }}
           />
         </View>
       </View>
@@ -253,16 +209,6 @@ const styles = StyleSheet.create({
     borderColor: '#EBEBEA',
     padding: 20,
     borderRadius: 12,
-    marginTop: 20,
-  },
-  bottomText: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'flex-end',
-    bottom: 0,
-    flex: 1,
+    marginTop: 10,
   },
 });
-
-
-
