@@ -21,11 +21,13 @@ import UploadBox from '../../Component/UploadBox';
 import { useSelector, useDispatch } from 'react-redux';
 import { userDetails } from '../../Redux/action';
 import { GET_WITH_TOKEN, POST_FORM_DATA } from '../../Backend/Backend';
+import MapLocationPicker from '../../Component/MapLocationPicker';
 import {
   PROFILE,
   PROFILE_UPDATE,
   CATEGORY,
   SUB_CATEGORY,
+  ADDRESSES_UPDATE,
 } from '../../Backend/api_routes';
 import SimpleToast from 'react-native-simple-toast';
 import {
@@ -82,6 +84,28 @@ const EditProfile = ({ navigation, route }) => {
   const [emergencyRelation, setEmergencyRelation] = useState('');
   const [preferredWorkCities, setPreferredWorkCities] = useState([]);
   const [stayType, setStayType] = useState([]);
+
+  // Present Address State
+  const [currentStreet, setCurrentStreet] = useState('');
+  const [currentCity, setCurrentCity] = useState('');
+  const [currentState, setCurrentState] = useState('');
+  const [currentPincode, setCurrentPincode] = useState('');
+  const [currentAreaLocality, setCurrentAreaLocality] = useState('');
+  const [currentGoogleLocation, setCurrentGoogleLocation] = useState('');
+  const [currentLat, setCurrentLat] = useState('');
+  const [currentLong, setCurrentLong] = useState('');
+  const [currentId, setCurrentId] = useState(null);
+
+  const handleCurrentPlaceSelected = location => {
+    setCurrentGoogleLocation(location?.google_location || '');
+    setCurrentLat(location?.lat ? String(location.lat) : '');
+    setCurrentLong(location?.long ? String(location.long) : '');
+    const mappedArea = location?.area_locality || location?.street;
+    if (mappedArea) setCurrentAreaLocality(mappedArea);
+    if (location?.city) setCurrentCity(location.city);
+    if (location?.state) setCurrentState(location.state);
+    if (location?.pincode) setCurrentPincode(location.pincode);
+  };
 
   // Image modal states
   const [currentImageType, setCurrentImageType] = useState('');
@@ -326,9 +350,27 @@ const EditProfile = ({ navigation, route }) => {
         label: `${workInfo.total_experience} Years`,
         value: workInfo.total_experience,
       });
-    if (workInfo?.emergency_contact_name) setEmergencyName(workInfo.emergency_contact_name);
-    if (workInfo?.emergency_contact_number) setEmergencyPhone(workInfo.emergency_contact_number);
-    if (userDetail?.relation) setEmergencyRelation(userDetail.relation);
+    if (workInfo?.emergency_contact_name || userDetail?.emergency_contact_name) {
+      setEmergencyName(workInfo?.emergency_contact_name || userDetail?.emergency_contact_name);
+    }
+    if (workInfo?.emergency_contact_number || userDetail?.emergency_contact_number) {
+      setEmergencyPhone(workInfo?.emergency_contact_number || userDetail?.emergency_contact_number);
+    }
+    const rel =
+      workInfo?.emergency_contact_relation ||
+      workInfo?.emergency_relation ||
+      workInfo?.relation ||
+      userDetail?.emergency_contact_relation ||
+      userDetail?.emergency_relation ||
+      userDetail?.relation ||
+      userDetail?.user_detail?.relation ||
+      userDetail?.user_detail?.emergency_contact_relation;
+
+    if (rel) {
+      const cleanRel = String(rel).trim();
+      const capitalizedRel = cleanRel.charAt(0).toUpperCase() + cleanRel.slice(1).toLowerCase();
+      setEmergencyRelation(capitalizedRel);
+    }
     if (workInfo?.stay_type) setStayType([workInfo.stay_type]);
     if (workInfo?.preferred_work_location) {
       const raw = workInfo.preferred_work_location;
@@ -340,6 +382,23 @@ const EditProfile = ({ navigation, route }) => {
       setPreferredWorkCities(parsed);
     }
     if (userDetail?.upi_id) setUpiId(userDetail.upi_id);
+
+    // Present Address loading
+    const addresses = userDetail?.addresses || [];
+    const currentAddress =
+      addresses.find(addr => addr.address_type === 'present' || addr.is_primary == 0) ||
+      addresses[0];
+    if (currentAddress) {
+      if (currentAddress.street) setCurrentStreet(currentAddress.street);
+      if (currentAddress.city) setCurrentCity(currentAddress.city);
+      if (currentAddress.state) setCurrentState(currentAddress.state);
+      if (currentAddress.pincode) setCurrentPincode(String(currentAddress.pincode));
+      if (currentAddress.area_locality) setCurrentAreaLocality(currentAddress.area_locality);
+      if (currentAddress.google_location) setCurrentGoogleLocation(currentAddress.google_location);
+      if (currentAddress.lat || currentAddress.latitude) setCurrentLat(String(currentAddress.lat || currentAddress.latitude));
+      if (currentAddress.long || currentAddress.longitude) setCurrentLong(String(currentAddress.long || currentAddress.longitude));
+      if (currentAddress.id) setCurrentId(currentAddress.id);
+    }
 
     // Last Work Experience
     const lastExp = userDetail?.last_exp || {};
@@ -718,7 +777,10 @@ const EditProfile = ({ navigation, route }) => {
     if (upiId) formData.append('upi_id', upiId);
     if (emergencyName) formData.append('emergency_contact_name', emergencyName);
     if (emergencyPhone) formData.append('emergency_contact_number', emergencyPhone);
-    if (emergencyRelation) formData.append('relation', emergencyRelation);
+    if (emergencyRelation) {
+      formData.append('emergency_contact_relation', emergencyRelation);
+      formData.append('relation', emergencyRelation);
+    }
     if (stayType.length > 0) formData.append('stay_type', stayType[0]);
     if (preferredWorkCities.length > 0) formData.append('preferred_work_location', preferredWorkCities.join(', '));
 
@@ -815,6 +877,22 @@ const EditProfile = ({ navigation, route }) => {
       PROFILE_UPDATE,
       formData,
       success => {
+        // Save present address if filled/pinned
+        if (currentStreet || currentCity || currentPincode || currentGoogleLocation) {
+          const addrData = new FormData();
+          addrData.append('pincode[0]', currentPincode || '');
+          addrData.append('city[0]', currentCity || '');
+          if (currentId) addrData.append('id[0]', currentId);
+          addrData.append('street[0]', currentStreet || '');
+          addrData.append('is_primary[0]', '0');
+          addrData.append('state[0]', currentState || '');
+          addrData.append('area_locality[0]', currentAreaLocality || '');
+          addrData.append('google_location[0]', currentGoogleLocation || '');
+          addrData.append('lat[0]', currentLat || '');
+          addrData.append('long[0]', currentLong || '');
+          POST_FORM_DATA(ADDRESSES_UPDATE, addrData, () => {}, () => {}, () => {});
+        }
+
         SimpleToast.show('Profile updated successfully!', SimpleToast.SHORT);
         if (success?.data) {
           dispatch(userDetails(success.data));
@@ -988,8 +1066,25 @@ const EditProfile = ({ navigation, route }) => {
             selectedTextStyleNew={{ marginLeft: 10 }}
             marginHorizontal={0}
             style_title={{ textAlign: 'left' }}
-            value={emergencyRelation ? { label: emergencyRelation, value: emergencyRelation } : null}
-            onChange={item => setEmergencyRelation(item.value)}
+            value={
+              emergencyRelation
+                ? {
+                    label:
+                      emergencyRelation.charAt(0).toUpperCase() +
+                      emergencyRelation.slice(1).toLowerCase(),
+                    value:
+                      emergencyRelation.charAt(0).toUpperCase() +
+                      emergencyRelation.slice(1).toLowerCase(),
+                  }
+                : null
+            }
+            onChange={item => {
+              const val = item?.value || item?.label || item;
+              if (val) {
+                const formatted = String(val).charAt(0).toUpperCase() + String(val).slice(1).toLowerCase();
+                setEmergencyRelation(formatted);
+              }
+            }}
             data={[
               { label: 'Father', value: 'Father' },
               { label: 'Mother', value: 'Mother' },
@@ -1003,6 +1098,69 @@ const EditProfile = ({ navigation, route }) => {
               { label: 'Relative', value: 'Relative' },
               { label: 'Other', value: 'Other' },
             ]}
+          />
+        </View>
+
+        <View style={styles.section}>
+          <Typography type={Font?.Poppins_SemiBold} style={styles.sectionTitle}>
+            Present Address
+          </Typography>
+          <Typography size={12} color="#707070" style={{ marginBottom: 10 }}>
+            Pin your location using Google Maps to update your present address.
+          </Typography>
+          <MapLocationPicker
+            title="Pin Present Location"
+            location={{
+              google_location: currentGoogleLocation,
+              lat: currentLat,
+              long: currentLong,
+              street: currentStreet,
+              area_locality: currentAreaLocality,
+              city: currentCity,
+              state: currentState,
+              pincode: currentPincode,
+            }}
+            selectedLabel={[currentAreaLocality, currentCity, currentState].filter(Boolean).join(', ')}
+            onConfirm={handleCurrentPlaceSelected}
+          />
+
+          <Input
+            title="House / Flat / Floor / Block"
+            placeholder="e.g. Flat 12B, 3rd Floor"
+            value={currentStreet}
+            onChange={text => setCurrentStreet(text)}
+          />
+          <Input
+            title="Apartment / Building / Road / Area"
+            placeholder="e.g. Phase 1, Model Town"
+            value={currentAreaLocality}
+            onChange={text => setCurrentAreaLocality(text)}
+          />
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+            <View style={{ flex: 1, marginRight: 8 }}>
+              <Input
+                title={LocalizedStrings.EditProfile?.City || 'City'}
+                placeholder="City"
+                value={currentCity}
+                onChange={text => setCurrentCity(text)}
+              />
+            </View>
+            <View style={{ flex: 1, marginLeft: 8 }}>
+              <Input
+                title={LocalizedStrings.EditProfile?.State || 'State'}
+                placeholder="State"
+                value={currentState}
+                onChange={text => setCurrentState(text)}
+              />
+            </View>
+          </View>
+          <Input
+            title={LocalizedStrings.EditProfile?.Pincode || 'Pincode'}
+            placeholder="6-digit pincode"
+            keyboardType="numeric"
+            value={currentPincode}
+            onChange={text => setCurrentPincode(text.replace(/[^0-9]/g, ''))}
+            maxLength={6}
           />
         </View>
 

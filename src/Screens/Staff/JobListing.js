@@ -137,27 +137,70 @@ const JobsList = ({ navigation }) => {
   };
   const filterOptions = getFilterOptions();
 
+  // Check if job location is All India / nationwide
+  const isAllIndiaJob = (job) => {
+    const city = (job?.city || '').toLowerCase();
+    const state = (job?.state || '').toLowerCase();
+    const addr = (job?.street_address || job?.address || '').toLowerCase();
+    const pref = (job?.preferred_work_location || '').toLowerCase();
+    return (
+      city === 'all' ||
+      city.includes('all india') ||
+      city.includes('pan india') ||
+      state === 'all' ||
+      state.includes('all india') ||
+      addr.includes('all india') ||
+      pref.includes('all india')
+    );
+  };
+
   // Filtered and sorted jobs
   const getFilteredJobs = () => {
     let result = [...jobData];
 
     // Search filter
     if (searchText.trim()) {
-      const query = searchText.toLowerCase().trim();
+      const rawQuery = searchText.toLowerCase().trim();
+      const queryTerms = rawQuery.split(/\s+/).filter(Boolean);
+
       result = result.filter(job => {
         const title = (job?.title || '').toLowerCase();
         const city = (job?.city || '').toLowerCase();
         const state = (job?.state || '').toLowerCase();
         const desc = (job?.description || '').toLowerCase();
-        return title.includes(query) || city.includes(query) || state.includes(query) || desc.includes(query);
+        const category = (job?.category_name || job?.sub_category_name || '').toLowerCase();
+        const fullJobText = `${title} ${city} ${state} ${desc} ${category}`;
+
+        // Direct full query match
+        if (fullJobText.includes(rawQuery)) {
+          return true;
+        }
+
+        // All India jobs match any city search term if the role/title matches
+        const isAllIndia = isAllIndiaJob(job);
+
+        return queryTerms.every(term => {
+          if (term.length <= 2 && term !== 'in') return true;
+          if (fullJobText.includes(term)) return true;
+          if (isAllIndia) {
+            // For All India jobs, location search terms are automatically matched
+            return true;
+          }
+          return false;
+        });
       });
     }
 
-    // Location filter
-    if (selectedLocations.length > 0) {
+    // Location filter - All India jobs ALWAYS match any selected city filter
+    if (selectedLocations.length > 0 && !allIndia) {
       result = result.filter(job => {
-        const loc = job?.city || job?.state || '';
-        return selectedLocations.includes(loc);
+        if (isAllIndiaJob(job)) return true;
+        const locCity = (job?.city || '').toLowerCase();
+        const locState = (job?.state || '').toLowerCase();
+        return selectedLocations.some(sel => {
+          const selLower = sel.toLowerCase();
+          return locCity.includes(selLower) || locState.includes(selLower) || selLower.includes(locCity);
+        });
       });
     }
 
@@ -193,11 +236,22 @@ const JobsList = ({ navigation }) => {
 
   // Format compensation display
   const formatCompensation = job => {
-    const amount = job?.expected_compensation || job?.compensation;
-    if (amount && job?.compensation_type) {
-      return `₹${amount} / ${job.compensation_type}`;
+    let amount = job?.expected_compensation || job?.compensation;
+    if (amount) {
+      const num = Number(amount);
+      if (!isNaN(num)) {
+        amount = num.toLocaleString('en-IN');
+      } else {
+        amount = String(amount).replace(/\.00$/, '');
+      }
     }
-    return amount ? `₹${amount}` : 'Not Found';
+    const compType = job?.compensation_type
+      ? (job.compensation_type.charAt(0).toUpperCase() + job.compensation_type.slice(1).toLowerCase())
+      : '';
+    if (amount && compType) {
+      return `₹${amount} / ${compType}`;
+    }
+    return amount ? `₹${amount}` : 'Flexible Pay';
   };
 
   // Format location display
@@ -252,64 +306,80 @@ const JobsList = ({ navigation }) => {
 
   const renderJobCard = (job) => (
     <View key={job.id} style={styles.jobCard}>
-      <View style={styles.iconCircle}>
-        <Image
-          source={ImageConstant.Briefcase}
-          style={{ height: 20, width: 20, tintColor: '#FF5833' }}
-        />
+      {/* Header Row: Icon + Stay Badge */}
+      <View style={styles.cardHeaderRow}>
+        <View style={styles.iconCircle}>
+          <Image
+            source={ImageConstant.Briefcase}
+            style={{ height: 18, width: 18, tintColor: '#D98579' }}
+          />
+        </View>
+        {job.stay_type ? (
+          <View style={styles.stayTypeBadge}>
+            <Typography type={Font.Poppins_Medium} size={11} color="#D98579">
+              {job.stay_type === 'come_and_go' ? 'Come & Go' : 'Live-in'}
+            </Typography>
+          </View>
+        ) : null}
       </View>
+
+      {/* Job Title */}
       <Typography
         type={Font.Poppins_SemiBold}
         style={styles.jobTitle}
+        numberOfLines={1}
       >
         {job.title}
       </Typography>
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          marginVertical: 7,
-        }}
-      >
+
+      {/* Location */}
+      <View style={styles.locationRow}>
         <Image
           source={ImageConstant.Location}
-          style={{ height: 15, width: 13, marginRight: 5 }}
+          style={{ height: 13, width: 11, tintColor: '#777', marginRight: 5 }}
         />
         <Typography
           type={Font.Poppins_Regular}
           style={styles.jobLocation}
+          numberOfLines={1}
         >
           {formatLocation(job)}
         </Typography>
       </View>
-      {job.stay_type && (
-        <Typography type={Font.Poppins_Medium} style={{fontSize: 12, color: '#D98579', marginBottom: 5, textAlign: 'center'}}>
-          {job.stay_type === 'come_and_go' ? 'Come and Go' : 'Inhouse'}
+
+      {/* Salary Pill */}
+      <View style={styles.payBadge}>
+        <Typography type={Font.Poppins_Bold} style={styles.jobPay}>
+          {formatCompensation(job)}
         </Typography>
-      )}
-      <Typography type={Font.Poppins_Bold} style={styles.jobPay}>
-        {formatCompensation(job)}
-      </Typography>
-      <Typography
-        type={Font.Poppins_Regular}
-        style={styles.jobLocation}
-      >
-        {getDescriptionPreview(job.description)}
-      </Typography>
-      <Button
-        title={
-          LocalizedStrings.staffSection?.ActiveJobs
-            ?.view_details || 'View Details'
-        }
-        style={styles.button}
-        textStyle={styles.buttonText}
+      </View>
+
+      {/* Description Preview */}
+      {job.description ? (
+        <Typography
+          type={Font.Poppins_Regular}
+          style={styles.jobDesc}
+          numberOfLines={1}
+        >
+          {getDescriptionPreview(job.description)}
+        </Typography>
+      ) : null}
+
+      {/* Action Button */}
+      <TouchableOpacity
+        style={styles.detailsBtn}
         onPress={() =>
           navigation.navigate('JobDetails', {
             jobId: job.id,
             jobStatus: job?.is_applied,
           })
         }
-      />
+        activeOpacity={0.85}
+      >
+        <Typography type={Font.Poppins_SemiBold} size={13} color="#fff">
+          {LocalizedStrings.staffSection?.ActiveJobs?.view_details || 'View Details'}
+        </Typography>
+      </TouchableOpacity>
     </View>
   );
 
@@ -362,29 +432,42 @@ const JobsList = ({ navigation }) => {
           contentContainerStyle={{ paddingBottom: 20 }}
         >
           <View style={styles.searchRow}>
-            <TextInput
-              placeholder={
-                LocalizedStrings.staffSection?.ActiveJobs?.search_placeholder ||
-                'Search for roles...'
-              }
-              placeholderTextColor="#888"
-              style={styles.searchInput}
-              value={searchText}
-              onChangeText={setSearchText}
-            />
+            <View style={styles.searchBoxInner}>
+              <Image
+                source={ImageConstant.search}
+                style={{ width: 18, height: 18, tintColor: '#D98579', marginRight: 8 }}
+              />
+              <TextInput
+                placeholder={
+                  LocalizedStrings.staffSection?.ActiveJobs?.search_placeholder ||
+                  'Search for roles...'
+                }
+                placeholderTextColor="#999"
+                style={styles.searchInputField}
+                value={searchText}
+                onChangeText={setSearchText}
+              />
+              {searchText ? (
+                <TouchableOpacity onPress={() => setSearchText('')} style={{ padding: 4 }}>
+                  <Typography color="#888" size={14}>✕</Typography>
+                </TouchableOpacity>
+              ) : null}
+            </View>
             <TouchableOpacity
-              style={[styles.filterBtn, hasActiveFilters && styles.filterBtnActive]}
+              style={[styles.iconActionBtn, hasActiveFilters && styles.iconActionBtnActive]}
               onPress={() => setShowFilterModal(true)}
+              activeOpacity={0.8}
             >
-              <Typography type={Font.Poppins_Medium} style={[styles.filterText, hasActiveFilters && styles.filterTextActive]}>
+              <Typography type={Font.Poppins_Medium} size={13} color={hasActiveFilters ? '#fff' : '#D98579'}>
                 {LocalizedStrings.staffSection?.ActiveJobs?.filter || 'Filter'}
               </Typography>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.filterBtn, selectedSort !== 'default' && styles.filterBtnActive]}
+              style={[styles.iconActionBtn, selectedSort !== 'default' && styles.iconActionBtnActive]}
               onPress={() => setShowSortModal(true)}
+              activeOpacity={0.8}
             >
-              <Typography type={Font.Poppins_Medium} style={[styles.filterText, selectedSort !== 'default' && styles.filterTextActive]}>
+              <Typography type={Font.Poppins_Medium} size={13} color={selectedSort !== 'default' ? '#fff' : '#D98579'}>
                 {LocalizedStrings.staffSection?.ActiveJobs?.sort || 'Sort'}
               </Typography>
             </TouchableOpacity>
@@ -721,34 +804,40 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginVertical: 10,
+    marginHorizontal: 16,
   },
-  searchInput: {
+  searchBoxInner: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
-    borderRadius: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F8F9FA',
+    borderWidth: 1.5,
+    borderColor: '#F0E5E2',
+    borderRadius: 12,
     paddingHorizontal: 12,
+    height: 44,
+  },
+  searchInputField: {
+    flex: 1,
     fontSize: 14,
-    height: 40,
-    marginRight: 8,
+    color: '#222',
     fontFamily: Font.Poppins_Regular,
-    color: '#333',
+    paddingVertical: 0,
   },
-  filterBtn: {
-    backgroundColor: '#F5F5F5',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
-    marginLeft: 5,
+  iconActionBtn: {
+    height: 44,
+    paddingHorizontal: 14,
+    backgroundColor: '#FFF5F3',
+    borderWidth: 1.5,
+    borderColor: '#D98579',
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 8,
   },
-  filterBtnActive: {
-    backgroundColor: '#E87C6F',
-  },
-  filterText: {
-    fontSize: 13,
-    color: '#333',
-  },
-  filterTextActive: {
-    color: '#fff',
+  iconActionBtnActive: {
+    backgroundColor: '#D98579',
+    borderColor: '#D98579',
   },
   filterToggleBtn: {
     flexDirection: 'row',
@@ -759,9 +848,10 @@ const styles = StyleSheet.create({
     borderColor: '#D98579',
     borderRadius: 20,
     paddingHorizontal: 14,
-    paddingVertical: 8,
-    marginTop: 8,
+    paddingVertical: 7,
+    marginTop: 4,
     marginBottom: 10,
+    marginRight: 16,
   },
   filterActiveDot: {
     width: 8,
@@ -777,16 +867,18 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ddd',
     marginBottom: 15,
+    marginHorizontal: 16,
   },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginTop: 14,
+    marginHorizontal: 16,
   },
   sectionTitle: {
-    fontSize: 20,
-    color: '#333',
+    fontSize: 18,
+    color: '#222',
   },
   viewAll: {
     fontSize: 13,
@@ -796,56 +888,86 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    marginTop: 12,
+    marginTop: 10,
+    paddingHorizontal: 16,
   },
   jobCard: {
     width: '48%',
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 14,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: '#eee',
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 5,
-    elevation: 2,
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    padding: 12,
+    marginBottom: 14,
+    borderWidth: 1.5,
+    borderColor: '#F0E5E2',
+    shadowColor: '#D98579',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 3,
+    justifyContent: 'space-between',
+  },
+  cardHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
   },
   iconCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#FFECE9',
-    alignSelf: 'center',
-    marginBottom: 8,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: '#FFF5F3',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  jobTitle: {
-    fontSize: 17,
-    color: '#222',
-    textAlign: 'center',
+  stayTypeBadge: {
+    backgroundColor: '#FFF5F3',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#F9D0CB',
   },
-  jobPay: {
-    fontSize: 18,
-    color: '#E87C6F',
-    marginVertical: 2,
-    textTransform: 'capitalize',
+  jobTitle: {
+    fontSize: 15,
+    color: '#1A1A1A',
+    marginBottom: 2,
+  },
+  locationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 4,
   },
   jobLocation: {
-    fontSize: 12,
-    color: 'gray',
+    fontSize: 11,
+    color: '#666',
+    flex: 1,
   },
-  button: {
-    backgroundColor: '#E87C6F',
+  payBadge: {
+    backgroundColor: '#FFF5F3',
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    marginVertical: 6,
+    alignItems: 'flex-start',
+  },
+  jobPay: {
+    fontSize: 13,
+    color: '#D98579',
+  },
+  jobDesc: {
+    fontSize: 11,
+    color: '#888',
+    marginBottom: 8,
+  },
+  detailsBtn: {
+    backgroundColor: '#D98579',
     borderRadius: 10,
-    marginTop: 10,
-    paddingVertical: 6,
-    height: 37,
-    width: '90%',
-  },
-  buttonText: {
-    color: '#fff',
+    paddingVertical: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    marginTop: 4,
   },
   loadingContainer: {
     flex: 1,
