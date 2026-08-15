@@ -1,1 +1,1 @@
-Build triggered at: 2026-08-15 14:30:00 UTC - Overhaul Staff Options screen UI, fix right chevrons, and refine top right notification bell icon
+Build triggered at: 2026-08-15 14:31:00 UTC - Remove camera icon overlay badge from staff profile picture on HouseHoldStaffProfile

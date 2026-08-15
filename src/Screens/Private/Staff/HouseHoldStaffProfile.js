@@ -743,26 +743,12 @@ const HouseHoldStaffProfile = ({ navigation, route }) => {
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.profileCard}>
           <View style={styles.imageContainer}>
-            <TouchableOpacity onPress={() => setPreviewImage(profileImageUrl)}>
+            <TouchableOpacity onPress={() => setPreviewImage(profileImageUrl)} activeOpacity={0.9}>
               <Image
                 source={profileImageUrl ? { uri: profileImageUrl } : ImageConstant.user}
                 style={styles.profileImage}
               />
-              <View style={styles.enlargeHint}>
-                <Image source={ImageConstant.Zoom || ImageConstant.eye} style={styles.enlargeIcon} />
-                <Typography style={styles.enlargeText}>Tap to enlarge</Typography>
-              </View>
             </TouchableOpacity>
-            
-            {!isReadOnlyPreview && (
-              <TouchableOpacity 
-                style={styles.editImageBtn}
-                onPress={handlePickProfileImage}
-                activeOpacity={0.8}
-              >
-                <Image source={ImageConstant.NewCamera} style={styles.editImageIcon} />
-              </TouchableOpacity>
-            )}
           </View>
           <Typography style={styles.name} size={22}>
             {fullName}
