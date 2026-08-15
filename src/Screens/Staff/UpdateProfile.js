@@ -144,9 +144,8 @@ const UpdateProfile = forwardRef((props, ref) => {
       if (lastWorkInfo.house_sold) {
         setHouseSold(String(lastWorkInfo.house_sold));
       }
-    } else {
-    }
   }, [userDetail?.last_exp]);
+
 
   useEffect(() => {
     GET_WITH_TOKEN(

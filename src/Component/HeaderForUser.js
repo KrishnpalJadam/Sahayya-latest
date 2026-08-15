@@ -121,44 +121,6 @@ const HeaderForUser = ({
           </TouchableOpacity>
         )}
       </View>
-        <Typography
-          type={Font.Poppins_Medium}
-          style={[styles.txt_style, style_title]}
-        >
-          {title}
-        </Typography>
-        {Lang_icon && (
-          <TouchableOpacity onPress={onPressLangIcon} style={{ right: 15 }}>
-            <Image
-              source={Lang_icon}
-              style={[styles.back_img, { tintColor: '#fff' }, back_img]}
-            />
-          </TouchableOpacity>
-        )}
-
-        {source_logo && (
-          <TouchableOpacity onPress={onPressRightIcon} style={{ right: 10 }}>
-            <Image source={source_logo} style={[styles.back_img, back_img]} />
-          </TouchableOpacity>
-        )}
-
-        {Profile_icon && (
-          <TouchableOpacity onPress={onPressProfileIcon}>
-            <Image
-              source={
-                Profile_icon && !isPlaceholderImage(Profile_icon)
-                  ? { uri: Profile_icon }
-                  : ImageConstant.user
-              }
-              style={[
-                styles.back_img,
-                { height: 35, width: 35, borderRadius: 40, resizeMode: 'cover' },
-                back_img,
-              ]}
-            />
-          </TouchableOpacity>
-        )}
-      </View>
     </View>
   );
 };
