@@ -233,12 +233,23 @@ const TicketDetail = ({ navigation, route }) => {
             onSubmitEditing={handleSendComment}
           />
         </View>
-        <Button
+        <TouchableOpacity
+          style={[
+            styles.sendButtonContainer,
+            (!commentText.trim() || sending) && { opacity: 0.6 },
+          ]}
           onPress={handleSendComment}
-          title="Send"
-          main_style={styles.sendButton}
-          loader={sending}
-        />
+          activeOpacity={0.8}
+          disabled={sending || !commentText.trim()}
+        >
+          {sending ? (
+            <ActivityIndicator size="small" color="#FFFFFF" />
+          ) : (
+            <Typography type={Font.Poppins_SemiBold} size={14} color="#FFFFFF">
+              Send
+            </Typography>
+          )}
+        </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
   );
@@ -301,31 +312,34 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingBottom: 16,
-    paddingTop: 10,
-    gap: 8,
+    paddingVertical: 10,
     borderTopWidth: 1,
     borderTopColor: '#F0F0F0',
     backgroundColor: '#fff',
   },
   commentInputWrapper: {
     flex: 1,
+    marginRight: 10,
   },
   textInput: {
-    height: 48,
-    borderRadius: 24,
+    height: 46,
+    borderRadius: 23,
     backgroundColor: '#F5F5F5',
     borderWidth: 1,
     borderColor: '#E0E0E0',
-    paddingHorizontal: 20,
+    paddingHorizontal: 18,
     fontSize: 14,
     color: '#333',
     includeFontPadding: false,
     textAlignVertical: 'center',
   },
-  sendButton: {
-    width: 80,
-    height: 48,
+  sendButtonContainer: {
+    height: 46,
+    paddingHorizontal: 22,
+    borderRadius: 23,
+    backgroundColor: '#D98579',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   emptyContainer: {
     flex: 1,
