@@ -1,1 +1,1 @@
-Build triggered at: 2026-08-15 14:11:00 UTC - Multi-role array matching and multi-city preferred location matching for active jobs listing
+Build triggered at: 2026-08-15 14:18:00 UTC - Enforce mandatory staff OTP verification and NewStaffFrom contract setup (Salary, Working Days, Joining Date) for all job application approvals

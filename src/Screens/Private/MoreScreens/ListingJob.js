@@ -175,36 +175,18 @@ export default function ListingJob({ navigation, route }) {
     }
 
     if (status === 'accepted' && item?.user) {
-      const isAadhaarVerified = item?.user?.aadhar__verify == 1;
-
-      if (isAadhaarVerified) {
-        // Aadhaar already verified — approve directly, skip OTP
-        POST_WITH_TOKEN(
-          `${ApplicantsStatus}/${jobID}/status`,
-          { application_status: 'accepted' },
-          success => {
-            SimpleToast.show(success?.message || 'Staff approved successfully', SimpleToast.SHORT);
-            JobList();
-          },
-          error => {
-            SimpleToast.show(
-              error?.data?.message || error?.message || 'Failed to approve. Please try again.',
-              SimpleToast.SHORT,
-            );
-          },
-          fail => {
-            SimpleToast.show('Network error. Please try again.', SimpleToast.SHORT);
-          },
-        );
-      } else {
-        // Aadhaar NOT verified — require OTP verification first
-        navigation.navigate('StaffVerifection', {
-          adharNumber: item?.user?.aadhar_number || item?.user?.aadhaar_number,
-          userData: item?.user,
-          pendingApproval: true,
-          applicationId: jobID,
-        });
-      }
+      // MANDATORY OTP & WORK CONTRACT SETUP FOR ALL APPLICANT APPROVALS!
+      // Navigates to StaffVerifection OTP screen -> sends OTP to staff's registered mobile number!
+      navigation.navigate('StaffVerifection', {
+        adharNumber: item?.user?.aadhar_number || item?.user?.aadhaar_number || item?.user?.phone,
+        userData: item?.user,
+        pendingApproval: true,
+        applicationId: jobID,
+        job_id: item?.job_id || item?.job?.id,
+        job_compensation: item?.job?.expected_compensation || item?.job?.compensation,
+        job_title: item?.job?.title,
+        job_compensation_type: item?.job?.compensation_type,
+      });
     }
   };
 
@@ -214,8 +196,6 @@ export default function ListingJob({ navigation, route }) {
         title={
           LocalizedStrings.MyJobPostings.job_applications || 'Job Applications'
         }
-        navigation={navigation}
-        showRightIcon={true}
         source_logo={ImageConstant?.notification}
         source_arrow={ImageConstant?.BackArrow}
         onPressLeftIcon={() => navigation?.goBack()}
