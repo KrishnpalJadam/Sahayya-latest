@@ -1,1 +1,1 @@
-Build triggered at: 2026-08-15 18:39:35 UTC - Include user manual fixes in HeaderForUser.js and UpdateProfile.js
+Build triggered at: 2026-08-15 21:10:00 UTC - Fix salary decimal validation & formatting UX issue

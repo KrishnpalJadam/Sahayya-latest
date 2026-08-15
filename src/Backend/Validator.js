@@ -174,20 +174,17 @@ export const validators = {
   },
 
   priceCheck: (name, value) => {
-    if (value) {
-      // var decimal= /^[-+]?[0-9]+\.[0-9]+$/;
-      var test = value.split('');
-      if (value <= 0) {
-        return `${name} must be greater than zero.`;
-        // return false;
-      } else if (test.indexOf('.') >= 0) {
-        return `${name} must not have decimal.`;
+    if (value !== undefined && value !== null && String(value).trim() !== '') {
+      const num = Number(value);
+      if (isNaN(num)) {
+        return `${name} must be a valid number.`;
       }
-
+      if (num <= 0) {
+        return `${name} must be greater than zero.`;
+      }
       return null;
     } else {
       return `${name} field is required.`;
-      // return false;
     }
   },
 

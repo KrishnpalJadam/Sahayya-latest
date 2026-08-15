@@ -338,8 +338,10 @@ const NewStaffForm = ({ navigation, route }) => {
       if (workInfo) {
         if (workInfo.emergency_contact_name) setEmergencyContactName(workInfo.emergency_contact_name);
         if (workInfo.emergency_contact_number) setEmergencyContactNumber(workInfo.emergency_contact_number);
-        if (workInfo.joining_date) setJoiningDate(workInfo.joining_date);
-        if (workInfo.salary) setSalary(String(workInfo.salary));
+        if (workInfo.salary) {
+          const sNum = Number(workInfo.salary);
+          setSalary(!isNaN(sNum) ? (sNum % 1 === 0 ? String(Math.round(sNum)) : String(sNum)) : String(workInfo.salary));
+        }
         if (workInfo.pay_frequency) {
           const freqOption = payFrequencyOptions.find(opt => opt.value === workInfo.pay_frequency);
           setPayFrequency(freqOption || { label: workInfo.pay_frequency, value: workInfo.pay_frequency });
@@ -393,7 +395,8 @@ const NewStaffForm = ({ navigation, route }) => {
   // Auto-fill salary from job compensation if no salary set yet
   useEffect(() => {
     if (jobCompensation && jobCompensation > 0 && !salary) {
-      setSalary(String(jobCompensation));
+      const cNum = Number(jobCompensation);
+      setSalary(!isNaN(cNum) ? (cNum % 1 === 0 ? String(Math.round(cNum)) : String(cNum)) : String(jobCompensation));
     }
   }, [jobCompensation]);
 
