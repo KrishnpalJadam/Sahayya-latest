@@ -37,10 +37,31 @@ const UpdateProfile = forwardRef((props, ref) => {
   useEffect(() => {
     const lastWorkInfo = userDetail?.last_exp || {};
     
-    if (lastWorkInfo && Object.keys(lastWorkInfo).length > 0) {
       if (lastWorkInfo.role) {
-        const roleVal = lastWorkInfo.role;
-        setRole(Array.isArray(roleVal) ? roleVal : typeof roleVal === 'string' ? roleVal.split(',').map(s => s.trim()).filter(Boolean) : []);
+        let roleVal = lastWorkInfo.role;
+        let parsed = [];
+        if (Array.isArray(roleVal)) {
+          parsed = roleVal;
+        } else if (typeof roleVal === 'string') {
+          try {
+            const json = JSON.parse(roleVal);
+            if (Array.isArray(json)) parsed = json;
+            else parsed = [json];
+          } catch (e) {
+            parsed = roleVal.split(',');
+          }
+        } else if (roleVal) {
+          parsed = [roleVal];
+        }
+
+        const cleaned = parsed.map(r => {
+          if (typeof r === 'string') {
+            return r.replace(/[\[\]"']/g, '').trim();
+          }
+          return String(r).trim();
+        }).filter(Boolean);
+
+        setRole(cleaned);
       }
 
       // Load join date - API might return YYYY-MM-DD, DD/MM/YY format, or ISO format
@@ -239,9 +260,15 @@ const UpdateProfile = forwardRef((props, ref) => {
         multiSelect={true}
         selectedValues={role}
         onChange={item => {
-          const val = item?.value || item?.label;
-          if (!val) return;
-          setRole(prev => prev.includes(val) ? prev.filter(v => v !== val) : [...prev, val]);
+          const rawVal = item?.value || item?.label;
+          if (!rawVal) return;
+          const cleanVal = String(rawVal).replace(/[\[\]"']/g, '').trim();
+          setRole(prev => {
+            const hasIt = prev.some(v => String(v?.value ?? v?.id ?? v).replace(/[\[\]"']/g, '').trim() === cleanVal);
+            return hasIt
+              ? prev.filter(v => String(v?.value ?? v?.id ?? v).replace(/[\[\]"']/g, '').trim() !== cleanVal)
+              : [...prev, cleanVal];
+          });
           if (errors.role) setErrors({...errors, role: null});
         }}
         data={roles}
@@ -249,15 +276,20 @@ const UpdateProfile = forwardRef((props, ref) => {
         error={errors.role}
       />
       {role.length > 0 && (
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginHorizontal: 16, marginBottom: 8 }}>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginHorizontal: 0, marginBottom: 8, marginTop: 4 }}>
           {role.map((r, i) => {
-            const rVal = r?.value ?? r?.id ?? r;
-            const roleObj = roles.find(rl => String(rl.value) === String(rVal) || String(rl.id) === String(rVal) || rl.label === String(rVal));
-            const roleLabel = roleObj?.label || r?.label || String(rVal);
+            const rVal = (r?.value ?? r?.id ?? r);
+            const cleanVal = String(rVal).replace(/[\[\]"']/g, '').trim();
+            const roleObj = roles.find(rl =>
+              String(rl.value) === cleanVal ||
+              String(rl.id) === cleanVal ||
+              String(rl.label).toLowerCase() === cleanVal.toLowerCase()
+            );
+            const roleLabel = roleObj?.label || (cleanVal ? cleanVal : 'Role');
             return (
-              <View key={i} style={{ backgroundColor: '#FFF5F3', borderRadius: 16, paddingHorizontal: 12, paddingVertical: 5, marginRight: 8, marginBottom: 6, flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#D98579' }}>
-                <Typography size={12} color="#D98579">{roleLabel}</Typography>
-                <TouchableOpacity onPress={() => setRole(prev => prev.filter(v => (v?.value ?? v?.id ?? v) !== rVal))} style={{ marginLeft: 6 }}>
+              <View key={i} style={{ backgroundColor: '#FFF5F3', borderRadius: 16, paddingHorizontal: 12, paddingVertical: 6, marginRight: 8, marginBottom: 6, flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#D98579' }}>
+                <Typography size={12} color="#D98579" type={Font.Poppins_Medium}>{roleLabel}</Typography>
+                <TouchableOpacity onPress={() => setRole(prev => prev.filter(v => String(v?.value ?? v?.id ?? v).replace(/[\[\]"']/g, '').trim() !== cleanVal))} style={{ marginLeft: 6 }}>
                   <Typography size={12} color="#999">✕</Typography>
                 </TouchableOpacity>
               </View>
