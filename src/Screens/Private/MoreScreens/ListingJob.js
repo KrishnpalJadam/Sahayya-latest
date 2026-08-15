@@ -69,6 +69,66 @@ export const leaveRequests = [
   {
     id: 5,
     name: 'Sophia Chen',
+import CommanView from '../../../Component/CommanView';
+import HeaderForUser from '../../../Component/HeaderForUser';
+import Typography from '../../../Component/UI/Typography';
+import { Font } from '../../../Constants/Font';
+import { GET_WITH_TOKEN, POST_WITH_TOKEN, API } from '../../../Backend/Backend';
+import { ApplicantsList, ApplicantsStatus } from '../../../Backend/api_routes';
+import { ImageConstant } from '../../../Constants/ImageConstant';
+import { useIsFocused } from '@react-navigation/native';
+import SimpleToast from 'react-native-simple-toast';
+import LocalizedStrings from '../../../Constants/localization';
+import EmptyView from '../../../Component/UI/EmptyView';
+import moment from 'moment';
+
+const getProfileImage = (img) => {
+  if (!img || img.includes('noimage')) return null;
+  if (img.startsWith('http')) return img;
+  const baseUrl = API.replace('/api/', '');
+  return `${baseUrl}${img}`;
+};
+
+export const leaveRequests = [
+  {
+    id: 1,
+    name: 'Alice Johnson',
+    initials: 'AJ',
+    type: 'Annual Leave',
+    dates: '2024-07-15 → 2024-07-30',
+    reason: 'Family vacation and personal rejuvenation.',
+    status: 'Pending',
+  },
+  {
+    id: 2,
+    name: 'Robert Williams',
+    initials: 'RW',
+    type: 'Sick Leave',
+    dates: '2024-07-01 → 2024-07-09',
+    reason: 'Recovering from a severe flu, doctor recommended rest.',
+    status: 'Approved',
+  },
+  {
+    id: 3,
+    name: 'Maria Garcia',
+    initials: 'MG',
+    type: 'Casual Leave',
+    dates: '2024-07-25 → 2024-07-30',
+    reason: 'Attending a cousin’s wedding ceremony.',
+    status: 'Pending',
+  },
+  {
+    id: 4,
+    name: 'David Lee',
+    initials: 'DL',
+    type: 'Sick Leave',
+    dates: '2024-07-08 → 2024-07-16',
+    reason: 'Expecting the arrival of a new family member.',
+    status: 'Rejected',
+  },
+  {
+    id: 5,
+    name: 'Sophia Chen',
     initials: 'SC',
     type: 'Annual Leave',
     dates: '2024-07-23 → 2024-07-26',
@@ -92,13 +152,32 @@ export default function ListingJob({ navigation, route }) {
       }, 0) / totalReviews).toFixed(1)
     : 'No ratings';
 
-  const getApplicantAddress = () => {
-    if (detailItem?.user?.addresses && detailItem.user.addresses.length > 0) {
-      const addr = detailItem.user.addresses.find(a => a.is_primary) || detailItem.user.addresses[0];
-      return [addr.street, addr.city, addr.state, addr.pincode].filter(Boolean).join(', ');
+  const getPresentAddress = () => {
+    const addresses = detailItem?.user?.addresses || [];
+    if (addresses.length > 0) {
+      const presAddr = addresses.find(a => a.address_type === 'present' || a.address_type === 'present_address') || addresses.find(a => a.is_primary) || addresses[0];
+      if (presAddr) {
+        const formatted = [presAddr.street, presAddr.area_locality, presAddr.city, presAddr.state, presAddr.pincode].filter(Boolean).join(', ');
+        if (formatted) return formatted;
+      }
     }
-    return [detailItem?.user?.street_address, detailItem?.user?.locality, detailItem?.user?.city, detailItem?.user?.state]
+    const fallback = [detailItem?.user?.street_address || detailItem?.user?.street, detailItem?.user?.locality, detailItem?.user?.city, detailItem?.user?.state, detailItem?.user?.pincode]
       .filter(Boolean).join(', ');
+    return fallback || null;
+  };
+
+  const getPermanentAddress = () => {
+    const addresses = detailItem?.user?.addresses || [];
+    if (addresses.length > 0) {
+      const permAddr = addresses.find(a => a.address_type === 'permanent' || a.address_type === 'permanent_address') || (addresses.length > 1 ? addresses[1] : null);
+      if (permAddr) {
+        const formatted = [permAddr.street, permAddr.area_locality, permAddr.city, permAddr.state, permAddr.pincode].filter(Boolean).join(', ');
+        if (formatted) return formatted;
+      }
+    }
+    const userPerm = [detailItem?.user?.perm_street, detailItem?.user?.perm_locality, detailItem?.user?.perm_city, detailItem?.user?.perm_state, detailItem?.user?.perm_pincode]
+      .filter(Boolean).join(', ');
+    return userPerm || null;
   };
 
   const handleCall = phoneNumber => {
@@ -126,7 +205,6 @@ export default function ListingJob({ navigation, route }) {
 
   const JobList = useCallback(() => {
     console.log('[JobList] Fetching applications for job ID:', id);
-    console.log('[JobList] API URL:', `${ApplicantsList}/${id}/applications`);
     GET_WITH_TOKEN(
       `${ApplicantsList}/${id}/applications`,
       success => {
@@ -517,9 +595,8 @@ export default function ListingJob({ navigation, route }) {
                 <DetailRow label="Gender" value={detailItem?.user?.gender} />
                 <DetailRow label="Date of Birth" value={detailItem?.user?.dob} />
                 <DetailRow label="Location" value={detailItem?.user?.city || detailItem?.user?.location} />
-                <DetailRow label="Address" value={
-                  getApplicantAddress() || null
-                } />
+                <DetailRow label="Present Address" value={getPresentAddress()} />
+                <DetailRow label="Permanent Address" value={getPermanentAddress()} />
               </View>
 
               {/* Work Expectations */}

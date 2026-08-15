@@ -30,7 +30,7 @@ const Input = ({
   onPress,
   source_eye,
   style_inputContainer,
-  placeholderTextColor,
+  placeholderTextColor = '#888888',
   borderColor = "#DDDDDD",
   countryPicker = false,
   onCountryPress = () => {},

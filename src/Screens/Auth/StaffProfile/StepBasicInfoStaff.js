@@ -33,6 +33,7 @@ const StepBasicInfoStaff = forwardRef((props, ref) => {
   const [profileImage, setProfileImage] = useState(null);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
   const [gender, setGender] = useState(null);
   const [dob, setDob] = useState(null);
   const [showImageModal, setShowImageModal] = useState(false);
@@ -44,6 +45,9 @@ const StepBasicInfoStaff = forwardRef((props, ref) => {
       const rawFn = userDetail?.first_name || userDetail?.user_detail?.first_name || '';
       const rawLn = userDetail?.last_name || userDetail?.user_detail?.last_name || '';
       const rawFullName = userDetail?.name || userDetail?.user_detail?.name || userDetail?.kycInformation?.name || '';
+      const userEm = userDetail?.email || userDetail?.user_detail?.email || '';
+
+      if (userEm) setEmail(userEm);
       
       const isPlaceholderFn = !rawFn || rawFn.toLowerCase() === 'user' || rawFn.toLowerCase() === 'staff member';
 
@@ -120,6 +124,9 @@ const StepBasicInfoStaff = forwardRef((props, ref) => {
         formData.append('first_name', firstName.trim());
         if (lastName && lastName.trim() !== '') {
           formData.append('last_name', lastName.trim());
+        }
+        if (email && email.trim() !== '') {
+          formData.append('email', email.trim());
         }
         if (gender?.value) {
           formData.append('gender', gender.value);
@@ -225,6 +232,19 @@ const StepBasicInfoStaff = forwardRef((props, ref) => {
         title="Last Name"
         value={lastName}
         onChange={text => setLastName(text)}
+      />
+
+      <Input
+        placeholder="e.g. name@example.com"
+        title="Email Address"
+        value={email}
+        keyboardType="email-address"
+        autoCapitalize="none"
+        onChange={text => {
+          setEmail(text);
+          if (errors.email) setErrors({ ...errors, email: null });
+        }}
+        error={errors.email}
       />
 
       <DropdownComponent

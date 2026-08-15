@@ -988,13 +988,14 @@ const PostNewJob = ({ navigation, route }) => {
             onChange={item => handleTitleChange(item?.value || item)}
             error={errors.title}
             marginHorizontal={0}
-            MainBoxStyle={{ width: '100%' }}
+            MainBoxStyle={{ width: '100%', marginVertical: 4 }}
+            style_dropdown={{ width: '100%', height: 52, borderRadius: 12, backgroundColor: '#FAFAFA' }}
           />
           <Input
             style_input={styles.inputText}
             multiline={true}
-            style_inputContainer={{ height: 130 }}
-            // placeholder="Enter job description"
+            style_inputContainer={{ height: 130, borderRadius: 12, backgroundColor: '#FAFAFA' }}
+            placeholder="Describe the job duties, requirements, and working conditions..."
             title={LocalizedStrings.PostNewJob.job_description}
             value={description}
             onChange={handleDescriptionChange}
@@ -1018,12 +1019,12 @@ const PostNewJob = ({ navigation, route }) => {
                 title=""
                 showTitle={false}
                 mainStyle={{ marginVertical: 0 }}
-                placeholder="Amount"
+                placeholder="Amount (e.g. 15000)"
                 value={expectedCompensation}
                 onChange={handleCompensationChange}
                 keyboardType="numeric"
                 error={errors.expectedCompensation}
-                prefixText={"\u20B9  "}
+                prefixText={"₹ "}
                 style_inputContainer={{ height: 52, borderRadius: 12, backgroundColor: '#FAFAFA' }}
               />
             </View>
@@ -1037,7 +1038,7 @@ const PostNewJob = ({ navigation, route }) => {
                 onChange={item => handleCompensationTypeChange(item)}
                 disable={false}
                 marginHorizontal={0}
-                style_dropdown={{ marginHorizontal: 0, height: 52, borderRadius: 12 }}
+                style_dropdown={{ marginHorizontal: 0, height: 52, borderRadius: 12, backgroundColor: '#FAFAFA' }}
                 selectedTextStyleNew={{ fontSize: 14, paddingLeft: 8 }}
                 error={errors.compensationType}
               />
@@ -1065,7 +1066,8 @@ const PostNewJob = ({ navigation, route }) => {
             }}
             error={errors.selectedAddress}
             marginHorizontal={0}
-            MainBoxStyle={{ width: '100%' }}
+            MainBoxStyle={{ width: '100%', marginVertical: 4 }}
+            style_dropdown={{ width: '100%', height: 52, borderRadius: 12, backgroundColor: '#FAFAFA' }}
           />
         </View>
 

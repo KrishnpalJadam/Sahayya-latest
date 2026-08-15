@@ -152,19 +152,22 @@ const RecentSalaryList = ({ navigation }) => {
         const data = success?.data?.data || success?.data || [];
         const formattedData = data.map(item => {
           const actualId = item.id || item.salary_id || item.payment_id;
+          const isAdv = item.type === 'advance' || item.is_advance || item.status === 'Advance' || item.status === 'advance';
+          const createdAtDate = item.created_at || item.payment_date || item.date || item.given_date || new Date().toISOString();
           return {
             ...item,
-            id: actualId, // Ensure we have a primary ID for API calls
-            display_id: item.payment_id || `SAL-${actualId}`,
+            id: actualId,
+            display_id: item.payment_id || (isAdv ? `ADV-${actualId}` : `SAL-${actualId}`),
             amount: item.net_salary || item.amount || 0,
-            created_at: item.payment_date || item.created_at,
-            status: item.status || 'Paid'
+            created_at: createdAtDate,
+            status: isAdv ? 'Advance' : (item.status || 'Paid'),
+            type: isAdv ? 'advance' : (item.type || 'salary'),
           };
         });
         
         const allRecords = [...formattedData, ...localRecords];
         const sorted = allRecords.sort(
-          (a, b) => new Date(b?.created_at) - new Date(a?.created_at),
+          (a, b) => new Date(b?.created_at || 0) - new Date(a?.created_at || 0),
         );
         setSalaryRecords(sorted);
         setVisibleCount(PAGE_SIZE);

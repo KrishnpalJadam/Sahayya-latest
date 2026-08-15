@@ -205,11 +205,10 @@ const StepLoactionStaff = forwardRef((props, ref) => {
         setCurrentId(prev => (prev !== newId ? newId : prev));
       }
 
-      // Find permanent address (is_primary = 1 or second address)
+      // Find permanent address (address_type = 'permanent' or name = 'Permanent Address')
       const permanentAddress =
-        addresses.find(addr => addr.address_type === 'permanent' || addr.is_primary == 1);
+        addresses.find(addr => addr.address_type === 'permanent' || addr.name === 'Permanent Address');
       if (permanentAddress) {
-        // Only update if values are actually different to prevent unnecessary re-renders
         const newStreet = permanentAddress.street || '';
         const newCity = permanentAddress.city || '';
         const newState = permanentAddress.state || '';
@@ -230,33 +229,31 @@ const StepLoactionStaff = forwardRef((props, ref) => {
         setPermanentId(prev => (prev !== newId ? newId : prev));
         setPermanentLocked(true);
       } else {
-        const altPerm = userDetail?.permanent_address || userDetail?.user_detail?.permanent_address || userDetail?.aadhar_address;
-        if (altPerm) {
-          if (typeof altPerm === 'object') {
-            if (altPerm.street) setPermanentStreet(altPerm.street);
-            if (altPerm.city) setPermanentCity(altPerm.city);
-            if (altPerm.state) setPermanentState(altPerm.state);
-            if (altPerm.pincode) setPermanentPincode(altPerm.pincode);
-            if (altPerm.area_locality) setPermanentAreaLocality(altPerm.area_locality);
-          } else if (typeof altPerm === 'string') {
-            setPermanentStreet(altPerm);
-          }
-        }
+        const permStreet = userDetail?.permanent_street || userDetail?.perm_street || (typeof userDetail?.permanent_address === 'object' ? userDetail?.permanent_address?.street : (typeof userDetail?.permanent_address === 'string' ? userDetail?.permanent_address : ''));
+        const permCity = userDetail?.permanent_city || userDetail?.perm_city || (typeof userDetail?.permanent_address === 'object' ? userDetail?.permanent_address?.city : '');
+        const permState = userDetail?.permanent_state || userDetail?.perm_state || (typeof userDetail?.permanent_address === 'object' ? userDetail?.permanent_address?.state : '');
+        const permPincode = userDetail?.permanent_pincode || userDetail?.perm_pincode || (typeof userDetail?.permanent_address === 'object' ? userDetail?.permanent_address?.pincode : '');
+        const permArea = userDetail?.permanent_area || userDetail?.perm_area || (typeof userDetail?.permanent_address === 'object' ? userDetail?.permanent_address?.area_locality : '');
+
+        if (permStreet) setPermanentStreet(permStreet);
+        if (permCity) setPermanentCity(permCity);
+        if (permState) setPermanentState(permState);
+        if (permPincode) setPermanentPincode(permPincode);
+        if (permArea) setPermanentAreaLocality(permArea);
         setPermanentLocked(true);
       }
     } else {
-      const altPerm = userDetail?.permanent_address || userDetail?.user_detail?.permanent_address || userDetail?.aadhar_address;
-      if (altPerm) {
-        if (typeof altPerm === 'object') {
-          if (altPerm.street) setPermanentStreet(altPerm.street);
-          if (altPerm.city) setPermanentCity(altPerm.city);
-          if (altPerm.state) setPermanentState(altPerm.state);
-          if (altPerm.pincode) setPermanentPincode(altPerm.pincode);
-          if (altPerm.area_locality) setPermanentAreaLocality(altPerm.area_locality);
-        } else if (typeof altPerm === 'string') {
-          setPermanentStreet(altPerm);
-        }
-      }
+      const permStreet = userDetail?.permanent_street || userDetail?.perm_street || (typeof userDetail?.permanent_address === 'object' ? userDetail?.permanent_address?.street : (typeof userDetail?.permanent_address === 'string' ? userDetail?.permanent_address : ''));
+      const permCity = userDetail?.permanent_city || userDetail?.perm_city || (typeof userDetail?.permanent_address === 'object' ? userDetail?.permanent_address?.city : '');
+      const permState = userDetail?.permanent_state || userDetail?.perm_state || (typeof userDetail?.permanent_address === 'object' ? userDetail?.permanent_address?.state : '');
+      const permPincode = userDetail?.permanent_pincode || userDetail?.perm_pincode || (typeof userDetail?.permanent_address === 'object' ? userDetail?.permanent_address?.pincode : '');
+      const permArea = userDetail?.permanent_area || userDetail?.perm_area || (typeof userDetail?.permanent_address === 'object' ? userDetail?.permanent_address?.area_locality : '');
+
+      if (permStreet) setPermanentStreet(permStreet);
+      if (permCity) setPermanentCity(permCity);
+      if (permState) setPermanentState(permState);
+      if (permPincode) setPermanentPincode(permPincode);
+      if (permArea) setPermanentAreaLocality(permArea);
       setPermanentLocked(true);
     }
 

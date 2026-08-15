@@ -35,6 +35,7 @@ const Step1 = () => {
   const [selectedPhoto, setSelectedPhoto] = useState(null);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
   const [gender, setGender] = useState(null);
   const [dob, setDob] = useState(null);
   const [error, setError] = useState(null);
@@ -101,6 +102,7 @@ const Step1 = () => {
       // Basic Information
       if (userDetail?.first_name) setFirstName(userDetail.first_name);
       if (userDetail?.last_name) setLastName(userDetail.last_name);
+      if (userDetail?.email) setEmail(userDetail.email);
 
       if (userDetail?.gender) {
         setGender({
@@ -259,6 +261,7 @@ const Step1 = () => {
           const formData = new FormData();
           formData.append('first_name', firstName);
           formData.append('last_name', lastName);
+          if (email && email.trim()) formData.append('email', email.trim());
           formData.append('gender', gender?.value);
           formData.append('dob', moment(dob).format('YYYY-MM-DD'));
           formData.append('profile_picture', {
@@ -272,6 +275,7 @@ const Step1 = () => {
           POST_WITH_TOKEN(PROFILE_UPDATE, {
             first_name: firstName,
             last_name: lastName,
+            email: email ? email.trim() : '',
             gender: gender?.value,
             dob: moment(dob).format('YYYY-MM-DD'),
             is_edit: '0',
@@ -392,6 +396,18 @@ const Step1 = () => {
                   if (error?.lastName) setError({ ...error, lastName: null });
                 }}
                 error={error?.lastName}
+              />
+              <Input
+                title={LocalizedStrings.EditProfile?.email || 'Email Address'}
+                placeholder="e.g. name@example.com"
+                value={email}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                onChange={text => {
+                  setEmail(text);
+                  if (error?.email) setError({ ...error, email: null });
+                }}
+                error={error?.email}
               />
               <DropdownComponent
                 title={LocalizedStrings.EditProfile?.Gender || 'Gender'}
