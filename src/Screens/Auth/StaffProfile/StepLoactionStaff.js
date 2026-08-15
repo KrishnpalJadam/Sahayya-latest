@@ -230,9 +230,33 @@ const StepLoactionStaff = forwardRef((props, ref) => {
         setPermanentId(prev => (prev !== newId ? newId : prev));
         setPermanentLocked(true);
       } else {
+        const altPerm = userDetail?.permanent_address || userDetail?.user_detail?.permanent_address || userDetail?.aadhar_address;
+        if (altPerm) {
+          if (typeof altPerm === 'object') {
+            if (altPerm.street) setPermanentStreet(altPerm.street);
+            if (altPerm.city) setPermanentCity(altPerm.city);
+            if (altPerm.state) setPermanentState(altPerm.state);
+            if (altPerm.pincode) setPermanentPincode(altPerm.pincode);
+            if (altPerm.area_locality) setPermanentAreaLocality(altPerm.area_locality);
+          } else if (typeof altPerm === 'string') {
+            setPermanentStreet(altPerm);
+          }
+        }
         setPermanentLocked(true);
       }
     } else {
+      const altPerm = userDetail?.permanent_address || userDetail?.user_detail?.permanent_address || userDetail?.aadhar_address;
+      if (altPerm) {
+        if (typeof altPerm === 'object') {
+          if (altPerm.street) setPermanentStreet(altPerm.street);
+          if (altPerm.city) setPermanentCity(altPerm.city);
+          if (altPerm.state) setPermanentState(altPerm.state);
+          if (altPerm.pincode) setPermanentPincode(altPerm.pincode);
+          if (altPerm.area_locality) setPermanentAreaLocality(altPerm.area_locality);
+        } else if (typeof altPerm === 'string') {
+          setPermanentStreet(altPerm);
+        }
+      }
       setPermanentLocked(true);
     }
 
