@@ -27,78 +27,7 @@ const getProfileImage = (img) => {
   if (img.startsWith('http')) return img;
   const baseUrl = API.replace('/api/', '');
   return `${baseUrl}${img}`;
-};
-
-export const leaveRequests = [
-  {
-    id: 1,
-    name: 'Alice Johnson',
-    initials: 'AJ',
-    type: 'Annual Leave',
-    dates: '2024-07-15 → 2024-07-30',
-    reason: 'Family vacation and personal rejuvenation.',
-    status: 'Pending',
-  },
-  {
-    id: 2,
-    name: 'Robert Williams',
-    initials: 'RW',
-    type: 'Sick Leave',
-    dates: '2024-07-01 → 2024-07-09',
-    reason: 'Recovering from a severe flu, doctor recommended rest.',
-    status: 'Approved',
-  },
-  {
-    id: 3,
-    name: 'Maria Garcia',
-    initials: 'MG',
-    type: 'Casual Leave',
-    dates: '2024-07-25 → 2024-07-30',
-    reason: 'Attending a cousin’s wedding ceremony.',
-    status: 'Pending',
-  },
-  {
-    id: 4,
-    name: 'David Lee',
-    initials: 'DL',
-    type: 'Sick Leave',
-    dates: '2024-07-08 → 2024-07-16',
-    reason: 'Expecting the arrival of a new family member.',
-    status: 'Rejected',
-  },
-  {
-    id: 5,
-    name: 'Sophia Chen',
-import CommanView from '../../../Component/CommanView';
-import HeaderForUser from '../../../Component/HeaderForUser';
-import Typography from '../../../Component/UI/Typography';
-import { Font } from '../../../Constants/Font';
-import { GET_WITH_TOKEN, POST_WITH_TOKEN, API } from '../../../Backend/Backend';
-import { ApplicantsList, ApplicantsStatus } from '../../../Backend/api_routes';
-import { ImageConstant } from '../../../Constants/ImageConstant';
-import { useIsFocused } from '@react-navigation/native';
-import SimpleToast from 'react-native-simple-toast';
-import LocalizedStrings from '../../../Constants/localization';
-import EmptyView from '../../../Component/UI/EmptyView';
-import moment from 'moment';
-
-const getProfileImage = (img) => {
-  if (!img || img.includes('noimage')) return null;
-  if (img.startsWith('http')) return img;
-  const baseUrl = API.replace('/api/', '');
-  return `${baseUrl}${img}`;
-};
-
-export const leaveRequests = [
-  {
-    id: 1,
-    name: 'Alice Johnson',
-    initials: 'AJ',
-    type: 'Annual Leave',
-    dates: '2024-07-15 → 2024-07-30',
-    reason: 'Family vacation and personal rejuvenation.',
-    status: 'Pending',
-  },
+};},
   {
     id: 2,
     name: 'Robert Williams',

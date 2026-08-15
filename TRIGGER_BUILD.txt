@@ -1,1 +1,1 @@
-Build triggered at: 2026-08-15 18:04:40 UTC - Remove step checkers on app launch/login so users open directly to Dashboard (TabNavigation)
+Build triggered at: 2026-08-15 18:11:20 UTC - Fix syntax error in ListingJob.js to resolve GitHub Actions build failure

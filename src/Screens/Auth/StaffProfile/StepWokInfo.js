@@ -530,12 +530,12 @@ const StepWokInfo = forwardRef(({ navigation }, ref) => {
       formData.append('preferred_work_location', preferredWorkCities.join(', '));
     }
 
-    // Voice Note (optional) - if provided
-    if (voiceNote && voiceNote.uri) {
+    // Voice Note (optional) - if provided locally (not pre-existing http URL)
+    if (voiceNote && voiceNote.uri && !voiceNote.uri.startsWith('http')) {
       formData.append('voice_note', {
         uri: voiceNote.path || voiceNote.uri,
         name: voiceNote.name || 'voice_note.mp3',
-        type: voiceNote.mime || 'audio/mpeg',
+        type: voiceNote.mime || voiceNote.type || 'audio/mpeg',
       });
     }
 
