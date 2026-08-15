@@ -12,7 +12,7 @@ import React, {
   forwardRef,
   useMemo,
 } from 'react';
-import { launchImageLibrary } from 'react-native-image-picker';
+import { pick, types, isErrorWithCode, errorCodes } from '@react-native-documents/picker';
 import Typography from '../../../Component/UI/Typography';
 import { Font } from '../../../Constants/Font';
 import Input from '../../../Component/Input';
@@ -593,37 +593,36 @@ const StepWokInfo = forwardRef(({ navigation }, ref) => {
     });
   };
 
-  // Handle voice note file selection
-  const handleVoiceNoteSelection = () => {
-    launchImageLibrary(
-      {
-        mediaType: 'audio',
-        quality: 1,
-      },
-      response => {
-        if (response.didCancel) {
-        } else if (response.errorMessage) {
-          SimpleToast.show(
-            LocalizedStrings.Auth?.error_selecting_audio ||
-              'Error selecting audio file',
-            SimpleToast.SHORT,
-          );
-        } else if (response.assets && response.assets.length > 0) {
-          const audioFile = response.assets[0];
-          setVoiceNote({
-            uri: audioFile.uri,
-            path: audioFile.uri,
-            name: audioFile.fileName || 'voice_note.mp3',
-            type: audioFile.type || 'audio/mpeg',
-            mime: audioFile.type || 'audio/mpeg',
-          });
-          SimpleToast.show(
-            LocalizedStrings.Auth?.audio_file_selected || 'Audio file selected',
-            SimpleToast.SHORT,
-          );
-        }
-      },
-    );
+  // Handle voice note file selection using System Document/Audio Picker
+  const handleVoiceNoteSelection = async () => {
+    try {
+      const [audioFile] = await pick({
+        type: [types.audio],
+      });
+      if (audioFile) {
+        setVoiceNote({
+          uri: audioFile.uri,
+          path: audioFile.uri,
+          name: audioFile.name || 'voice_note.mp3',
+          type: audioFile.type || 'audio/mpeg',
+          mime: audioFile.type || 'audio/mpeg',
+        });
+        SimpleToast.show(
+          LocalizedStrings.Auth?.audio_file_selected || 'Audio file selected',
+          SimpleToast.SHORT,
+        );
+      }
+    } catch (err) {
+      if (isErrorWithCode(err) && err.code === errorCodes.OPERATION_CANCELED) {
+        // User cancelled picking
+      } else {
+        SimpleToast.show(
+          LocalizedStrings.Auth?.error_selecting_audio ||
+            'Error selecting audio file',
+          SimpleToast.SHORT,
+        );
+      }
+    }
   };
 
   // Handle voice note deletion
