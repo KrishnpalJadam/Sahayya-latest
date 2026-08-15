@@ -45,14 +45,87 @@ const JobsList = ({ navigation }) => {
   const [showFilters, setShowFilters] = useState(false);
   const [allIndia, setAllIndia] = useState(false);
 
-  // Get staff's primary role and location from profile
-  const staffRole = (() => {
-    const role = userDetail?.user_work_info?.primary_role;
-    if (Array.isArray(role)) return role[0] || '';
-    return role || '';
+  // Map category IDs to names
+  const categoryIdToNameMap = {
+    '1': 'Cook',
+    '2': 'Housekeeper',
+    '3': 'Driver',
+    '4': 'Nanny',
+    '5': 'Gardener',
+    '6': 'Elderly Care',
+    '7': 'Security Guard',
+    '8': 'Office Helper',
+  };
+
+  // Extract ALL staff roles from profile (primary_role, skills, last_exp)
+  const staffRoles = (() => {
+    const rolesSet = new Set();
+    const primary = userDetail?.user_work_info?.primary_role || userDetail?.work_info?.primary_role;
+    const skills = userDetail?.user_work_info?.skills || userDetail?.work_info?.skills;
+    const lastRole = userDetail?.last_exp?.role || userDetail?.lastExp?.role;
+
+    const addRole = (r) => {
+      if (!r) return;
+      if (Array.isArray(r)) {
+        r.forEach(item => addRole(item));
+      } else if (typeof r === 'string') {
+        try {
+          const parsed = JSON.parse(r);
+          if (Array.isArray(parsed)) {
+            parsed.forEach(item => addRole(item));
+            return;
+          }
+        } catch (e) {}
+        r.split(',').forEach(s => {
+          const clean = s.replace(/[\[\]"']/g, '').trim();
+          if (clean) {
+            rolesSet.add(clean);
+            if (categoryIdToNameMap[clean]) {
+              rolesSet.add(categoryIdToNameMap[clean]);
+            }
+          }
+        });
+      } else {
+        const val = String(r);
+        rolesSet.add(val);
+        if (categoryIdToNameMap[val]) {
+          rolesSet.add(categoryIdToNameMap[val]);
+        }
+      }
+    };
+
+    addRole(primary);
+    addRole(skills);
+    addRole(lastRole);
+
+    return Array.from(rolesSet);
   })();
-  const staffCity = userDetail?.addresses?.[0]?.city || userDetail?.city || '';
-  const staffState = userDetail?.addresses?.[0]?.state || userDetail?.state || '';
+
+  // Extract ALL preferred work cities from profile
+  const staffPreferredCities = (() => {
+    const citiesSet = new Set();
+    const prefLoc = userDetail?.user_work_info?.preferred_work_location || userDetail?.work_info?.preferred_work_location;
+    const addresses = userDetail?.addresses || [];
+
+    if (prefLoc) {
+      if (Array.isArray(prefLoc)) {
+        prefLoc.forEach(c => citiesSet.add(String(c).trim()));
+      } else if (typeof prefLoc === 'string') {
+        prefLoc.split(',').forEach(c => {
+          const clean = c.replace(/[\[\]"']/g, '').trim();
+          if (clean) citiesSet.add(clean);
+        });
+      }
+    }
+
+    addresses.forEach(a => {
+      if (a?.city) citiesSet.add(a.city.trim());
+    });
+
+    if (userDetail?.city) citiesSet.add(userDetail.city.trim());
+
+    return Array.from(citiesSet);
+  })();
 
   useEffect(() => {
     if (isFocused) {

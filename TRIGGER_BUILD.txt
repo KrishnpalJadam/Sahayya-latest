@@ -1,1 +1,1 @@
-Build triggered at: 2026-08-15 14:10:00 UTC - Fix previous work experience raw role IDs [1, 3] to resolved Role Names on HouseHoldStaffProfile and staff registration saving
+Build triggered at: 2026-08-15 14:11:00 UTC - Multi-role array matching and multi-city preferred location matching for active jobs listing
