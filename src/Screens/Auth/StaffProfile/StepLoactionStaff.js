@@ -375,19 +375,19 @@ const StepLoactionStaff = forwardRef((props, ref) => {
     // Skip permanent address validation if it's already locked (saved with ID)
 
     const error = {
-      currentStreet: validators?.checkRequire('Current Street', currentStreet),
-      currentCity: validators?.checkRequire('Current City', currentCity),
-      currentState: validators?.checkRequire('Current State', currentState),
+      currentStreet: validators?.checkRequire('House / Flat / Floor / Block', currentStreet),
+      currentCity: validators?.checkRequire('City', currentCity),
+      currentState: validators?.checkRequire('State', currentState),
       currentPincode: validators?.checkRequire(
-        'Current Pincode',
+        'Pincode',
         currentPincode,
       ),
       currentAreaLocality: validators?.checkRequire(
-        'Current Area / Locality',
+        'Area / Locality',
         currentAreaLocality,
       ),
       currentGoogleLocation: validators?.checkRequire(
-        'Current Google Location',
+        'Google Location',
         currentGoogleLocation,
       ),
     };
@@ -566,40 +566,44 @@ const StepLoactionStaff = forwardRef((props, ref) => {
       </View>
       <View>
         <View style={styles.wrap}>
-          <View style={styles.headerRow}>
+            <View style={styles.headerRow}>
             <Typography type={Font?.Poppins_SemiBold} size={18}>
               {LocalizedStrings.EditProfile?.Permanent_Address || 'Permanent Address'}
             </Typography>
-            <View style={styles.lockedBadge}>
-              <Typography type={Font?.Poppins_Medium} size={11} color="#1F6E43">
-                Aadhaar Verified
-              </Typography>
-            </View>
+            {(permanentStreet || permanentCity || permanentState) ? (
+              <View style={styles.lockedBadge}>
+                <Typography type={Font?.Poppins_Medium} size={11} color="#1F6E43">
+                  Aadhaar Verified
+                </Typography>
+              </View>
+            ) : null}
           </View>
 
           <View style={styles.lockedCard}>
             <Typography size={12} color="#555555" style={styles.lockedNote}>
-              Permanent address is auto-fetched from Aadhaar verification and is non-editable. Contact support if you need to update it.
+              {permanentStreet || permanentCity || permanentState
+                ? 'Permanent address is auto-fetched from Aadhaar verification and is non-editable. Contact support if you need to update it.'
+                : 'Permanent address will be populated after Aadhaar OTP verification. Contact support if you need to update it.'}
             </Typography>
             <View style={styles.lockedRow}>
               <Typography type={Font?.Poppins_SemiBold} size={12} color="#8A8A8A" style={{ flex: 1, marginRight: 10 }}>House / Flat / Floor / Block</Typography>
-              <Typography type={Font?.Poppins_Regular} size={13} color="#111" style={{ flex: 1, textAlign: 'right' }}>{permanentStreet || userDetail?.permanent_street || '-'}</Typography>
+              <Typography type={Font?.Poppins_Regular} size={13} color={permanentStreet ? '#111' : '#B0B0B0'} style={{ flex: 1, textAlign: 'right' }}>{permanentStreet || 'Not provided'}</Typography>
             </View>
             <View style={styles.lockedRow}>
               <Typography type={Font?.Poppins_SemiBold} size={12} color="#8A8A8A" style={{ flex: 1, marginRight: 10 }}>Apartment / Building / Road / Area</Typography>
-              <Typography type={Font?.Poppins_Regular} size={13} color="#111" style={{ flex: 1, textAlign: 'right' }}>{permanentAreaLocality || userDetail?.permanent_area || '-'}</Typography>
+              <Typography type={Font?.Poppins_Regular} size={13} color={permanentAreaLocality ? '#111' : '#B0B0B0'} style={{ flex: 1, textAlign: 'right' }}>{permanentAreaLocality || 'Not provided'}</Typography>
             </View>
             <View style={styles.lockedRow}>
               <Typography type={Font?.Poppins_SemiBold} size={12} color="#8A8A8A" style={{ flex: 1, marginRight: 10 }}>City</Typography>
-              <Typography type={Font?.Poppins_Regular} size={13} color="#111" style={{ flex: 1, textAlign: 'right' }}>{permanentCity || userDetail?.permanent_city || '-'}</Typography>
+              <Typography type={Font?.Poppins_Regular} size={13} color={permanentCity ? '#111' : '#B0B0B0'} style={{ flex: 1, textAlign: 'right' }}>{permanentCity || 'Not provided'}</Typography>
             </View>
             <View style={styles.lockedRow}>
               <Typography type={Font?.Poppins_SemiBold} size={12} color="#8A8A8A" style={{ flex: 1, marginRight: 10 }}>State</Typography>
-              <Typography type={Font?.Poppins_Regular} size={13} color="#111" style={{ flex: 1, textAlign: 'right' }}>{permanentState || userDetail?.permanent_state || '-'}</Typography>
+              <Typography type={Font?.Poppins_Regular} size={13} color={permanentState ? '#111' : '#B0B0B0'} style={{ flex: 1, textAlign: 'right' }}>{permanentState || 'Not provided'}</Typography>
             </View>
             <View style={styles.lockedRow}>
               <Typography type={Font?.Poppins_SemiBold} size={12} color="#8A8A8A" style={{ flex: 1, marginRight: 10 }}>Pincode</Typography>
-              <Typography type={Font?.Poppins_Regular} size={13} color="#111" style={{ flex: 1, textAlign: 'right' }}>{permanentPincode || userDetail?.permanent_pincode || '-'}</Typography>
+              <Typography type={Font?.Poppins_Regular} size={13} color={permanentPincode ? '#111' : '#B0B0B0'} style={{ flex: 1, textAlign: 'right' }}>{permanentPincode || 'Not provided'}</Typography>
             </View>
           </View>
         </View>

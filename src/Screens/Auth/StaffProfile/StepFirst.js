@@ -137,10 +137,8 @@ const StepFirst = () => {
               await locationRef.current?.saveAddresses();
               setActiveTab(4);
             } catch (error) {
-              SimpleToast.show(
-                error?.message || 'Please fill all required address fields.',
-                SimpleToast.SHORT,
-              );
+              const msg = error?.message || 'Please fill all required address fields including Google Location.';
+              SimpleToast.show(msg, SimpleToast.SHORT);
             } finally {
               setLoader(false);
             }

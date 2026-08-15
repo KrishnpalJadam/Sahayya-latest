@@ -797,6 +797,12 @@ const NewStaffForm = ({ navigation, route }) => {
       }
     }
 
+    // Validate Google Location
+    if (!googleLocation || googleLocation.trim() === '') {
+      newErrors.googleLocation = 'Please select a Google Location.';
+      hasError = true;
+    }
+
     setErrors(newErrors);
     return !hasError;
   };
@@ -864,6 +870,11 @@ const NewStaffForm = ({ navigation, route }) => {
 
     if (!areaLocality || areaLocality.trim() === '') {
       newErrors.areaLocality = 'Area/Locality is required.';
+      hasError = true;
+    }
+
+    if (!googleLocation || googleLocation.trim() === '') {
+      newErrors.googleLocation = 'Please select a Google Location.';
       hasError = true;
     }
 

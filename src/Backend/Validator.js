@@ -129,18 +129,13 @@ export const validators = {
     var max = max || 10;
     if (value) {
       if (!VALIDATE.MOBILE.test(value)) {
-        // return(`${name} field is invalid.`, 'error');
         return `${name} field is invalid.`;
-
-        // return false;
       } else if (value.length !== max) {
         return `${name} should be ${max} digits.`;
-        // return false;
       }
-      return false;
+      return null;
     } else {
-      // return true;
-      return `${name} field is required.`;
+      return null;
     }
   },
   checkFixPhoneNumber: (name, value, min = 10, max = 15) => {
@@ -217,7 +212,7 @@ export const validators = {
     if (value) {
       return null;
     } else {
-      return ` ${name} field is required.  `;
+      return `${name} field is required.`;
     }
   },
   checkMultiple: (name, value) => {
@@ -240,7 +235,7 @@ export const validators = {
   checkPassword: (name, value) => {
     if (value) {
       if (!VALIDATE.PASSWORD.test(value)) {
-        return `${name} must be of 8 characters with atleast one uppercase, one lowercase, one number and one special character.`;
+        return `${name} must be at least 8 characters with one uppercase, one lowercase, one number, and one special character.`;
       }
       //  else if (value.length < min || value.length > max) {
       //   return `${name} entered must be between ${min} to ${max} characters.`;
@@ -256,7 +251,7 @@ export const validators = {
       if (value === value2) {
         return '';
       } else {
-        return `${name} and ${name2} does'nt match`;
+        return `${name} and ${name2} do not match.`;
       }
     } else {
       return `${name2} field is required.`;

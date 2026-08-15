@@ -1,1 +1,1 @@
-Build triggered at: 2026-08-15 18:11:20 UTC - Fix syntax error in ListingJob.js to resolve GitHub Actions build failure
+Build triggered at: 2026-08-15 18:20:30 UTC - Include user manual profile, validation, location, and staff form updates
