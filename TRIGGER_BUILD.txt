@@ -1,1 +1,1 @@
-Build triggered at: 2026-08-16 21:51:35 UTC - Pass user_id in StaffVerifection to allow existing registered staff OTP verification during job hiring.
+Build triggered at: 2026-08-16 21:55:20 UTC - Fix handleResend and auto-send user_id in StaffVerifection.
