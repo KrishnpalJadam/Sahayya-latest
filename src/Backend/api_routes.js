@@ -26,7 +26,6 @@ export const LOGOUT = 'logout';
 // ===========================================
 export const AddJob = 'admin/jobs';
 export const Joblist_Admin = 'admin/auth-jobs';
-export const ListJob = 'admin/auth-jobs';
 export const MyJobsList = 'admin/auth-jobs';
 export const MyJobDelete = 'admin/jobs';
 export const AddUser = 'admin/members/store';

@@ -1,1 +1,1 @@
-Build triggered at: 2026-08-16 07:41:45 UTC - Fix My Job Postings route to use authenticated admin/auth-jobs endpoint so all newly posted jobs list instantly and delete properly.
+Build triggered at: 2026-08-16 07:53:20 UTC - Fix duplicate ListJob declaration in api_routes.js to resolve Android release APK build #57 error.
