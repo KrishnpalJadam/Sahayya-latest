@@ -77,7 +77,9 @@ export default function ListingJob({ navigation, route }) {
       SimpleToast.show('Phone number not available', SimpleToast.SHORT);
       return;
     }
-    Linking.openURL(`tel:${phoneNumber}`);
+    const phone = String(phoneNumber).replace(/\D/g, '');
+    const fullPhone = phone.startsWith('91') && phone.length >= 12 ? phone : `91${phone}`;
+    Linking.openURL(`tel:+${fullPhone}`);
   };
 
   const handleWhatsApp = async phoneNumber => {
@@ -86,7 +88,8 @@ export default function ListingJob({ navigation, route }) {
       return;
     }
     const phone = phoneNumber.replace(/\D/g, '');
-    const url = `whatsapp://send?phone=91${phone}`;
+    const fullPhone = phone.startsWith('91') && phone.length >= 12 ? phone : `91${phone}`;
+    const url = `whatsapp://send?phone=${fullPhone}`;
     const supported = await Linking.canOpenURL(url);
     if (!supported) {
       SimpleToast.show('WhatsApp not installed', SimpleToast.SHORT);
@@ -277,7 +280,7 @@ export default function ListingJob({ navigation, route }) {
                 />
                 <Typography type={Font.Poppins_Regular} style={styles.dates}>
                   {LocalizedStrings.LeaveApplications.DatesRequested}:{' '}
-                  {moment(item?.available_from).format('DD-MM-YYYY')}
+                  {item?.available_from ? moment(item?.available_from).format('DD-MM-YYYY') : 'N/A'}
                 </Typography>
               </View>
               <View style={styles.contactRow}>
@@ -622,7 +625,7 @@ export default function ListingJob({ navigation, route }) {
 }
 
 const DetailRow = ({ label, value }) => {
-  if (!value) return null;
+  if (value === null || value === undefined || value === '') return null;
   return (
     <View style={styles.detailRow}>
       <Typography type={Font.Poppins_Regular} style={styles.detailLabel}>

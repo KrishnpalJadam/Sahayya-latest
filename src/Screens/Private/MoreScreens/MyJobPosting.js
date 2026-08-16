@@ -316,7 +316,7 @@ const MyJobPosting = ({ navigation, route }) => {
         <FlatList
           data={jobData}
           renderItem={renderJob}
-          keyExtractor={item => item.id}
+          keyExtractor={item => String(item?.id || Math.random())}
           contentContainerStyle={styles.list}
         />
       )}

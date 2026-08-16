@@ -9,12 +9,12 @@ export const VALIDATE = {
   EMAIL:
     /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
   ALPHABET_ONLY: /^[a-zA-Z \s]*$/,
-  NUMBER: /[0-9]$/,
+  NUMBER: /^[0-9]+$/,
   MOBILE: /^\+?[0-9\s\-()]{1,20}$/,
   STREET: /^[a-zA-Z0-9 '-.~!@#$%^&*()_+={}[];':"<>,.\s]*$/,
   PASSWORD: /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/,
   URL: /^(?:(?:(?:https?|ftp):)?\/\/)(?:\S+(?::\S*)?@)?(?:(?!(?:10|127)(?:\.\d{1,3}){3})(?!(?:169\.254|192\.168)(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)(?:\.(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,})))(?::\d{2,5})?(?:[/?#]\S*)?$/i,
-  OTP: /^[0,1,2,3,4,5,6]*$/,
+  OTP: /^\d{6}$/,
   // /(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g,
 };
 
@@ -55,8 +55,8 @@ export const validators = {
     if (value) {
       if (!VALIDATE.ALPHABET_ONLY.test(value)) {
         return `${name} field is invalid.`;
-      } else if (value.length + 1 === max) {
-        return `${name} can have ${max} characters.`;
+      } else if (value.length > max) {
+        return `${name} can have at most ${max} characters.`;
       }
       return null;
     } else {
@@ -121,7 +121,7 @@ export const validators = {
       }
       return null;
     } else {
-      return `${name} field should contain valid number.`;
+      return `${name} field is required.`;
     }
   },
 
@@ -191,22 +191,19 @@ export const validators = {
   checkNotNull: (name, min, max, value) => {
     var min = min || 10;
     var max = max || 100;
-    console.log(value, value?.length, min, max);
 
     if (value) {
       if (value < min || value > max) {
-        showToast(`${name} must be between ${min} to ${max} AED.`, 'error');
-        return false;
+        return `${name} must be between ${min} to ${max}.`;
       }
-      return true;
+      return null;
     } else {
-      showToast(`${name} field is required.`, 'error');
-      return false;
+      return `${name} field is required.`;
     }
   },
 
   checkRequire: (name, value) => {
-    if (value) {
+    if (value !== null && value !== undefined && value !== '') {
       return null;
     } else {
       return `${name} field is required.`;
@@ -214,19 +211,15 @@ export const validators = {
   },
   checkMultiple: (name, value) => {
     if (value) {
-      if (value?.length >= 4) {
-        return '';
+      const arr = Array.isArray(value) ? value : [value];
+      if (arr.length > 0) {
+        return null;
       } else {
-        return `${name} field is invalid.`;
+        return `${name} field is required.`;
       }
     } else {
       return `${name} field is required.`;
     }
-    // if (value) {
-    //     return null;
-    // } else {
-    //     return `Please enter ${name}`;
-    // }
   },
 
   checkPassword: (name, value) => {
@@ -234,10 +227,7 @@ export const validators = {
       if (!VALIDATE.PASSWORD.test(value)) {
         return `${name} must be at least 8 characters with one uppercase, one lowercase, one number, and one special character.`;
       }
-      //  else if (value.length < min || value.length > max) {
-      //   return `${name} entered must be between ${min} to ${max} characters.`;
-      // }
-      return '';
+      return null;
     } else {
       return `${name} field is required.`;
     }
@@ -246,7 +236,7 @@ export const validators = {
   checkMatch: (name, value, name2, value2) => {
     if (value2) {
       if (value === value2) {
-        return '';
+        return null;
       } else {
         return `${name} and ${name2} do not match.`;
       }

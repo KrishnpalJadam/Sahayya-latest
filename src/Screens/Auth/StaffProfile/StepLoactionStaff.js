@@ -371,7 +371,7 @@ const StepLoactionStaff = forwardRef((props, ref) => {
       currentPincode: validators?.checkRequire(
         'Pincode',
         currentPincode,
-      ),
+      ) || (currentPincode && !/^\d{6}$/.test(currentPincode) ? 'Pincode must be 6 digits.' : null),
       currentAreaLocality: validators?.checkRequire(
         'Area / Locality',
         currentAreaLocality,

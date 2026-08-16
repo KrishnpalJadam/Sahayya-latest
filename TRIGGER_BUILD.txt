@@ -1,1 +1,1 @@
-Build triggered at: 2026-08-16 07:53:20 UTC - Fix duplicate ListJob declaration in api_routes.js to resolve Android release APK build #57 error.
+Build triggered at: 2026-08-16 14:37:55 UTC - Release APK build with user's manual changes and full Aadhaar OTP live real SMS integration.

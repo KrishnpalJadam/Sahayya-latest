@@ -670,12 +670,11 @@ const NewStaffForm = ({ navigation, route }) => {
       hasError = true;
     }
 
-    // Validate Aadhar Number
+    // Validate Aadhaar Number
     if (!aadharNumber || aadharNumber.trim() === '') {
-      newErrors.aadharNumber = 'Aadhar Number field is required.';
-      hasError = true;
+      newErrors.aadharNumber = 'Aadhaar Number is required.';
     } else if (!/^\d{12}$/.test(aadharNumber)) {
-      newErrors.aadharNumber = 'Aadhar Number must be 12 digits.';
+      newErrors.aadharNumber = 'Aadhaar Number must be 12 digits.';
       hasError = true;
     }
 
@@ -715,14 +714,14 @@ const NewStaffForm = ({ navigation, route }) => {
     }
 
     // Validate City
-    const cityError = validators.checkAlphabet('City', 2, 50, city);
+    const cityError = validators.checkName('City', 2, 50, city);
     if (cityError) {
       newErrors.city = cityError;
       hasError = true;
     }
 
     // Validate State
-    const stateError = validators.checkAlphabet('State', 2, 50, stateName);
+    const stateError = validators.checkName('State', 2, 50, stateName);
     if (stateError) {
       newErrors.stateName = stateError;
       hasError = true;
@@ -860,6 +859,9 @@ const NewStaffForm = ({ navigation, route }) => {
     if (!street || street.trim() === '') {
       newErrors.street = 'Street/Landmark is required.';
       hasError = true;
+    } else if (street.trim().length < 5) {
+      newErrors.street = 'Street/Landmark must be at least 5 characters.';
+      hasError = true;
     }
 
     const cityError = validators.checkName('City', 2, 50, city);
@@ -868,7 +870,10 @@ const NewStaffForm = ({ navigation, route }) => {
     const stateError = validators.checkName('State', 2, 50, stateName);
     if (stateError) { newErrors.stateName = stateError; hasError = true; }
 
-    if (!pincode || pincode.trim() === '' || !/^\d{6}$/.test(pincode)) {
+    if (!pincode || pincode.trim() === '') {
+      newErrors.pincode = 'Pincode is required.';
+      hasError = true;
+    } else if (!/^\d{6}$/.test(pincode)) {
       newErrors.pincode = 'Pincode must be 6 digits.';
       hasError = true;
     }

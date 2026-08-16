@@ -26,13 +26,14 @@ export const LOGOUT = 'logout';
 // ===========================================
 export const AddJob = 'admin/jobs';
 export const Joblist_Admin = 'admin/auth-jobs';
-export const MyJobsList = 'admin/auth-jobs';
-export const MyJobDelete = 'admin/jobs';
+export const MyJobsList = 'my-posted-jobs';
+export const MyJobDelete = 'my-posted-jobs';
 export const AddUser = 'admin/members/store';
 export const ListUser = 'admin/members/list';
 export const DeleteUser = 'admin/delete-user';
 export const JobApplicationList = 'admin/jobs';
 export const ApplicantsList = 'admin/jobs';
+export const ApplicantsStatus = 'applications';
 export const AddStaff = 'staff/add';
 export const UpdateStaff = 'staff/update';
 export const ListStaff = 'staff/list';

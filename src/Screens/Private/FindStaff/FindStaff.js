@@ -25,6 +25,7 @@ import { isPlaceholderImage } from '../../../Utils/ImageUtils';
 import { hasActivePaidSubscription } from '../../../Utils/subscription';
 import { onSubscriptionUpdated } from '../../../Utils/subscriptionEvents';
 import {speakSearchQuery} from '../../../Utils/speechOutput';
+import SimpleToast from 'react-native-simple-toast';
 
 const EXPERIENCE_OPTIONS = [
   { label: '0-1 Years', value: '0-1' },

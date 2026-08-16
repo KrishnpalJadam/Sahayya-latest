@@ -514,6 +514,11 @@ const PostNewJob = ({ navigation, route }) => {
       validationErrors.endTime = 'End Time field is required.';
     }
 
+    // Validate time order
+    if (startTime && endTime && startTime >= endTime) {
+      validationErrors.endTime = 'End Time must be after Start Time.';
+    }
+
     // Validate Selected Days
     if (selectedDays.length === 0) {
       validationErrors.selectedDays = 'Please select at least one working day.';
@@ -557,7 +562,17 @@ const PostNewJob = ({ navigation, route }) => {
 
     // Working Schedule
     if (commitment.length > 0) {
-      const commitmentValue = commitment[0].toLowerCase().replace('-', '-');
+      const commitmentMap = {
+        'Full-time': 'full-time', 'Part-time': 'part-time', 'Flexible': 'flexible',
+        'पूर्णकालिक': 'full-time', 'अंशकालिक': 'part-time', 'लचीला': 'flexible',
+        'முழுநேர': 'full-time', 'பகுதி நேர': 'part-time', 'நெகிழ்வான': 'flexible',
+        'ఫుల్-టైమ్': 'full-time', 'పార్ట్-టైమ్': 'part-time', 'ఫ్లెక్సిబుల్': 'flexible',
+        'ಪೂರ್ಣ ಸಮಯ': 'full-time', 'ಭಾಗ ಸಮಯ': 'part-time', 'ಹೊಂದಿಕೊಳ್ಳುವ': 'flexible',
+        'ഫുൾ-ടൈം': 'full-time', 'പാർട്ട്-ടൈം': 'part-time', 'ഫ്ലെക്സിബിൾ': 'flexible',
+        'संपूर्णवेळ': 'full-time', 'अंशकालिक': 'part-time', 'लवचिक': 'flexible',
+        'पूर्ण समय': 'full-time', 'आंशिक समय': 'part-time', 'लचिलो': 'flexible',
+      };
+      const commitmentValue = commitmentMap[commitment[0]] || commitment[0].toLowerCase().replace(/\s+/g, '-');
       formData.append('commitment_type', commitmentValue);
     }
     if (stayType.length > 0) {
@@ -895,7 +910,17 @@ const PostNewJob = ({ navigation, route }) => {
 
     // Working Schedule
     if (commitment.length > 0) {
-      const commitmentValue = commitment[0].toLowerCase().replace('-', '-');
+      const commitmentMap = {
+        'Full-time': 'full-time', 'Part-time': 'part-time', 'Flexible': 'flexible',
+        'पूर्णकालिक': 'full-time', 'अंशकालिक': 'part-time', 'लचीला': 'flexible',
+        'முழுநேர': 'full-time', 'பகுதி நேர': 'part-time', 'நெகிழ்வான': 'flexible',
+        'ఫుల్-టైమ్': 'full-time', 'పార్ట్-టైమ్': 'part-time', 'ఫ్లెక్సిబుల్': 'flexible',
+        'ಪೂರ್ಣ ಸಮಯ': 'full-time', 'ಭಾಗ ಸಮಯ': 'part-time', 'ಹೊಂದಿಕೊಳ್ಳುವ': 'flexible',
+        'ഫുൾ-ടൈം': 'full-time', 'പാർട്ട്-ടൈം': 'part-time', 'ഫ്ലെക്സിബിൾ': 'flexible',
+        'संपूर्णवेळ': 'full-time', 'अंशकालिक': 'part-time', 'लवचिक': 'flexible',
+        'पूर्ण समय': 'full-time', 'आंशिक समय': 'part-time', 'लचिलो': 'flexible',
+      };
+      const commitmentValue = commitmentMap[commitment[0]] || commitment[0].toLowerCase().replace(/\s+/g, '-');
       formData.append('commitment_type', commitmentValue);
     }
     if (stayType.length > 0) {
@@ -946,7 +971,32 @@ const PostNewJob = ({ navigation, route }) => {
         navigation?.goBack();
       },
       error => {
-        SimpleToast.show('Failed to update job', SimpleToast.SHORT);
+        if (error?.success === false && error?.error_code === 'LIMIT_EXCEEDED') {
+          const price = error?.extra_job_price || 500;
+          const gstTotal = Math.round(price * 1.18 * 100) / 100;
+          const gstAmount = Math.round((price * 0.18) * 100) / 100;
+          Alert.alert(
+            'Job Limit Exceeded',
+            `Your subscription's monthly job limit has been reached.\n\nBase: ₹${price}\nGST (18%): ₹${gstAmount}\nTotal: ₹${gstTotal}`,
+            [
+              { text: 'Cancel', style: 'cancel' },
+              { text: 'Pay & Post', onPress: () => processExtraJobPayment(price, formData) },
+            ],
+            { cancelable: true }
+          );
+        } else if (error?.success === false && error?.error_code === 'UPGRADE_REQUIRED') {
+          Alert.alert(
+            'Upgrade Required',
+            error?.message || 'Please upgrade your plan to post jobs.',
+            [
+              { text: 'Cancel', style: 'cancel' },
+              { text: 'Upgrade Plan', onPress: () => navigation.navigate('HouseholdManager') },
+            ],
+            { cancelable: true },
+          );
+        } else {
+          SimpleToast.show('Failed to update job', SimpleToast.SHORT);
+        }
         setLoading(false);
       },
       fail => {
@@ -961,7 +1011,7 @@ const PostNewJob = ({ navigation, route }) => {
 
   const compensationTypeOptions = [
     { label: 'Mon', value: 'monthly' },
-    { label: 'Yrl', value: 'Year' },
+    { label: 'Yrl', value: 'yearly' },
     { label: 'Dly', value: 'daily' },
     { label: 'Hrl', value: 'hourly' },
   ];

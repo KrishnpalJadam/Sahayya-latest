@@ -464,7 +464,8 @@ const HouseHoldStaffProfile = ({ navigation, route }) => {
     }
     try {
       const phone = String(number).replace(/\D/g, '');
-      await Linking.openURL(`tel:+91${phone}`);
+      const fullPhone = phone.startsWith('91') && phone.length >= 12 ? phone : `91${phone}`;
+      await Linking.openURL(`tel:+${fullPhone}`);
     } catch (e) {
       SimpleToast.show('Could not open phone dialer', SimpleToast.SHORT);
     }
@@ -594,10 +595,11 @@ const HouseHoldStaffProfile = ({ navigation, route }) => {
     if (isBlacklist) {
       formData.append('is_blacklist', '1');
       if (firPhoto) {
-        formData.append('fir_photo', firPhoto);
+        formData.append('fir_photo', { uri: firPhoto.uri, type: firPhoto.type || 'image/jpeg', name: firPhoto.name || 'fir_photo.jpg' });
       }
       if (policeStationName) formData.append('police_station_name', policeStationName);
       if (policeStationContact) formData.append('police_station_contact', policeStationContact);
+      if (policeStationAddress) formData.append('police_station_address', policeStationAddress);
     }
 
     console.log('--- admin/terminations payload --- (FormData with FIR if applicable)');

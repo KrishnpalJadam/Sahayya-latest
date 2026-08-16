@@ -104,12 +104,24 @@ const StepBasicInfoStaff = forwardRef((props, ref) => {
         let errs = {};
         if (!firstName || firstName.trim() === '') {
           errs.firstName = 'First Name is required';
+        } else if (firstName.trim().length < 2) {
+          errs.firstName = 'First Name must be at least 2 characters';
+        }
+        if (!lastName || lastName.trim() === '') {
+          errs.lastName = 'Last Name is required';
+        } else if (lastName.trim().length < 2) {
+          errs.lastName = 'Last Name must be at least 2 characters';
         }
         if (!gender || !gender.value) {
           errs.gender = 'Please select gender';
         }
         if (!dob) {
           errs.dob = 'Date of Birth is required';
+        } else {
+          const dobDate = new Date(dob);
+          if (dobDate > new Date()) {
+            errs.dob = 'Date of Birth cannot be in the future';
+          }
         }
         if (email && email.trim() !== '') {
           const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
