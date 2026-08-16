@@ -1,1 +1,1 @@
-Build triggered at: 2026-08-16 06:02:47 UTC - Hide roles subtitle from Active Staff cards on Dashboard, resolve Employer actual name on receipt, and fix hires count calculation on SelectJob
+Build triggered at: 2026-08-16 06:08:00 UTC - Complete redesign & feature upgrade of Add Staff form: Added Google Map Pin Picker, Multi-select Roles with Badges, Skills & Expertise selection, Working Days Select All, and fixed Permanent Address input clipping & layout.

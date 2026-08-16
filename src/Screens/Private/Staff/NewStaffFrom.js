@@ -10,6 +10,7 @@ import DropdownComponent from '../../../Component/DropdownComponent';
 import UploadBox from '../../../Component/UploadBox';
 import Date_Picker from '../../../Component/Date_Picker';
 import GooglePlacesInput from '../../../Component/GooglePlacesInput';
+import MapLocationPicker from '../../../Component/MapLocationPicker';
 import { ImageConstant } from '../../../Constants/ImageConstant';
 import { isPlaceholderImage } from '../../../Utils/ImageUtils';
 import LocalizedStrings from '../../../Constants/localization';
@@ -95,7 +96,8 @@ const NewStaffForm = ({ navigation, route }) => {
   const [currentPickerType, setCurrentPickerType] = useState(null);
 
   // Work Details States
-  const [roleDesignation, setRoleDesignation] = useState(null);
+  const [roleDesignation, setRoleDesignation] = useState([]); // array for multi-select
+  const [selectedSkills, setSelectedSkills] = useState([]); // array of skills
   const [roles, setRoles] = useState([]);
   const [rolesLoading, setRolesLoading] = useState(false);
   const [joiningDate, setJoiningDate] = useState('');
@@ -980,17 +982,29 @@ const NewStaffForm = ({ navigation, route }) => {
 
     // Work Details - all optional (staff can be a fresher)
 
-    // Role designation - only append if selected
-    if (roleDesignation) {
+    // Role designation - handle multi-select array or single string
+    if (Array.isArray(roleDesignation) && roleDesignation.length > 0) {
+      roleDesignation.forEach((r, idx) => {
+        const selectedRoleObj = roles.find(
+          role => String(role.value) === String(r) || String(role.id) === String(r) || role.label === String(r)
+        );
+        const roleName = selectedRoleObj?.label || r?.label || String(r);
+        formData.append(`role_designation[${idx}]`, roleName);
+      });
+    } else if (roleDesignation) {
       const selectedRoleObj = roles.find(
         role => role.value === (roleDesignation?.value || roleDesignation) ||
                 role.id === (roleDesignation?.value || roleDesignation),
       );
       const roleName = selectedRoleObj?.label || roleDesignation?.label || roleDesignation || '';
-      const roleStr = typeof roleName === 'string' ? roleName.trim() : String(roleName);
-      if (roleStr) {
-        formData.append('role_designation[0]', roleStr);
-      }
+      if (roleName) formData.append('role_designation[0]', String(roleName).trim());
+    }
+
+    // Skills & Expertise
+    if (selectedSkills.length > 0) {
+      selectedSkills.forEach((skill, idx) => {
+        formData.append(`required_skills[${idx}]`, skill);
+      });
     }
 
     // Joining date - send default (today) if not provided, backend requires it
@@ -1481,6 +1495,32 @@ const NewStaffForm = ({ navigation, route }) => {
             }}
             error={errors.areaLocality}
           />
+          <MapLocationPicker
+            title="Pin Present Location (Google Maps)"
+            location={{
+              google_location: googleLocation,
+              lat: lat,
+              long: long,
+              street: street,
+              area_locality: areaLocality,
+              city: city,
+              state: stateName,
+              pincode: pincode,
+            }}
+            selectedLabel={[areaLocality, city, stateName].filter(Boolean).join(', ')}
+            onConfirm={(location) => {
+              setGoogleLocation(location?.google_location || '');
+              setLat(location?.lat ? String(location.lat) : '');
+              setLong(location?.long ? String(location.long) : '');
+              if (location?.street) setStreet(location.street);
+              if (location?.area_locality) setAreaLocality(location.area_locality);
+              if (location?.city) setCity(location.city);
+              if (location?.state) setStateName(location.state);
+              if (location?.pincode) setPincode(location.pincode);
+              clearError('googleLocation');
+            }}
+          />
+
           <View style={{ zIndex: 100 }}>
             <GooglePlacesInput
               title="Search Google Location (Mandatory)"
@@ -1503,7 +1543,7 @@ const NewStaffForm = ({ navigation, route }) => {
           </View>
           {googleLocation ? (
             <View style={{ marginBottom: 15 }}>
-              <Typography size={12} color="green">Location Selected</Typography>
+              <Typography size={12} color="green">✓ Location Selected</Typography>
               <Typography size={11} color="gray">{googleLocation}</Typography>
             </View>
           ) : null}
@@ -1739,26 +1779,80 @@ const NewStaffForm = ({ navigation, route }) => {
           </View>
 
           <DropdownComponent
-            title={LocalizedStrings.NewStaffForm.Role_Designation || 'Role/Designation'}
+            title={LocalizedStrings.NewStaffForm.Role_Designation || 'Role/Designation (Multi-Select)'}
             placeholder={
               rolesLoading
                 ? 'Loading roles...'
-                : LocalizedStrings.NewStaffForm.Role_Placeholder || 'Select Role'
+                : LocalizedStrings.NewStaffForm.Role_Placeholder || 'Select Roles'
             }
             width={'100%'}
             style_dropdown={{ marginHorizontal: 0 }}
             selectedTextStyleNew={{ marginLeft: 10 }}
             marginHorizontal={0}
             style_title={{ textAlign: 'left' }}
-            value={roleDesignation}
+            multiSelect={true}
+            selectedValues={roleDesignation}
             onChange={item => {
-              setRoleDesignation(item);
+              const val = item?.value || item?.label;
+              if (!val) return;
+              setRoleDesignation(prev =>
+                Array.isArray(prev)
+                  ? (prev.includes(val) ? prev.filter(v => v !== val) : [...prev, val])
+                  : [val]
+              );
               clearError('roleDesignation');
             }}
             data={roles}
             disable={rolesLoading}
             error={errors.roleDesignation}
           />
+          {Array.isArray(roleDesignation) && roleDesignation.length > 0 && (
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 6, marginBottom: 10 }}>
+              {roleDesignation.map((r, i) => {
+                const rVal = r?.value ?? r?.id ?? r;
+                const roleObj = roles.find(rl => String(rl.value) === String(rVal) || String(rl.id) === String(rVal) || rl.label === String(rVal));
+                const roleLabel = roleObj?.label || r?.label || String(rVal);
+                return (
+                  <View key={i} style={{ backgroundColor: '#FFF5F3', borderRadius: 16, paddingHorizontal: 12, paddingVertical: 5, marginRight: 8, marginBottom: 6, flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#D98579' }}>
+                    <Typography size={12} color="#D98579" type={Font?.Poppins_Medium}>{roleLabel}</Typography>
+                    <TouchableOpacity onPress={() => setRoleDesignation(prev => prev.filter(v => (v?.value ?? v?.id ?? v) !== rVal))} style={{ marginLeft: 6 }}>
+                      <Typography size={12} color="#999">✕</Typography>
+                    </TouchableOpacity>
+                  </View>
+                );
+              })}
+            </View>
+          )}
+
+          {/* Skills & Expertise Section */}
+          <Typography type={Font?.Poppins_Bold} size={14} style={{ marginTop: 12, marginBottom: 8 }}>
+            Skills & Expertise
+          </Typography>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: 12 }}>
+            {['Cooking', 'Cleaning', 'Driving', 'Child Care', 'Elderly Care', 'Pet Care', 'Patient Care', 'Gardening', 'Housekeeping', 'Ironing', 'Washing'].map((skill, idx) => {
+              const isSelected = selectedSkills.includes(skill);
+              return (
+                <TouchableOpacity
+                  key={idx}
+                  onPress={() => setSelectedSkills(prev => prev.includes(skill) ? prev.filter(s => s !== skill) : [...prev, skill])}
+                  style={{
+                    backgroundColor: isSelected ? '#D98579' : '#F7F7F7',
+                    borderRadius: 20,
+                    paddingHorizontal: 14,
+                    paddingVertical: 6,
+                    marginRight: 8,
+                    marginBottom: 8,
+                    borderWidth: 1,
+                    borderColor: isSelected ? '#D98579' : '#E5E5E5',
+                  }}
+                >
+                  <Typography size={12} color={isSelected ? '#FFFFFF' : '#444444'} type={Font?.Poppins_Medium}>
+                    {isSelected ? `✓ ${skill}` : skill}
+                  </Typography>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
 
           <Date_Picker
             title={LocalizedStrings.NewStaffForm.Joining_Date || 'Joining Date'}
@@ -1836,13 +1930,32 @@ const NewStaffForm = ({ navigation, route }) => {
             />
           )}
 
-          <Typography
-            type={Font?.Poppins_Bold}
-            size={14}
-            style={{ marginTop: 15 }}
-          >
-            {LocalizedStrings.NewStaffForm.Working_Days || 'Working Schedule'}
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 15, marginBottom: 4 }}>
+            <Typography
+              type={Font?.Poppins_Bold}
+              size={14}
+            >
+              {LocalizedStrings.NewStaffForm.Working_Days || 'Working Schedule'}
+            </Typography>
+            <TouchableOpacity
+              onPress={() => {
+                const allDays = workingDaysOptions.map(d => d.value);
+                if (workingDays.length === allDays.length) {
+                  setWorkingDays([]);
+                } else {
+                  setWorkingDays(allDays);
+                }
+              }}
+            >
+              <Typography size={12} color="#D98579" type={Font?.Poppins_Medium}>
+                {workingDays.length === workingDaysOptions.length ? 'Deselect All' : 'Select All'}
+              </Typography>
+            </TouchableOpacity>
+          </View>
+          <Typography size={11} color="#888" style={{ marginBottom: 8 }}>
+            Selected days will be used for staff attendance & leave tracking.
           </Typography>
+
           <View style={styles.daysContainer}>
             {workingDaysOptions.map((day, index) => {
               const isSelected = workingDays.includes(day.value);

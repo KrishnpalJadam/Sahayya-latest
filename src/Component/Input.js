@@ -223,10 +223,10 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingHorizontal: 4,
     paddingVertical: 5,
-    height: 60,
+    minHeight: 52,
     backgroundColor: Colors.white,
     borderWidth: 1,
-    borderColor:"#DDDDDD"
+    borderColor: '#DDDDDD',
   },
   input: {
     flex: 1,
@@ -234,7 +234,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontFamily: Font.Poppins_Medium,
     color: Colors.black,
-    maxHeight: 'fixed',
+    paddingVertical: 6,
   },
   icon_container: {
     paddingRight: 5,
