@@ -75,12 +75,8 @@ const CommanView = ({ children }) => {
       const props = firstChild.props || {};
 
       const isHeaderElement =
-        typeName === 'HeaderForUser' ||
-        typeName?.includes('Header') ||
-        props.isHeader === true ||
-        props.title !== undefined ||
-        props.source_arrow !== undefined ||
-        props.source_logo !== undefined;
+        (typeName === 'HeaderForUser' || props.isHeader === true || props.stickyHeader === true) &&
+        !props.nonSticky;
 
       if (isHeaderElement) {
         headerComponent = firstChild;

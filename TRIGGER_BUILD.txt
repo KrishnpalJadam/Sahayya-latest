@@ -1,1 +1,1 @@
-Build triggered at: 2026-08-16 17:33:10 UTC - Make top header fixed and non-scrollable across all screens in CommanView.
+Build triggered at: 2026-08-16 17:57:55 UTC - Restore Login/Signup Auth Header to original design while keeping HeaderForUser sticky.
