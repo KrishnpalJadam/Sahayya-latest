@@ -1,1 +1,1 @@
-Build triggered at: 2026-08-16 21:55:20 UTC - Fix handleResend and auto-send user_id in StaffVerifection.
+Build triggered at: 2026-08-16 22:36:55 UTC - Add success.status and success.success check in StaffVerifection.js to strictly block invalid OTPs.

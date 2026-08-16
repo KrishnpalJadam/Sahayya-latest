@@ -241,6 +241,11 @@ const job_compensation_type = route?.params?.job_compensation_type || 'monthly';
       data,
       success => {
         setLoading(false);
+        if (success?.status === false || success?.success === false) {
+          let errorMsg = success?.message || success?.error || 'Invalid OTP. Please try again.';
+          setOtpError(errorMsg);
+          return;
+        }
         const verifiedUser = success?.data?.user || success?.user || null;
         if (verifiedUser && typeof verifiedUser === 'object') {
           dispatch(userDetailsAction(verifiedUser));
