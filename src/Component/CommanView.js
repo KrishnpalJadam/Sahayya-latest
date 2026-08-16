@@ -63,8 +63,40 @@ const CommanView = ({ children }) => {
     }, 400);
   }, []);
 
+  // Separate top header element (if present) so it remains fixed outside ScrollView
+  const childrenArray = React.Children.toArray(children);
+  let headerComponent = null;
+  let bodyChildren = childrenArray;
+
+  if (childrenArray.length > 0) {
+    const firstChild = childrenArray[0];
+    if (React.isValidElement(firstChild)) {
+      const typeName = firstChild.type?.name || firstChild.type?.displayName || '';
+      const props = firstChild.props || {};
+
+      const isHeaderElement =
+        typeName === 'HeaderForUser' ||
+        typeName?.includes('Header') ||
+        props.isHeader === true ||
+        props.title !== undefined ||
+        props.source_arrow !== undefined ||
+        props.source_logo !== undefined;
+
+      if (isHeaderElement) {
+        headerComponent = firstChild;
+        bodyChildren = childrenArray.slice(1);
+      }
+    }
+  }
+
   return (
     <View style={styles.container}>
+      {headerComponent ? (
+        <View style={styles.fixedHeaderWrapper}>
+          {headerComponent}
+        </View>
+      ) : null}
+
       <ScrollContext.Provider value={scrollToInput}>
         <ScrollView
           ref={scrollRef}
@@ -80,7 +112,7 @@ const CommanView = ({ children }) => {
           nestedScrollEnabled={true}
         >
           <View style={styles.inner}>
-            {children}
+            {bodyChildren}
           </View>
         </ScrollView>
       </ScrollContext.Provider>
@@ -94,6 +126,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFFFFF',
+  },
+  fixedHeaderWrapper: {
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 20,
+    zIndex: 999,
+    elevation: 3,
   },
   scrollContent: {
     paddingBottom: 20,

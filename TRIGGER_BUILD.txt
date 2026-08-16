@@ -1,1 +1,1 @@
-Build triggered at: 2026-08-16 17:28:25 UTC - Multi-select roles & dynamic skills in EditProfile screen + card text overflow fix.
+Build triggered at: 2026-08-16 17:33:10 UTC - Make top header fixed and non-scrollable across all screens in CommanView.
