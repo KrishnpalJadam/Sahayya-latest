@@ -80,17 +80,6 @@ const MyJobPosting = ({ navigation, route }) => {
           text: 'Upgrade Now',
           onPress: () => navigation.navigate('HouseholdManager'),
         },
-
-  const showUpgradeAlert = () => {
-    Alert.alert(
-      'Upgrade to Premium Plan',
-      'You are currently on the Standard (Free) plan. Upgrade to Premium to post and manage jobs.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Upgrade Now',
-          onPress: () => navigation.navigate('HouseholdManager'),
-        },
       ],
       { cancelable: true }
     );
