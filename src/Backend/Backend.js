@@ -33,11 +33,18 @@ const responseBack = (data, msg, status) => {
 
 const _normalizeErrorResponse = (payload, fallbackMessage = 'Server error. Please try again.') => {
   if (payload && typeof payload === 'object') {
+    let msg = payload.message || payload.error;
+    if (payload.errors && typeof payload.errors === 'object') {
+      const errList = Object.values(payload.errors).flat();
+      if (errList.length > 0 && typeof errList[0] === 'string') {
+        msg = errList[0];
+      }
+    }
     return {
       ...payload,
       data: payload.data !== undefined ? payload.data : payload,
-      message: payload.message || payload.error || fallbackMessage,
-      error: payload.error,
+      message: msg || fallbackMessage,
+      error: payload.error || msg,
       errors: payload.errors,
     };
   }

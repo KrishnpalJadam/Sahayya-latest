@@ -111,6 +111,12 @@ const StepBasicInfoStaff = forwardRef((props, ref) => {
         if (!dob) {
           errs.dob = 'Date of Birth is required';
         }
+        if (email && email.trim() !== '') {
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (!emailRegex.test(email.trim())) {
+            errs.email = 'Please enter a valid email address';
+          }
+        }
 
         if (Object.keys(errs).length > 0) {
           setErrors(errs);
@@ -156,8 +162,18 @@ const StepBasicInfoStaff = forwardRef((props, ref) => {
             resolve(true);
           },
           error => {
-            const msg = error?.message || 'Failed to save basic information';
-            SimpleToast.show(msg, SimpleToast.SHORT);
+            let msg = 'Failed to save basic information';
+            if (error?.message && !error.message.includes('422')) {
+              msg = error.message;
+            } else if (error?.data?.message) {
+              msg = error.data.message;
+            } else if (error?.errors) {
+              const errsList = Object.values(error.errors).flat();
+              if (errsList.length > 0) msg = errsList[0];
+            } else if (error?.error) {
+              msg = typeof error.error === 'string' ? error.error : JSON.stringify(error.error);
+            }
+            SimpleToast.show(msg, SimpleToast.LONG);
             reject(new Error(msg));
           },
           fail => {
