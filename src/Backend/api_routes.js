@@ -18,6 +18,9 @@ export const RESEND_OTP = 'resend-otp';
 export const PROFILE_UPDATE = 'profile/update';
 export const POLICY = 'cms-page';
 export const PROFILE = 'profile';
+export const PROFILE_UPDATE = 'profile/update';
+export const POLICY = 'cms-page';
+export const PROFILE = 'profile';
 export const DELETE_ACCOUNT = 'user/delete-self';
 export const LOGOUT = 'logout';
 
@@ -25,19 +28,13 @@ export const LOGOUT = 'logout';
 // HOUSEHOLD / ADMIN
 // ===========================================
 export const AddJob = 'admin/jobs';
+export const MyJobsList = 'my-posted-jobs';
+export const MyJobDelete = 'my-posted-jobs';
 export const AddUser = 'admin/members/store';
 export const ListUser = 'admin/members/list';
 export const DeleteUser = 'admin/delete-user';
 export const JobApplicationList = 'admin/jobs';
 export const ApplicantsList = 'admin/jobs';
-export const ApplicantsStatus = 'admin/applications';
-export const Joblist_Admin = 'admin/auth-jobs';
-export const UpdateMember = 'admin/members';
-export const DELETE_Member = 'delete/member';
-
-// ===========================================
-// STAFF MANAGEMENT
-// ===========================================
 export const AddStaff = 'staff/add';
 export const UpdateStaff = 'staff/update';
 export const ListStaff = 'staff/list';

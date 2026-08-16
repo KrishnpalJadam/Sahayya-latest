@@ -19,6 +19,8 @@ import {
   AddJob,
   Joblist_Admin,
   ListJob,
+  MyJobsList,
+  MyJobDelete,
   SUBSCRIPTION_USER_CURRENT,
 } from '../../../Backend/api_routes';
 import { useIsFocused } from '@react-navigation/native';
@@ -78,53 +80,44 @@ const MyJobPosting = ({ navigation, route }) => {
           text: 'Upgrade Now',
           onPress: () => navigation.navigate('HouseholdManager'),
         },
+
+  const showUpgradeAlert = () => {
+    Alert.alert(
+      'Upgrade to Premium Plan',
+      'You are currently on the Standard (Free) plan. Upgrade to Premium to post and manage jobs.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Upgrade Now',
+          onPress: () => navigation.navigate('HouseholdManager'),
+        },
       ],
       { cancelable: true }
     );
   };
 
   const JobList = useCallback(() => {
-    const jobsRoute = data?.user_role_id ? Joblist_Admin : ListJob;
+    // Only superadmin (is_admin_panel_user = 1) calls Joblist_Admin.
+    // Houseowners ALWAYS call MyJobsList ('my-posted-jobs') to fetch ONLY their own posted jobs.
+    const jobsRoute = data?.is_admin_panel_user ? Joblist_Admin : MyJobsList;
     console.log('Fetching jobs from:', jobsRoute);
     GET_WITH_TOKEN(
       jobsRoute,
       success => {
-        console.log('Jobs response:', JSON.stringify(success));
-        // Handle paginated response: success.data.data or success.data (array)
         const rawData = success?.data;
         const jobs = Array.isArray(rawData) ? rawData : (rawData?.data || []);
         setJobData(Array.isArray(jobs) ? jobs : []);
       },
       error => {
         console.log('Jobs error:', JSON.stringify(error));
-        // Fallback: if admin endpoint fails, try the general jobs endpoint
-        if (jobsRoute === Joblist_Admin) {
-          console.log('Falling back to general jobs endpoint');
-          GET_WITH_TOKEN(
-            ListJob,
-            fallbackSuccess => {
-              const rawData = fallbackSuccess?.data;
-              const jobs = Array.isArray(rawData) ? rawData : (rawData?.data || []);
-              setJobData(Array.isArray(jobs) ? jobs : []);
-            },
-            fallbackError => {
-              console.log('Fallback also failed:', JSON.stringify(fallbackError));
-              setJobData([]);
-            },
-            fallbackFail => {
-              setJobData([]);
-            },
-          );
-        } else {
-          setJobData([]);
-        }
+        setJobData([]);
       },
       fail => {
         console.log('Jobs network fail');
         setJobData([]);
       },
     );
-  }, [data?.user_role_id]);
+  }, [data?.is_admin_panel_user]);
 
   const deleteJob = itemId => {
     if (!itemId) {
@@ -134,8 +127,10 @@ const MyJobPosting = ({ navigation, route }) => {
     if (deletingJobId) return;
 
     setDeletingJobId(itemId);
+    const deleteRoute = data?.is_admin_panel_user ? `${AddJob}/${itemId}` : `${MyJobDelete}/${itemId}`;
+
     DELETE_WITH_TOKEN(
-      `${AddJob}/${itemId}`,
+      deleteRoute,
       {},
       success => {
         setDeletingJobId(null);

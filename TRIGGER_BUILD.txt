@@ -1,1 +1,1 @@
-Build triggered at: 2026-08-16 06:08:00 UTC - Complete redesign & feature upgrade of Add Staff form: Added Google Map Pin Picker, Multi-select Roles with Badges, Skills & Expertise selection, Working Days Select All, and fixed Permanent Address input clipping & layout.
+Build triggered at: 2026-08-16 06:42:05 UTC - Fix My Job Postings endpoint mapping to fetch strictly user-owned jobs (my-posted-jobs) and allow instant deletion
