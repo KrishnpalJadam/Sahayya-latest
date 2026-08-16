@@ -10,6 +10,8 @@ import SimpleModal from './../../../Component/UI/SimpleModal';
 import { OtpInput } from 'react-native-otp-entry';
 import LocalizedStrings from '../../../Constants/localization';
 import SimpleToast from 'react-native-simple-toast';
+import { useDispatch } from 'react-redux';
+import { userDetails as userDetailsAction } from '../../../Redux/action';
 import { POST_FORM_DATA, POST_WITH_TOKEN } from '../../../Backend/Backend';
 import { AADHAR_SAVE, AADHAR_VERFIY, ApplicantsStatus } from '../../../Backend/api_routes';
 
@@ -90,6 +92,7 @@ const buildSafeStaffPayload = (baseUser = {}, verifiedUser = {}) => {
 };
 
 const StaffVerifection = ({ navigation, route }) => {
+const dispatch = useDispatch();
 const userData = route?.params?.userData;
 const adharNumber = route?.params?.adharNumber;
 const otpAlreadySent = route?.params?.otpAlreadySent || false;
@@ -231,6 +234,9 @@ const job_compensation_type = route?.params?.job_compensation_type || 'monthly';
       success => {
         setLoading(false);
         const verifiedUser = success?.data?.user || success?.user || null;
+        if (verifiedUser && typeof verifiedUser === 'object') {
+          dispatch(userDetailsAction(verifiedUser));
+        }
         const mergedUserData = buildSafeStaffPayload(userData, verifiedUser);
 
         const goToNewStaff = () => {
