@@ -121,7 +121,7 @@ const SelectJob = ({ navigation }) => {
         <View style={styles.hiresContainer}>
           <Image source={ImageConstant?.Users} style={styles.hiresIcon} />
           <Typography type={Font.Poppins_Medium} style={styles.hiresText}>
-            {item.users_count || 0} {(item.users_count || 0) === 1 ? 'hire' : 'hires'}
+            {item.hires_count ?? item.users_count ?? 0} {(item.hires_count ?? item.users_count ?? 0) === 1 ? 'hire' : 'hires'}
           </Typography>
         </View>
         <Button

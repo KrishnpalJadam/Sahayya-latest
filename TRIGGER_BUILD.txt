@@ -1,1 +1,1 @@
-Build triggered at: 2026-08-16 05:45:30 UTC - Add email format validation and clear error toast message extraction for 422 errors
+Build triggered at: 2026-08-16 06:02:47 UTC - Hide roles subtitle from Active Staff cards on Dashboard, resolve Employer actual name on receipt, and fix hires count calculation on SelectJob

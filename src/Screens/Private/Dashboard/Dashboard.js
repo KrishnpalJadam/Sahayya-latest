@@ -207,9 +207,6 @@ const Dashboard = ({ navigation }) => {
             <Typography type={Font?.Poppins_SemiBold} size={16}>
               {`${item?.first_name || ''} ${item?.last_name || ''}`.trim() || item.name}
             </Typography>
-            <Typography type={Font?.Poppins_Regular} size={14}>
-              {item?.user_work_info?.primary_role || item?.staff?.user_work_info?.primary_role}
-            </Typography>
           </View>
         </TouchableOpacity>
         <View style={[styles.dot, { backgroundColor: getStatusColor(itemStatus) }]} />

@@ -48,21 +48,38 @@ const PaymentReceipt = ({ visible, onClose, paymentData, userDetails, employerNa
   const taxDeduction = Number(
     sb?.tax_deduction ?? paymentData?.tax_deduction ?? 0,
   );
+  const advanceDeduction = Number(
+    sb?.advance_deduction ?? paymentData?.advance_deduction ?? (paymentData?.should_deduct ? paymentData?.amount : 0),
+  );
+  const absentDeduction = Number(
+    sb?.absent_deduction ?? paymentData?.absent_deduction ?? 0,
+  );
+  const otherDeduction = Number(
+    sb?.other_deduction ?? sb?.deductions ?? paymentData?.deductions ?? paymentData?.deduction ?? 0,
+  );
+
   const totalDeductions = Number(
-    sb?.total_deductions ?? (pfDeduction + taxDeduction),
+    sb?.total_deductions ?? (pfDeduction + taxDeduction + advanceDeduction + absentDeduction + otherDeduction),
   );
 
   const staffName =
     paymentData?.staff_name ??
     paymentData?.staff_member?.name ??
-    userDetails?.name ??
-    (userDetails?.first_name
-      ? `${userDetails.first_name} ${userDetails.last_name || ''}`.trim()
-      : null) ??
+    (userDetails?.userType == 2 || userDetails?.user_role_id == 2 ? (userDetails?.name || `${userDetails?.first_name || ''} ${userDetails?.last_name || ''}`.trim()) : null) ??
     'Staff Member';
 
   const employerName =
     employerNameProp ||
+    paymentData?.employer_name ||
+    paymentData?.employer?.name ||
+    paymentData?.owner_name ||
+    paymentData?.added_by_user?.name ||
+    (paymentData?.added_by_user?.first_name
+      ? `${paymentData.added_by_user.first_name} ${paymentData.added_by_user.last_name || ''}`.trim()
+      : null) ||
+    (userDetails?.userType == 3 || userDetails?.user_role_id == 3 || userDetails?.role === 'houseowner' || userDetails?.is_houseowner
+      ? (userDetails?.name || `${userDetails?.first_name || ''} ${userDetails?.last_name || ''}`.trim())
+      : null) ||
     userDetails?.employer_name ||
     userDetails?.employer ||
     userDetails?.added_by_user?.name ||
@@ -281,7 +298,23 @@ const PaymentReceipt = ({ visible, onClose, paymentData, userDetails, employerNa
                   {taxDeduction > 0 ? (
                     <BreakdownRow label="Income Tax (IT)" value={taxDeduction} />
                   ) : null}
-                  {totalDeductions <= 0 ? (
+                  {advanceDeduction > 0 ? (
+                    <BreakdownRow 
+                      label={
+                        paymentData?.deduction_method 
+                          ? `Advance Recovery (${String(paymentData.deduction_method).replace('_', ' ')})` 
+                          : "Advance Recovery"
+                      } 
+                      value={advanceDeduction} 
+                    />
+                  ) : null}
+                  {absentDeduction > 0 ? (
+                    <BreakdownRow label="Absent Deduction" value={absentDeduction} />
+                  ) : null}
+                  {otherDeduction > 0 ? (
+                    <BreakdownRow label="Salary Deduction" value={otherDeduction} />
+                  ) : null}
+                  {totalDeductions <= 0 && pfDeduction <= 0 && taxDeduction <= 0 && advanceDeduction <= 0 && absentDeduction <= 0 && otherDeduction <= 0 ? (
                     <Typography type={Font.Poppins_Regular} size={12} color="#999">
                       No deductions
                     </Typography>
