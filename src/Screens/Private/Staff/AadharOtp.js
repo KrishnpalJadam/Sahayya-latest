@@ -133,13 +133,6 @@ const AadharOtp = ({ navigation, route }) => {
             {(LocalizedStrings.AddStaff?.Description || 'OTP sent to mobile linked with Aadhaar') + (last4 ? ` (ending in ${last4})` : '')}
           </Typography>
 
-          {/* Testing OTP Banner */}
-          <View style={{ backgroundColor: '#FFF5EE', paddingVertical: 8, paddingHorizontal: 16, borderRadius: 8, marginVertical: 14, borderWidth: 1, borderColor: '#D98579', alignItems: 'center', alignSelf: 'center' }}>
-            <Typography size={13} color="#D98579" type={Font?.Poppins_Medium}>
-              🔑 Testing OTP: 123456
-            </Typography>
-          </View>
-
           {/* OTP Input */}
           <OtpInput
             numberOfDigits={6}

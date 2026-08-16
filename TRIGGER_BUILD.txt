@@ -1,1 +1,1 @@
-Build triggered at: 2026-08-16 14:37:55 UTC - Release APK build with user's manual changes and full Aadhaar OTP live real SMS integration.
+Build triggered at: 2026-08-16 15:45:45 UTC - Push user manual changes in Aadhaar.js and AadharOtp.js for Release APK build.
