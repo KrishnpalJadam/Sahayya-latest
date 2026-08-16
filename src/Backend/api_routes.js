@@ -25,8 +25,10 @@ export const LOGOUT = 'logout';
 // HOUSEHOLD / ADMIN
 // ===========================================
 export const AddJob = 'admin/jobs';
-export const MyJobsList = 'my-posted-jobs';
-export const MyJobDelete = 'my-posted-jobs';
+export const Joblist_Admin = 'admin/auth-jobs';
+export const ListJob = 'admin/auth-jobs';
+export const MyJobsList = 'admin/auth-jobs';
+export const MyJobDelete = 'admin/jobs';
 export const AddUser = 'admin/members/store';
 export const ListUser = 'admin/members/list';
 export const DeleteUser = 'admin/delete-user';
