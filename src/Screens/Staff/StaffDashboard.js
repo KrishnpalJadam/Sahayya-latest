@@ -171,8 +171,8 @@ const StaffDashboard = ({ navigation }) => {
       : userDetail?.first_name || userDetail?.name || 'User';
   return (
     <View style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
-    <CommanView>
-      <View style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 10, backgroundColor: '#FFFFFF' }}>
+      {/* Fixed Sticky Top Header */}
+      <View style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 10, paddingHorizontal: 20, backgroundColor: '#FFFFFF', zIndex: 999 }}>
         <View style={{ width: 75, alignItems: 'flex-start' }}>
           <TouchableOpacity
             onPress={() => navigation.navigate('StaffWallet')}
@@ -210,7 +210,9 @@ const StaffDashboard = ({ navigation }) => {
           <NotificationBell navigateTo="Notifications" />
         </View>
       </View>
-      <View style={{ borderBottomWidth: 1, borderColor: '#EBEBEA' }} />
+      <View style={{ borderBottomWidth: 1, borderColor: '#EBEBEA', marginHorizontal: 20 }} />
+
+      <CommanView>
 
       <TouchableOpacity
         onPress={() => {

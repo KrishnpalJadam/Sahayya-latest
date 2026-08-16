@@ -289,30 +289,31 @@ const Dashboard = ({ navigation }) => {
 
   return (
     <View style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
+      {/* Fixed Sticky Top Header */}
+      <View style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 10, paddingHorizontal: 20, backgroundColor: '#FFFFFF', zIndex: 999 }}>
+        <TouchableOpacity onPress={() => navigation.navigate('ReferAndEarn')} style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <View style={{ height: 32, width: 32, borderRadius: 16, borderWidth: 1.5, borderColor: '#D98579', backgroundColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center' }}>
+            <Typography type={Font?.Poppins_SemiBold} style={{ fontSize: 16, color: '#D98579' }}>{'\u20B9'}</Typography>
+          </View>
+          <View style={{ marginLeft: 6 }}>
+            <Typography type={Font?.Poppins_Medium} style={{ fontSize: 11, color: '#555' }}>Wallet</Typography>
+            <Typography type={Font?.Poppins_SemiBold} style={{ fontSize: 13, color: '#1a1a1a' }}>{'\u20B9'}{walletBalance || '0.00'}</Typography>
+          </View>
+        </TouchableOpacity>
+        <Typography type={Font?.Poppins_Medium} style={{ flex: 1, textAlign: 'center', fontSize: 18, color: '#000' }}>
+          {LocalizedStrings.Dashboard?.title}
+        </Typography>
+        <NotificationBell navigateTo="Notification" style={{marginRight: 10}} />
+        <TouchableOpacity onPress={() => navigation.navigate('ProfileManagement')}>
+          <Image
+            source={userDetails?.image && !isPlaceholderImage(userDetails?.image) ? { uri: userDetails?.image } : ImageConstant.user}
+            style={{ height: 35, width: 35, borderRadius: 40, resizeMode: 'cover' }}
+          />
+        </TouchableOpacity>
+      </View>
+      <View style={{ borderBottomWidth: 1, borderColor: '#EBEBEA', marginHorizontal: 20 }} />
+
       <CommanView>
-        {/* Header */}
-        <View style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 10, backgroundColor: '#FFFFFF' }}>
-          <TouchableOpacity onPress={() => navigation.navigate('ReferAndEarn')} style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <View style={{ height: 32, width: 32, borderRadius: 16, borderWidth: 1.5, borderColor: '#D98579', backgroundColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center' }}>
-              <Typography type={Font?.Poppins_SemiBold} style={{ fontSize: 16, color: '#D98579' }}>{'\u20B9'}</Typography>
-            </View>
-            <View style={{ marginLeft: 6 }}>
-              <Typography type={Font?.Poppins_Medium} style={{ fontSize: 11, color: '#555' }}>Wallet</Typography>
-              <Typography type={Font?.Poppins_SemiBold} style={{ fontSize: 13, color: '#1a1a1a' }}>{'\u20B9'}{walletBalance || '0.00'}</Typography>
-            </View>
-          </TouchableOpacity>
-          <Typography type={Font?.Poppins_Medium} style={{ flex: 1, textAlign: 'center', fontSize: 18, color: '#000' }}>
-            {LocalizedStrings.Dashboard?.title}
-          </Typography>
-          <NotificationBell navigateTo="Notification" style={{marginRight: 10}} />
-          <TouchableOpacity onPress={() => navigation.navigate('ProfileManagement')}>
-            <Image
-              source={userDetails?.image && !isPlaceholderImage(userDetails?.image) ? { uri: userDetails?.image } : ImageConstant.user}
-              style={{ height: 35, width: 35, borderRadius: 40, resizeMode: 'cover' }}
-            />
-          </TouchableOpacity>
-        </View>
-        <View style={{ borderBottomWidth: 1, borderColor: '#EBEBEA' }} />
 
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
           {/* ── Active Staff (Today's Attendance) ── */}

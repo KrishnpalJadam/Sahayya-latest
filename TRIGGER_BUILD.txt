@@ -1,1 +1,1 @@
-Build triggered at: 2026-08-16 17:57:55 UTC - Restore Login/Signup Auth Header to original design while keeping HeaderForUser sticky.
+Build triggered at: 2026-08-16 18:11:45 UTC - Make Dashboard headers 100% fixed & sticky at top for Release APK build.
