@@ -2226,7 +2226,7 @@ const NewStaffForm = ({ navigation, route }) => {
               Back
             </Typography>
           </TouchableOpacity>
-          <View style={{ flex: 1.2 }}>
+          <View style={{ flex: 1.2, height: 48, justifyContent: 'center' }}>
             <Button
               title={
                 isEditMode
@@ -2234,7 +2234,8 @@ const NewStaffForm = ({ navigation, route }) => {
                   : LocalizedStrings.NewStaffForm.Add_Staff
               }
               onPress={() => handleSubmit()}
-              main_style={{ width: '100%', height: 48 }}
+              main_style={{ width: '100%', height: 48, justifyContent: 'center' }}
+              style={{ marginVertical: 0, height: 48, borderRadius: 24 }}
               loader={loading}
             />
           </View>
