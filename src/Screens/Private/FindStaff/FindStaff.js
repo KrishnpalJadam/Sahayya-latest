@@ -697,12 +697,12 @@ const FindStaff = ({ navigation, route }) => {
                       onError={() => setFailedImages(prev => ({ ...prev, [c.id]: true }))}
                       style={styles.avatar}
                     />
-                    <View style={{ justifyContent: 'center', marginLeft: 8 }}>
-                      <Typography type={Font?.Poppins_SemiBold} size={17}>
+                    <View style={{ flex: 1, justifyContent: 'center', marginLeft: 8 }}>
+                      <Typography type={Font?.Poppins_SemiBold} size={17} style={{ flexShrink: 1 }}>
                         {c.name}
                       </Typography>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2 }}>
-                        <Typography size={13} color="#555">
+                      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2, flexWrap: 'wrap' }}>
+                        <Typography size={13} color="#555" style={{ flex: 1, flexWrap: 'wrap' }}>
                           {c.role}
                         </Typography>
                         {Number(c.rating) > 0 && (

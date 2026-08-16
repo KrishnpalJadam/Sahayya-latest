@@ -1,1 +1,1 @@
-Build triggered at: 2026-08-16 17:17:35 UTC - Align Back and Add Staff buttons in 1 perfect horizontal row.
+Build triggered at: 2026-08-16 17:28:25 UTC - Multi-select roles & dynamic skills in EditProfile screen + card text overflow fix.

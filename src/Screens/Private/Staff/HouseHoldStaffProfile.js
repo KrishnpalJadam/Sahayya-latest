@@ -1935,6 +1935,8 @@ const styles = StyleSheet.create({
     fontFamily: Font.Poppins_Regular,
     color: '#666',
     marginBottom: 12,
+    paddingHorizontal: 16,
+    textAlign: 'center',
   },
   info: {
     fontFamily: Font.Poppins_Medium,
