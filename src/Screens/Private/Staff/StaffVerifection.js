@@ -122,6 +122,10 @@ const job_compensation_type = route?.params?.job_compensation_type || 'monthly';
         aadhar_number: adharNumber,
         is_staff_add: 1,
       };
+      const userId = userData?.user_id || userData?.id;
+      if (userId) {
+        body.user_id = userId;
+      }
       POST_FORM_DATA(
         AADHAR_SAVE,
         body,
