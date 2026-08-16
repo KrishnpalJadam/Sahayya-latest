@@ -123,44 +123,30 @@ export default function ListingJob({ navigation, route }) {
     }
   }, [isFocused, JobList]);
 
-  // API call for approve/reject
+  // API call for approve/reject (Direct status update - no Aadhaar OTP needed for job request approvals)
   const handelapplication = (status, jobID, item) => {
-    if (status === 'rejected') {
-      // Reject immediately — no OTP needed
-      POST_WITH_TOKEN(
-        `${ApplicantsStatus}/${jobID}/status`,
-        { application_status: status },
-        success => {
-          SimpleToast.show(success?.message || 'Success', SimpleToast.SHORT);
-          JobList();
-        },
-        error => {
-          SimpleToast.show(
-            error?.data?.message || error?.message || 'Something went wrong',
-            SimpleToast.SHORT,
-          );
-        },
-        fail => {
-          SimpleToast.show('Network error. Please try again.', SimpleToast.SHORT);
-        },
-      );
-      return;
-    }
-
-    if (status === 'accepted' && item?.user) {
-      // MANDATORY OTP & WORK CONTRACT SETUP FOR ALL APPLICANT APPROVALS!
-      // Navigates to StaffVerifection OTP screen -> sends OTP to staff's registered mobile number!
-      navigation.navigate('StaffVerifection', {
-        adharNumber: item?.user?.aadhar_number || item?.user?.aadhaar_number || item?.user?.phone,
-        userData: item?.user,
-        pendingApproval: true,
-        applicationId: jobID,
-        job_id: item?.job_id || item?.job?.id,
-        job_compensation: item?.job?.expected_compensation || item?.job?.compensation,
-        job_title: item?.job?.title,
-        job_compensation_type: item?.job?.compensation_type,
-      });
-    }
+    POST_WITH_TOKEN(
+      `${ApplicantsStatus}/${jobID}/status`,
+      { application_status: status },
+      success => {
+        SimpleToast.show(
+          status === 'accepted'
+            ? 'Application approved successfully!'
+            : 'Application rejected',
+          SimpleToast.SHORT,
+        );
+        JobList();
+      },
+      error => {
+        SimpleToast.show(
+          error?.data?.message || error?.message || 'Something went wrong',
+          SimpleToast.SHORT,
+        );
+      },
+      fail => {
+        SimpleToast.show('Network error. Please try again.', SimpleToast.SHORT);
+      },
+    );
   };
 
   return (
