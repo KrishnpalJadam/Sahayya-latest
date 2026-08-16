@@ -1597,9 +1597,9 @@ const NewStaffForm = ({ navigation, route }) => {
           <View
             style={{ flexDirection: 'row', justifyContent: 'space-between' }}
           >
-            <View style={{ flex: 1, marginRight: 8 }}>
+            <View style={{ flex: 1, marginRight: 6 }}>
               <Input
-                style_title={{ color: '#8C8D8B' }}
+                style_title={{ color: '#8C8D8B', fontSize: 13 }}
                 placeholder={LocalizedStrings.NewStaffForm.City || 'Mumbai'}
                 title={LocalizedStrings.NewStaffForm.City || 'City'}
                 value={city}
@@ -1607,12 +1607,13 @@ const NewStaffForm = ({ navigation, route }) => {
                   setCity(value);
                   clearError('city');
                 }}
+                style_input={{ paddingHorizontal: 6, fontSize: 12.5 }}
                 error={errors.city}
               />
             </View>
-            <View style={{ flex: 1, marginLeft: 8 }}>
+            <View style={{ flex: 1, marginLeft: 6 }}>
               <Input
-                style_title={{ color: '#8C8D8B' }}
+                style_title={{ color: '#8C8D8B', fontSize: 13 }}
                 placeholder={
                   LocalizedStrings.NewStaffForm.State_Placeholder ||
                   'Maharashtra'
@@ -1623,6 +1624,7 @@ const NewStaffForm = ({ navigation, route }) => {
                   setStateName(value);
                   clearError('stateName');
                 }}
+                style_input={{ paddingHorizontal: 6, fontSize: 12.5 }}
                 error={errors.stateName}
               />
             </View>
@@ -1662,22 +1664,24 @@ const NewStaffForm = ({ navigation, route }) => {
           <View
             style={{ flexDirection: 'row', justifyContent: 'space-between' }}
           >
-            <View style={{ flex: 1, marginRight: 8 }}>
+            <View style={{ flex: 1, marginRight: 6 }}>
               <Input
-                style_title={{ color: '#8C8D8B' }}
+                style_title={{ color: '#8C8D8B', fontSize: 13 }}
                 placeholder="City"
-                title="Permanent City"
+                title="City"
                 value={permCity}
                 onChange={value => setPermCity(value)}
+                style_input={{ paddingHorizontal: 6, fontSize: 12.5 }}
               />
             </View>
-            <View style={{ flex: 1, marginLeft: 8 }}>
+            <View style={{ flex: 1, marginLeft: 6 }}>
               <Input
-                style_title={{ color: '#8C8D8B' }}
+                style_title={{ color: '#8C8D8B', fontSize: 13 }}
                 placeholder="State"
-                title="Permanent State"
+                title="State"
                 value={permStateName}
                 onChange={value => setPermStateName(value)}
+                style_input={{ paddingHorizontal: 6, fontSize: 12.5 }}
               />
             </View>
           </View>
@@ -2199,22 +2203,36 @@ const NewStaffForm = ({ navigation, route }) => {
 
       {currentStep === 2 && (
       <View style={styles.bottomButton}>
-        <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 12 }}>
-          <Button
-            title="Back"
+        <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 12, width: '90%' }}>
+          <TouchableOpacity
             onPress={() => setCurrentStep(1)}
-            main_style={[styles.buttonStyle, { backgroundColor: '#888', width: '40%' }]}
-          />
-          <Button
-            title={
-              isEditMode
-                ? LocalizedStrings.NewStaffForm.Update_Staff || 'Update Staff'
-                : LocalizedStrings.NewStaffForm.Add_Staff
-            }
-            onPress={() => handleSubmit()}
-            main_style={[styles.buttonStyle, { width: '50%' }]}
-            loader={loading}
-          />
+            style={{
+              flex: 1,
+              height: 48,
+              borderRadius: 24,
+              backgroundColor: '#FFFFFF',
+              borderWidth: 1.5,
+              borderColor: '#D98579',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Typography size={15} color="#D98579" type={Font?.Poppins_SemiBold}>
+              Back
+            </Typography>
+          </TouchableOpacity>
+          <View style={{ flex: 1.2 }}>
+            <Button
+              title={
+                isEditMode
+                  ? LocalizedStrings.NewStaffForm.Update_Staff || 'Update Staff'
+                  : LocalizedStrings.NewStaffForm.Add_Staff
+              }
+              onPress={() => handleSubmit()}
+              main_style={{ width: '100%', height: 48 }}
+              loader={loading}
+            />
+          </View>
         </View>
       </View>
       )}
