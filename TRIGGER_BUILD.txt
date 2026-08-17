@@ -1,1 +1,1 @@
-Build triggered at: 2026-08-17 11:23:30 UTC - Remove camera icon badge and pencil icon from Staff Profile screen and preserve deleted staff basic info in employer Inactive Staff tab.
+Build triggered at: 2026-08-17 11:28:40 UTC - Pre-fill Role/Designation, Skills, Previous Owner details, and Work Details in NewStaffForm.

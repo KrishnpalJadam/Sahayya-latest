@@ -337,6 +337,48 @@ const NewStaffForm = ({ navigation, route }) => {
       if (data.upi_id) setUpiId(data.upi_id);
 
       const workInfo = data.user_work_info || data.userWorkInfo || data.work_info;
+      // Role / Designation prefill
+      const rawRole =
+        workInfo?.primary_role ||
+        workInfo?.role_designation ||
+        data?.primary_role ||
+        data?.role_designation ||
+        data?.role ||
+        jobTitle ||
+        '';
+      if (rawRole) {
+        const roleArr = Array.isArray(rawRole)
+          ? rawRole
+          : typeof rawRole === 'string'
+            ? rawRole.split(',').map(r => r.trim()).filter(Boolean)
+            : [];
+        if (roleArr.length > 0) {
+          setRoleDesignation(roleArr);
+        }
+      }
+
+      // Skills & Expertise prefill
+      const rawSkills =
+        workInfo?.skills ||
+        data?.skills ||
+        '';
+      if (rawSkills) {
+        const skillArr = Array.isArray(rawSkills)
+          ? rawSkills
+          : typeof rawSkills === 'string'
+            ? rawSkills.split(',').map(s => s.trim()).filter(Boolean)
+            : [];
+        if (skillArr.length > 0) {
+          setSelectedSkills(skillArr);
+        }
+      }
+
+      // Previous Owner Contact prefill
+      const prevName = workInfo?.previous_owner_name || workInfo?.prev_owner_name || data?.previous_owner_name || data?.prev_owner_name;
+      if (prevName) setPrevOwnerName(prevName);
+      const prevPhone = workInfo?.previous_owner_phone || workInfo?.prev_owner_phone || data?.previous_owner_phone || data?.prev_owner_phone;
+      if (prevPhone) setPrevOwnerPhone(String(prevPhone));
+
       if (workInfo) {
         if (workInfo.emergency_contact_name) setEmergencyContactName(workInfo.emergency_contact_name);
         if (workInfo.emergency_contact_number) setEmergencyContactNumber(workInfo.emergency_contact_number);
