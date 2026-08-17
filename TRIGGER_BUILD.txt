@@ -1,1 +1,1 @@
-Build triggered at: 2026-08-16 22:36:55 UTC - Add success.status and success.success check in StaffVerifection.js to strictly block invalid OTPs.
+Build triggered at: 2026-08-17 09:52:10 UTC - Add top-right Close X button, backdrop dismiss, and Cancel button to ImageModal.js.
