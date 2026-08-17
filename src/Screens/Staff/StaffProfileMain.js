@@ -255,13 +255,6 @@ const StaffProfileMain = ({ navigation }) => {
                         <TouchableOpacity onPress={() => setPreviewImage(imgUrl)}>
                             <Image source={userImage} style={styles.profileImage} />
                         </TouchableOpacity>
-                        <TouchableOpacity
-                            style={styles.editImageBtn}
-                            onPress={handlePickProfileImage}
-                            activeOpacity={0.8}
-                        >
-                            <Image source={ImageConstant.NewCamera} style={styles.editImageIcon} />
-                        </TouchableOpacity>
                     </View>
                     <Typography style={styles.name} size={22}>{userName}</Typography>
 
@@ -300,7 +293,6 @@ const StaffProfileMain = ({ navigation }) => {
                         onPress={() => navigation.navigate('EditProfile')}
                         activeOpacity={0.8}
                     >
-                        <Image source={ImageConstant.pencle} style={{ width: 22, height: 22, tintColor: '#D98579', marginRight: 10, resizeMode: 'contain' }} />
                         <Typography type={Font.Poppins_SemiBold} size={15} color="#D98579">
                             Edit Profile
                         </Typography>

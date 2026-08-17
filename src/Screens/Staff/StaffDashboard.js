@@ -303,7 +303,6 @@ const StaffDashboard = ({ navigation }) => {
             }
             main_style={styles.smallBtn}
             title_style={styles.btnTextSmall}
-            disabled={!houseownerId}
             onPress={() => navigation.navigate('StaffAttendance')}
             style={{ height: 40 }}
           />
@@ -341,7 +340,6 @@ const StaffDashboard = ({ navigation }) => {
             }
             main_style={styles.smallBtn}
             title_style={styles.btnTextSmall}
-            disabled={!houseownerId}
             onPress={() => navigation.navigate('EarningSummary', { id: staffJobId })}
             style={{ height: 40 }}
           />
@@ -384,7 +382,6 @@ const StaffDashboard = ({ navigation }) => {
             }
             main_style={styles.smallBtn}
             title_style={styles.btnTextSmall}
-            disabled={!houseownerId}
             onPress={() => navigation.navigate('ApplyLeave', { houseownerId })}
             style={{ height: 40 }}
           />
