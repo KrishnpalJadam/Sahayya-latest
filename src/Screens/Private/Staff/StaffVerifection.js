@@ -107,7 +107,7 @@ const job_compensation_type = route?.params?.job_compensation_type || 'monthly';
   const [Verify, setVerify] = useState(false);
   const [loading, setLoading] = useState(false);
   const [otpError, setOtpError] = useState('');
-  const [resendTimer, setResendTimer] = useState(60);
+  const [resendTimer, setResendTimer] = useState(30);
   const last4 = adharNumber?.slice(-4) || '****';
 
   useEffect(() => {
@@ -130,7 +130,7 @@ const job_compensation_type = route?.params?.job_compensation_type || 'monthly';
         AADHAR_SAVE,
         body,
         () => {
-          setResendTimer(60);
+          setResendTimer(30);
         },
         error => {
           let errorMsg = 'Failed to send OTP. Please tap Resend.';
@@ -144,7 +144,7 @@ const job_compensation_type = route?.params?.job_compensation_type || 'monthly';
         },
       );
     } else if (otpAlreadySent) {
-      setResendTimer(60);
+      setResendTimer(30);
     }
   }, []);
 
@@ -181,7 +181,7 @@ const job_compensation_type = route?.params?.job_compensation_type || 'monthly';
       AADHAR_SAVE,
       body,
       success => {
-        setResendTimer(60);
+        setResendTimer(30);
         setOtpError('');
       },
       error => {

@@ -78,24 +78,28 @@ const BankAccounts = ({ navigation }) => {
   };
 
   const handleSave = () => {
-    if (!form.bank_name.trim()) {
+    const cleanBankName = form.bank_name.trim();
+    const cleanAccountNum = form.account_number.trim();
+    const cleanIfsc = form.ifsc_code.trim().toUpperCase();
+
+    if (!cleanBankName) {
       SimpleToast.show('Please enter bank name', SimpleToast.SHORT);
       return;
     }
-    if (!form.account_number.trim() || form.account_number.trim().length < 5) {
-      SimpleToast.show('Please enter valid account number (min 5 digits)', SimpleToast.SHORT);
+    if (!cleanAccountNum || cleanAccountNum.length < 9 || cleanAccountNum.length > 18 || !/^[0-9]+$/.test(cleanAccountNum)) {
+      SimpleToast.show('Account number must be between 9 and 18 digits', SimpleToast.SHORT);
       return;
     }
-    if (!form.ifsc_code.trim() || form.ifsc_code.trim().length !== 11) {
-      SimpleToast.show('Please enter valid 11-character IFSC code', SimpleToast.SHORT);
+    if (!cleanIfsc || cleanIfsc.length !== 11 || !/^[A-Z]{4}0[A-Z0-9]{6}$/.test(cleanIfsc)) {
+      SimpleToast.show('Please enter a valid 11-character IFSC code (e.g. SBIN0001234)', SimpleToast.SHORT);
       return;
     }
 
     setSaving(true);
     const body = {
-      bank_name: form.bank_name.trim(),
-      account_number: form.account_number.trim(),
-      ifsc_code: form.ifsc_code.trim().toUpperCase(),
+      bank_name: cleanBankName,
+      account_number: cleanAccountNum,
+      ifsc_code: cleanIfsc,
       bank_type: form.bank_type,
     };
 
@@ -388,6 +392,7 @@ const BankAccounts = ({ navigation }) => {
                 style={styles.input}
                 placeholder="e.g. State Bank of India, HDFC Bank, ICICI"
                 placeholderTextColor="#94A3B8"
+                maxLength={50}
                 value={form.bank_name}
                 onChangeText={t => setForm(f => ({ ...f, bank_name: t }))}
               />
@@ -398,11 +403,12 @@ const BankAccounts = ({ navigation }) => {
               </Typography>
               <TextInput
                 style={styles.input}
-                placeholder="Enter full account number"
+                placeholder="Enter 9 to 18 digit account number"
                 placeholderTextColor="#94A3B8"
                 keyboardType="numeric"
+                maxLength={18}
                 value={form.account_number}
-                onChangeText={t => setForm(f => ({ ...f, account_number: t }))}
+                onChangeText={t => setForm(f => ({ ...f, account_number: t.replace(/[^0-9]/g, '') }))}
               />
 
               {/* IFSC Code */}
@@ -416,7 +422,7 @@ const BankAccounts = ({ navigation }) => {
                 autoCapitalize="characters"
                 maxLength={11}
                 value={form.ifsc_code}
-                onChangeText={t => setForm(f => ({ ...f, ifsc_code: t.toUpperCase() }))}
+                onChangeText={t => setForm(f => ({ ...f, ifsc_code: t.replace(/[^a-zA-Z0-9]/g, '').toUpperCase() }))}
               />
 
               {/* Account Type */}

@@ -1,1 +1,1 @@
-Build triggered at: 2026-08-17 09:52:10 UTC - Add top-right Close X button, backdrop dismiss, and Cancel button to ImageModal.js.
+Build triggered at: 2026-08-17 10:57:45 UTC - Remove SelectJob screen flow: Add Staff button now navigates directly to Aadhaar verification screen.

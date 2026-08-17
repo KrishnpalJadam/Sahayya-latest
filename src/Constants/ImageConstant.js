@@ -21,7 +21,7 @@ export const ImageConstant = {
   Briefcase: require('../../assets/Images/briefcase.png'),
   Calendar: require('../../assets/Images/calendar.png'),
   Back: require('../../assets/Images/Container.png'),
-  Dollar: require('../../assets/Images/rupee.jpg'),
+  Dollar: require('../../assets/Images/dollar-sign.png'),
   Rupee: require('../../assets/Images/rupee.jpg'),
   Location: require('../../assets/Images/map-pin.png'),
   Users: require('../../assets/Images/staff.png'),

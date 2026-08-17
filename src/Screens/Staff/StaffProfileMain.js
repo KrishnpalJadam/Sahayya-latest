@@ -18,11 +18,13 @@ import { useIsFocused } from '@react-navigation/native';
 import RNFS from 'react-native-fs';
 import { Alert } from 'react-native';
 import { isPlaceholderImage } from '../../Utils/ImageUtils';
+import ImageModal from '../../Modals/ImageModal';
 
 const StaffProfileMain = ({ navigation }) => {
     const dispatch = useDispatch();
     const userDetail = useSelector(store => store?.userDetails);
     const [loading, setLoading] = useState(false);
+    const [showImageModal, setShowImageModal] = useState(false);
     const [terminateModal, setTerminateModal] = useState(false);
     const [Adhar, setAdhar] = useState()
     // Notification Settings State
@@ -203,27 +205,20 @@ const StaffProfileMain = ({ navigation }) => {
     };
 
     const handlePickProfileImage = () => {
-        const options = {
-            mediaType: 'photo',
-            quality: 0.8,
-            maxWidth: 1024,
-            maxHeight: 1024,
-        };
+        setShowImageModal(true);
+    };
 
-        launchImageLibrary(options, response => {
-            if (response.didCancel) return;
-            if (response.errorMessage) {
-                SimpleToast.show('Error picking image', SimpleToast.SHORT);
-            } else if (response.assets && response.assets[0]) {
-                const asset = response.assets[0];
-                const imageObj = {
-                    uri: asset.uri,
-                    type: asset.type || 'image/jpeg',
-                    name: asset.fileName || `profile_photo_${Date.now()}.jpg`,
-                };
-                handleUpdateProfileImage(imageObj);
-            }
-        });
+    const handleImageSelected = (assets) => {
+        setShowImageModal(false);
+        if (assets && assets[0]) {
+            const asset = assets[0];
+            const imageObj = {
+                uri: asset.uri,
+                type: asset.type || 'image/jpeg',
+                name: asset.fileName || `profile_photo_${Date.now()}.jpg`,
+            };
+            handleUpdateProfileImage(imageObj);
+        }
     };
 
     const handleUpdateProfileImage = (imageObj) => {
@@ -645,6 +640,11 @@ const StaffProfileMain = ({ navigation }) => {
             </View>
         )}
 
+        <ImageModal
+            showModal={showImageModal}
+            close={() => setShowImageModal(false)}
+            selected={handleImageSelected}
+        />
     </>
     );
 };

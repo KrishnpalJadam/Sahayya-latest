@@ -15,7 +15,7 @@ import LocalizedStrings from '../../../Constants/localization';
 
 const AadharOtp = ({ navigation, route }) => {
   const [otp, setOtp] = useState('');
-  const [resendTimer, setResendTimer] = useState(60); // 60 sec timer
+  const [resendTimer, setResendTimer] = useState(30); // 30 sec timer
   const [otpError, setOtpError] = useState('');
   const { mobile } = route?.params || {};
   const dispatch = useDispatch();
@@ -46,7 +46,7 @@ const AadharOtp = ({ navigation, route }) => {
       data,
       sucess => {
         setOtpError('');
-        setResendTimer(60);
+        setResendTimer(30);
       },
       error => {
         let errorMsg = 'Invalid OTP. Please try again.';

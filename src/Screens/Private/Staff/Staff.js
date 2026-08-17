@@ -280,7 +280,7 @@ const Staff = ({ navigation }) => {
       <View style={styles.bottomButton}>
         <Button
           onPress={() => {
-            navigation.navigate('SelectJob');
+            navigation.navigate('Aadhar');
           }}
           title={'+ ' + LocalizedStrings.MyStaff.Add_New_Staff}
           main_style={styles.buttonStyle}

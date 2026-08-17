@@ -35,6 +35,7 @@ import moment from 'moment';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { isPlaceholderImage } from '../../../Utils/ImageUtils';
 import { useIsFocused } from '@react-navigation/native';
+import ImageModal from '../../../Modals/ImageModal';
 
 const terminationReasons = [
   { label: 'No longer required', value: 'no_longer_required' },
@@ -96,6 +97,7 @@ const HouseHoldStaffProfile = ({ navigation, route }) => {
   const [submitLoading, setSubmitLoading] = useState(false);
   const [previewImage, setPreviewImage] = useState(null);
   const [isSavingImage, setIsSavingImage] = useState(false);
+  const [showImageModal, setShowImageModal] = useState(false);
 
   // Zoom / pan state for image preview
   const scale = useRef(new Animated.Value(1)).current;
@@ -512,27 +514,20 @@ const HouseHoldStaffProfile = ({ navigation, route }) => {
   };
   
   const handlePickProfileImage = () => {
-    const options = {
-      mediaType: 'photo',
-      quality: 0.8,
-      maxWidth: 1024,
-      maxHeight: 1024,
-    };
+    setShowImageModal(true);
+  };
 
-    launchImageLibrary(options, response => {
-      if (response.didCancel) return;
-      if (response.errorMessage) {
-        SimpleToast.show('Error picking image', SimpleToast.SHORT);
-      } else if (response.assets && response.assets[0]) {
-        const asset = response.assets[0];
-        const imageObj = {
-          uri: asset.uri,
-          type: asset.type || 'image/jpeg',
-          name: asset.fileName || `staff_photo_${Date.now()}.jpg`,
-        };
-        handleUpdateProfileImage(imageObj);
-      }
-    });
+  const handleImageSelected = (assets) => {
+    setShowImageModal(false);
+    if (assets && assets[0]) {
+      const asset = assets[0];
+      const imageObj = {
+        uri: asset.uri,
+        type: asset.type || 'image/jpeg',
+        name: asset.fileName || `staff_photo_${Date.now()}.jpg`,
+      };
+      handleUpdateProfileImage(imageObj);
+    }
   };
 
   const handleUpdateProfileImage = (imageObj) => {
@@ -1851,6 +1846,12 @@ const HouseHoldStaffProfile = ({ navigation, route }) => {
           )}
         </View>
       </Modal>
+
+      <ImageModal
+        showModal={showImageModal}
+        close={() => setShowImageModal(false)}
+        selected={handleImageSelected}
+      />
     </CommanView>
   );
 };
