@@ -35,7 +35,7 @@ import {
 } from '../../Backend/Utility';
 import Date_Picker from '../../Component/Date_Picker';
 import moment from 'moment';
-import ImageModal from '../../Component/Modals/ImageModal';
+import ImageModal from '../../Modals/ImageModal';
 import LocalizedStrings from '../../Constants/localization';
 import {
   getLanguage,

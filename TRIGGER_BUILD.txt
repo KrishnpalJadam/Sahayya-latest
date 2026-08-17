@@ -1,1 +1,1 @@
-Build triggered at: 2026-08-17 10:57:45 UTC - Remove SelectJob screen flow: Add Staff button now navigates directly to Aadhaar verification screen.
+Build triggered at: 2026-08-17 11:01:10 UTC - Fix Staff EditProfile crash by pointing ImageModal import to src/Modals/ImageModal.js and removing unlinked react-native-image-crop-picker dependency.
