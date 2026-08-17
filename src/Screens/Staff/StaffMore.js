@@ -177,7 +177,6 @@ const StaffMore = ({ navigation }) => {
         <TouchableOpacity style={styles.editBtn} onPress={() => {
           navigation?.navigate("EditProfile")
         }}>
-          <Image source={ImageConstant.pencle} style={{ width: 18, height: 18, tintColor: '#D98579', marginRight: 6, resizeMode: 'contain' }} />
           <Typography type={Font?.Poppins_SemiBold} size={13} color="#D98579">
             {LocalizedStrings.EditProfile?.title || "Edit Profile"}
           </Typography>

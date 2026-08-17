@@ -1,1 +1,1 @@
-Build triggered at: 2026-08-17 11:01:10 UTC - Fix Staff EditProfile crash by pointing ImageModal import to src/Modals/ImageModal.js and removing unlinked react-native-image-crop-picker dependency.
+Build triggered at: 2026-08-17 11:07:50 UTC - Replace Pet Details Pet Type text input with DropdownComponent (Dog, Cat, Bird, Fish, Rabbit, Other) on Manage Addresses screen and remove pencil icon from Staff More Options.

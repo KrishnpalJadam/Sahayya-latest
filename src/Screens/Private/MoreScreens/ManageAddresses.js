@@ -461,7 +461,25 @@ const ManageAddresses = ({ navigation }) => {
                 {(address.pets || []).map((pet, petIndex) => (
                   <View key={petIndex} style={styles.petRow}>
                     <View style={{ flex: 1, marginRight: 8 }}>
-                      <Input title="Type" value={pet.pet_type} onChange={val => updatePet(addrIndex, petIndex, 'pet_type', val)} />
+                      <DropdownComponent
+                        title="Type"
+                        placeholder="Select Type"
+                        width={'100%'}
+                        style_dropdown={{ marginHorizontal: 0 }}
+                        selectedTextStyleNew={{ marginLeft: 10 }}
+                        marginHorizontal={0}
+                        style_title={{ textAlign: 'left' }}
+                        value={pet.pet_type || pet.type || ''}
+                        onChange={item => updatePet(addrIndex, petIndex, 'pet_type', item?.value || item || '')}
+                        data={[
+                          { label: 'Dog', value: 'Dog' },
+                          { label: 'Cat', value: 'Cat' },
+                          { label: 'Bird', value: 'Bird' },
+                          { label: 'Fish', value: 'Fish' },
+                          { label: 'Rabbit', value: 'Rabbit' },
+                          { label: 'Other', value: 'Other' },
+                        ]}
+                      />
                     </View>
                     <View style={{ width: 80 }}>
                       <Input title="Count" keyboardType="numeric" value={pet.pet_count} onChange={val => updatePet(addrIndex, petIndex, 'pet_count', val)} />
