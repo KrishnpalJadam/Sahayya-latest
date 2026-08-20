@@ -172,15 +172,14 @@ const UpdateProfile = forwardRef((props, ref) => {
   }, []);
 
   const saveLastWorkExperience = () => {
-    // Validate all required fields
     const error = {
-      role: validators?.checkArrayLength('Role/Designation', role),
-      joinDate: validators?.checkRequire('Joining Date', joinDate),
-      endDate: validators?.checkRequire('End Date', endDate),
-      salary: validators?.checkRequire('Salary', salary),
-      workingHours: validators?.checkRequire('Working Hours', workingHours),
-      ownerName: validators?.checkRequire('Owner Name', ownerName),
-      contactNumber: validators?.checkFixPhoneNumber('Contact Number', contactNumber, 10, 10),
+      role: null,
+      joinDate: null,
+      endDate: null,
+      salary: null,
+      workingHours: null,
+      ownerName: null,
+      contactNumber: null,
     };
 
     setErrors(error);
