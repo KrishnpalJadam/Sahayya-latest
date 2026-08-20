@@ -1,4 +1,4 @@
-import { StyleSheet, TouchableOpacity, View, Alert } from 'react-native';
+import { StyleSheet, TouchableOpacity, View, Alert, Modal } from 'react-native';
 import React, { useState } from 'react';
 import CommanView from '../../Component/CommanView';
 import Header from '../../Component/Header';
@@ -17,6 +17,8 @@ const Login = ({ navigation }) => {
   const [mobile, setMobile] = useState('');
   const [mobileError, setMobileError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showActivateModal, setShowActivateModal] = useState(false);
+  const [pendingLoginData, setPendingLoginData] = useState(null);
 
   const [selectedCountry, setSelectedCountry] = useState({
     flag: '🇮🇳',
@@ -60,6 +62,11 @@ const Login = ({ navigation }) => {
       response => {
         setIsLoading(false);
         if (response?.status === true) {
+          if (response?.is_deactivated) {
+            setPendingLoginData({ response, payload });
+            setShowActivateModal(true);
+            return;
+          }
           navigation?.navigate('Otp', {
             type: 'login',
             mobile: mobile,
@@ -103,6 +110,26 @@ const Login = ({ navigation }) => {
         }
       },
     );
+  };
+
+  const handleActivateAccount = () => {
+    setShowActivateModal(false);
+    if (pendingLoginData) {
+      const { response } = pendingLoginData;
+      navigation?.navigate('Otp', {
+        type: 'login',
+        mobile: mobile,
+        countryCode: selectedCountry.dial_code,
+        user_id: response?.user_id,
+        testOtp: response?.otp,
+      });
+    }
+    setPendingLoginData(null);
+  };
+
+  const handleCancelActivate = () => {
+    setShowActivateModal(false);
+    setPendingLoginData(null);
   };
 
   return (
@@ -168,6 +195,72 @@ const Login = ({ navigation }) => {
           Welcome again to Sahaya
         </Typography>
       </View>
+
+      {/* Activate Account Modal */}
+      <Modal
+        transparent={true}
+        visible={showActivateModal}
+        animationType="fade"
+        onRequestClose={handleCancelActivate}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={handleCancelActivate}
+        >
+          <TouchableOpacity
+            style={styles.modalContent}
+            activeOpacity={1}
+            onPress={(e) => e.stopPropagation()}
+          >
+            <View style={styles.modalIconContainer}>
+              <Typography style={styles.modalEmoji}>🔒</Typography>
+            </View>
+            <Typography
+              type={Font?.Poppins_SemiBold}
+              size={20}
+              style={styles.modalTitle}
+            >
+              Activate Your Account
+            </Typography>
+            <Typography
+              type={Font?.Poppins_Regular}
+              size={14}
+              style={styles.modalMessage}
+              color="#666"
+            >
+              Your account is currently deactivated. Would you like to activate it and continue?
+            </Typography>
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={styles.modalNoButton}
+                onPress={handleCancelActivate}
+              >
+                <Typography
+                  type={Font?.Poppins_Medium}
+                  size={16}
+                  color="#666"
+                >
+                  No
+                </Typography>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.modalYesButton}
+                onPress={handleActivateAccount}
+                disabled={isLoading}
+              >
+                <Typography
+                  type={Font?.Poppins_Medium}
+                  size={16}
+                  color="#fff"
+                >
+                  {isLoading ? 'Activating...' : 'Yes'}
+                </Typography>
+              </TouchableOpacity>
+            </View>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
     </CommanView>
   );
 };
@@ -199,5 +292,60 @@ const styles = StyleSheet.create({
     marginTop: 18,
     textAlign: 'center',
     color: '#8C8D8B',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 24,
+    width: '100%',
+    maxWidth: 340,
+    alignItems: 'center',
+  },
+  modalIconContainer: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#FFF5F4',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  modalEmoji: {
+    fontSize: 28,
+  },
+  modalTitle: {
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  modalMessage: {
+    textAlign: 'center',
+    marginBottom: 24,
+    lineHeight: 20,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    gap: 12,
+    width: '100%',
+  },
+  modalNoButton: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    backgroundColor: '#F5F5F5',
+    alignItems: 'center',
+  },
+  modalYesButton: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    backgroundColor: '#D98579',
+    alignItems: 'center',
   },
 });

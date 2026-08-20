@@ -8,7 +8,7 @@ import { Font } from '../../Constants/Font';
 import { ImageConstant } from '../../Constants/ImageConstant';
 import { isAuth, userDetails } from '../../Redux/action';
 import { POST_WITH_TOKEN, GET_WITH_TOKEN } from '../../Backend/Backend';
-import { DELETE_ACCOUNT, LOGOUT, StaffAvailabilityUpdate, StaffAvailabilityStatus } from '../../Backend/api_routes';
+import { DELETE_ACCOUNT, DEACTIVATE_ACCOUNT, LOGOUT, StaffAvailabilityUpdate, StaffAvailabilityStatus } from '../../Backend/api_routes';
 import SimpleToast from 'react-native-simple-toast';
 import LocalizedStrings from '../../Constants/localization';
 import { clearFcmToken } from '../../Constants/AsyncStorage';
@@ -95,31 +95,31 @@ const StaffMore = ({ navigation }) => {
     navigation.navigate('Policy', { slug });
   };
 
-  // Handle Delete Account
-  const handleDeleteAccount = () => {
+  // Handle Deactivate Account
+  const handleDeactivateAccount = () => {
     setShowDeleteModal(true);
   };
 
-  const confirmDeleteAccount = () => {
+  const confirmDeactivateAccount = () => {
     setShowDeleteModal(false);
     setLoading(true);
     POST_WITH_TOKEN(
-      DELETE_ACCOUNT,
+      DEACTIVATE_ACCOUNT,
       {},
       success => {
         setLoading(false);
-        SimpleToast.show(success?.message || LocalizedStrings.Settings?.accountDeletedSuccess || 'Account deleted successfully', SimpleToast.SHORT);
-        // Logout user after account deletion
+        SimpleToast.show(success?.message || 'Account deactivated successfully', SimpleToast.SHORT);
+        clearFcmToken();
         dispatch(isAuth(false));
         dispatch(userDetails({}));
       },
       error => {
         setLoading(false);
-        SimpleToast.show(error?.message || LocalizedStrings.Settings?.accountDeleteFailed || 'Failed to delete account', SimpleToast.SHORT);
+        SimpleToast.show(error?.message || 'Failed to deactivate account', SimpleToast.SHORT);
       },
       fail => {
         setLoading(false);
-        SimpleToast.show(LocalizedStrings.Settings?.networkError || 'Network error. Please try again.', SimpleToast.SHORT);
+        SimpleToast.show('Network error. Please try again.', SimpleToast.SHORT);
       },
     );
   };
@@ -315,10 +315,10 @@ const StaffMore = ({ navigation }) => {
         />
         <Option
           Images={ImageConstant?.Users}
-          title={LocalizedStrings.Settings?.delete || "Delete Account"}
+          title={"Deactivate Account"}
           imageStyle={{}}
-          subtitle={LocalizedStrings.Settings?.deleteSubtitle || "Permanently remove your account. Data will be kept for records."}
-          onPress={handleDeleteAccount}
+          subtitle={"Deactivate your account. You can reactivate anytime by logging in again."}
+          onPress={handleDeactivateAccount}
         />
         <Option
           onPress={handleLogout}
@@ -399,7 +399,7 @@ const StaffMore = ({ navigation }) => {
         </TouchableOpacity>
       </Modal>
 
-      {/* Delete Account Modal */}
+      {/* Deactivate Account Modal */}
       <Modal
         transparent={true}
         visible={showDeleteModal}
@@ -428,7 +428,7 @@ const StaffMore = ({ navigation }) => {
               size={20}
               style={styles.modalTitle}
             >
-              {LocalizedStrings.Settings?.accountDeleteTitle || 'Delete Account'}
+              {'Deactivate Account'}
             </Typography>
             <Typography
               type={Font.Poppins_Regular}
@@ -436,7 +436,7 @@ const StaffMore = ({ navigation }) => {
               style={styles.modalMessage}
               color="#666"
             >
-              {LocalizedStrings.Settings?.accountDeleteDesc || 'Are you sure you want to delete your account? This action cannot be undone. Data will be kept for records.'}
+              {'Are you sure you want to deactivate your account? You can reactivate it anytime by logging in again. Your data will be preserved.'}
             </Typography>
             <View style={styles.modalButtons}>
               <TouchableOpacity
@@ -453,7 +453,7 @@ const StaffMore = ({ navigation }) => {
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.deleteAccountButton}
-                onPress={confirmDeleteAccount}
+                onPress={confirmDeactivateAccount}
                 disabled={loading}
               >
                 <Typography
@@ -461,7 +461,7 @@ const StaffMore = ({ navigation }) => {
                   size={16}
                   color="#fff"
                 >
-                  {loading ? 'Deleting...' : ('Delete')}
+                  {loading ? 'Deactivating...' : ('Deactivate')}
                 </Typography>
               </TouchableOpacity>
             </View>

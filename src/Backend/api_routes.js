@@ -19,6 +19,8 @@ export const PROFILE_UPDATE = 'profile/update';
 export const POLICY = 'cms-page';
 export const PROFILE = 'profile';
 export const DELETE_ACCOUNT = 'user/delete-self';
+export const DEACTIVATE_ACCOUNT = 'user/deactivate-self';
+export const ACTIVATE_ACCOUNT = 'user/activate-account';
 export const LOGOUT = 'logout';
 
 // ===========================================
