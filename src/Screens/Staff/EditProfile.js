@@ -1545,7 +1545,7 @@ const EditProfile = ({ navigation, route }) => {
             <View style={styles.uploadWrapperThree}>
               <UploadBox
                 icon={ImageConstant.Verify}
-                title="Verification Certificate"
+                title="Police Verification Certificate"
                 onPress={() => handleImageSelection('verification_certificate')}
               />
               {renderImagePreview('verification_certificate')}
