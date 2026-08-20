@@ -92,8 +92,28 @@ const ImageModal = ({
           cropping: true,
         },
         response => {
-          if (!response.didCancel) {
+          if (!response.didCancel && response.assets) {
             selected(response.assets, 'gallery');
+            close();
+          }
+        },
+      );
+    });
+  };
+
+  const OpenDrive = async () => {
+    await handlePermission(getPhotoPermission(), () => {
+      launchImageLibrary(
+        {
+          mediaType: 'photo',
+          maxWidth: 500,
+          maxHeight: 500,
+          quality: 0.7,
+          cropping: true,
+        },
+        response => {
+          if (!response.didCancel && response.assets) {
+            selected(response.assets, 'drive');
             close();
           }
         },
@@ -170,6 +190,24 @@ const ImageModal = ({
                     color={Colors.black}
                     style={{marginLeft: 15}}>
                     Open Gallery
+                  </Typography>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.optionRow} onPress={OpenDrive}>
+                  <View style={styles.iconContainer}>
+                    <Image
+                      style={styles.icon}
+                      source={{
+                        uri: 'https://cdn-icons-png.flaticon.com/128/2965/2965327.png',
+                      }}
+                    />
+                  </View>
+                  <Typography
+                    size={15}
+                    fontFamily={Font.Poppins_Medium}
+                    color={Colors.black}
+                    style={{marginLeft: 15}}>
+                    Upload from Drive / Files
                   </Typography>
                 </TouchableOpacity>
 
