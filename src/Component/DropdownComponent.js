@@ -220,11 +220,11 @@ const styles = StyleSheet.create({
   },
   dropdown: {
     borderWidth: 1,
-    borderColor:"#E0E0E0",
-    backgroundColor: '#FAFAFA',
-    borderRadius: 12,
-    height: 56,
-    paddingHorizontal: 4,
+    borderColor: '#E5E7EB',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    height: 48,
+    paddingHorizontal: 6,
   },
   placeholderStyle: {
     color: '#999',
