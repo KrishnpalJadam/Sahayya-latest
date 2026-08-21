@@ -112,40 +112,44 @@ const Aadhar = ({ route }) => {
         onPressLeftIcon={() => {
           navigation?.goBack();
         }}
-        title={LocalizedStrings.AddStaff.title}
+        title={LocalizedStrings.AddStaff?.title || 'Aadhaar Number'}
         style_title={styles.headerTitle}
       />
 
-      <View style={styles.formContainer}>
-        <Typography type={Font?.Poppins_SemiBold} style={styles.sectionTitle}>
-          {LocalizedStrings.AddStaff.Enter_Staff_Aadhaar}
-        </Typography>
+      <View style={styles.centerContainer}>
+        <View style={styles.formContainer}>
+          <Typography type={Font?.Poppins_SemiBold} style={styles.fieldLabel}>
+            {LocalizedStrings.AddStaff?.Aadhaar_Number || 'Aadhaar Number'}
+          </Typography>
 
-        <View style={styles.inputWrapper}>
           <Input
-            mainStyle={{ marginTop: -20 }}
-            placeholder={LocalizedStrings.AddStaff.Aadhaar_Placeholder}
+            placeholder={LocalizedStrings.AddStaff?.Aadhaar_Placeholder || 'Enter 12-digit Aadhaar Number'}
             keyboardType="number-pad"
             maxLength={12}
             value={adharNumber}
-            onChange={text => setAdharNumber(text)}
-            title={LocalizedStrings.AddStaff.Aadhaar_Number}
+            onChange={text => {
+              setAdharNumber(text);
+              if (error?.add_error) setError({});
+            }}
             error={error?.add_error}
           />
+
+          <View style={{ marginTop: 20 }}>
+            <Button
+              onPress={() => submit()}
+              title={LocalizedStrings.AddStaff?.Submit || 'Submit'}
+              main_style={styles.buttonStyle}
+              icon={ImageConstant?.Arrow}
+              disabled={isLoading}
+              loader={isLoading}
+            />
+          </View>
+
+          <Typography type={Font?.Poppins_Regular} style={styles.noteText}>
+            {LocalizedStrings.AddStaff?.Aadhaar_Info ||
+              'We use Aadhaar for identity verification and to prevent fraudulent listings, enhancing trust within the Sahayya community.'}
+          </Typography>
         </View>
-        <View style={{ marginTop: 40 }}>
-          <Button
-            onPress={() => submit()}
-            title={LocalizedStrings.AddStaff.Submit}
-            main_style={styles.buttonStyle}
-            icon={ImageConstant?.Arrow}
-            disabled={isLoading}
-            loader={isLoading}
-          />
-        </View>
-        <Typography type={Font?.Poppins_Regular} style={styles.noteText}>
-          {LocalizedStrings.AddStaff.Aadhaar_Info}
-        </Typography>
       </View>
     </CommanView>
   );
@@ -156,41 +160,47 @@ export default Aadhar;
 const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
+    fontFamily: Font?.Poppins_SemiBold,
+  },
+  centerContainer: {
+    paddingTop: 30,
+    paddingHorizontal: 16,
   },
   formContainer: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    marginHorizontal: 20,
-    marginTop: 10,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
-    marginTop: 100,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 24,
+    borderWidth: 1,
+    borderColor: '#EFEFEF',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.06,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 3,
+      },
+    }),
   },
-  sectionTitle: {
-    fontSize: 20,
-    marginBottom: 12,
-    textAlign: 'center',
-    textDecorationLine: 'underline',
-  },
-  inputWrapper: {
-    marginTop: 40,
-  },
-  label: {
-    fontSize: 16,
-    color: '#8C8D8B',
+  fieldLabel: {
+    fontSize: 15,
+    fontFamily: Font?.Poppins_Medium,
+    color: '#666666',
+    marginBottom: 8,
   },
   buttonStyle: {
     width: '100%',
+    height: 48,
+    borderRadius: 12,
   },
   noteText: {
     fontSize: 12,
-    color: '#666',
+    color: '#8C8D8B',
     textAlign: 'center',
-    marginTop: 20,
-    marginHorizontal: 20,
+    marginTop: 24,
+    lineHeight: 18,
+    paddingHorizontal: 6,
   },
 });

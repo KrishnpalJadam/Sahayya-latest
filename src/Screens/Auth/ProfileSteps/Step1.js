@@ -557,11 +557,13 @@ const Step1 = () => {
         title={LocalizedStrings.EditProfile?.change_photo || 'Upload Photo'}
         close={() => setShowImageModal(false)}
         selected={image => {
+          const img = Array.isArray(image) ? image[0] : image;
+          const imgUri = img?.uri || img?.path;
           let obj = {
-            uri: image[0]?.path,
-            path: image[0]?.path,
-            name: image[0]?.filename,
-            type: image[0]?.mime || 'image/jpeg',
+            uri: imgUri,
+            path: imgUri,
+            name: img?.fileName || img?.filename || img?.name || 'profile.jpg',
+            type: img?.type || img?.mime || 'image/jpeg',
           };
           setSelectedPhoto(obj);
           setImageLoadError(false);

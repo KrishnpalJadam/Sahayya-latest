@@ -563,25 +563,23 @@ const HouseholdProfile = ({ navigation, route }) => {
     }
 
     // Profile Image - only upload if user PICKED a NEW image.
-    // If profileImage was loaded from server (isExisting=true), skip upload
-    // because RN cannot re-upload a remote http:// URL as a file — backend
-    // would then reject it as "not an image" and whole save fails.
-    const localPath = profileImage?.path || profileImage?.uri || '';
+    // Handle both asset.uri and asset.path from image picker
+    const imgUri = profileImage?.uri || profileImage?.path || profileImage?.[0]?.uri || profileImage?.[0]?.path || '';
     const isLocalFile =
-      typeof localPath === 'string' &&
-      (localPath.startsWith('file://') ||
-        localPath.startsWith('content://') ||
-        localPath.startsWith('/') ||
-        localPath.startsWith('ph://'));
+      typeof imgUri === 'string' &&
+      (imgUri.startsWith('file://') ||
+        imgUri.startsWith('content://') ||
+        imgUri.startsWith('/') ||
+        imgUri.startsWith('ph://'));
     if (
       profileImage &&
       !profileImage.isExisting &&
-      profileImage.path &&
+      imgUri &&
       isLocalFile
     ) {
       formData.append('profile_picture', {
-        uri: profileImage.path,
-        name: profileImage.name || `profile_${Date.now()}.jpg`,
+        uri: imgUri,
+        name: profileImage.name || profileImage.fileName || `profile_${Date.now()}.jpg`,
         type: profileImage.type || profileImage.mime || 'image/jpeg',
       });
     }

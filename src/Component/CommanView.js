@@ -9,8 +9,9 @@ import {
 export const ScrollContext = createContext(null);
 export const useScrollContext = () => useContext(ScrollContext);
 
-const CommanView = ({ children }) => {
-  const scrollRef = useRef(null);
+const CommanView = ({ children, scrollRef: externalScrollRef }) => {
+  const internalScrollRef = useRef(null);
+  const scrollRef = externalScrollRef || internalScrollRef;
   const [kbHeight, setKbHeight] = useState(0);
   const scrollY = useRef(0);
   const scrollViewY = useRef(0);

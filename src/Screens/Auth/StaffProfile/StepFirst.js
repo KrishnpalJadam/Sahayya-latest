@@ -72,6 +72,16 @@ const StepFirst = () => {
     }
   };
 
+  const completeProfileFlow = () => {
+    SimpleToast.show(
+      LocalizedStrings.EditProfile?.profile_completed ||
+      'Profile completed successfully',
+      SimpleToast.SHORT,
+    );
+    if (global.Profile) global.Profile();
+    Dispatch(userDetails({ ...userDetail, is_staff_added: 1, step: 5 }));
+  };
+
   return (
     <CommanView>
       <Header
@@ -107,92 +117,105 @@ const StepFirst = () => {
         onStepPress={index => setActiveTab(index + 1)}
       />
       {renderContent()}
-      <Button
-        title={
-          activeTab == 5
-            ? LocalizedStrings.EditProfile?.Save_Changes || 'Save & Complete'
-            : LocalizedStrings.Auth?.next || 'Next'
-        }
-        onPress={async () => {
-          if (activeTab == 1) {
-            // Save Basic Info (Photo, Name, Gender, DOB) and move to next step
-            try {
-              setLoader(true);
-              await basicInfoRef.current?.saveBasicInfo();
-              setActiveTab(2);
-            } catch (error) {
-              SimpleToast.show(
-                error?.message || 'Please fill all required basic information fields.',
-                SimpleToast.SHORT,
-              );
-            } finally {
-              setLoader(false);
-            }
-          } else if (activeTab == 2) {
-            // Save KYC images and details
-            const images = kycRef.current?.getUploadedImages?.();
-            if (images) setKycImages(images);
-            try {
-              setLoader(true);
-              await kycRef.current?.saveKYC();
-              setActiveTab(3);
-            } catch (error) {
-              SimpleToast.show(
-                error?.message || 'Failed to save KYC details. Please fill all required fields.',
-                SimpleToast.SHORT,
-              );
-            } finally {
-              setLoader(false);
-            }
-          } else if (activeTab == 3) {
-            // Save addresses
-            try {
-              setLoader(true);
-              await locationRef.current?.saveAddresses();
-              setActiveTab(4);
-            } catch (error) {
-              const msg = error?.message || 'Please fill all required address fields including Google Location.';
-              SimpleToast.show(msg, SimpleToast.SHORT);
-            } finally {
-              setLoader(false);
-            }
-          } else if (activeTab == 4) {
-            // Save work info
-            try {
-              setLoader(true);
-              await workInfoRef.current?.saveWorkInfo();
-              setActiveTab(5);
-            } catch (error) {
-              SimpleToast.show(
-                error?.message || 'Failed to save work info. Please fill all required fields.',
-                SimpleToast.SHORT,
-              );
-            } finally {
-              setLoader(false);
-            }
-          } else if (activeTab == 5) {
-            // Final step — save last work experience
-            try {
-              setLoader(true);
-              await lastWorkRef.current?.saveLastWorkExperience();
-              SimpleToast.show(
-                LocalizedStrings.EditProfile?.profile_completed ||
-                'Profile completed successfully',
-                SimpleToast.SHORT,
-              );
-              if (global.Profile) global.Profile();
-              Dispatch(userDetails({ ...userDetail, is_staff_added: 1, step: 5 }));
-            } catch (error) {
-              console.log('Final step error:', error);
-            } finally {
-              setLoader(false);
-            }
+      <View style={styles.bottomButtonsRow}>
+        {activeTab === 5 ? (
+          <TouchableOpacity
+            activeOpacity={0.7}
+            style={styles.skipButton}
+            onPress={completeProfileFlow}
+            disabled={loader}
+          >
+            <Typography
+              size={13}
+              type={Font?.Poppins_Medium}
+              color="#737373"
+            >
+              Skip Now
+            </Typography>
+          </TouchableOpacity>
+        ) : <View />}
+
+        <Button
+          title={
+            activeTab == 5
+              ? LocalizedStrings.EditProfile?.Save_Changes || 'Save & Complete'
+              : LocalizedStrings.Auth?.next || 'Next'
           }
-        }}
-        style={{ width: 150, alignSelf: 'flex-end', marginVertical: 10 }}
-        disabled={loader}
-        loader={loader}
-      />
+          onPress={async () => {
+            if (activeTab == 1) {
+              // Save Basic Info (Photo, Name, Gender, DOB) and move to next step
+              try {
+                setLoader(true);
+                await basicInfoRef.current?.saveBasicInfo();
+                setActiveTab(2);
+              } catch (error) {
+                SimpleToast.show(
+                  error?.message || 'Please fill all required basic information fields.',
+                  SimpleToast.SHORT,
+                );
+              } finally {
+                setLoader(false);
+              }
+            } else if (activeTab == 2) {
+              // Save KYC images and details
+              const images = kycRef.current?.getUploadedImages?.();
+              if (images) setKycImages(images);
+              try {
+                setLoader(true);
+                await kycRef.current?.saveKYC();
+                setActiveTab(3);
+              } catch (error) {
+                SimpleToast.show(
+                  error?.message || 'Failed to save KYC details. Please fill all required fields.',
+                  SimpleToast.SHORT,
+                );
+              } finally {
+                setLoader(false);
+              }
+            } else if (activeTab == 3) {
+              // Save addresses
+              try {
+                setLoader(true);
+                await locationRef.current?.saveAddresses();
+                setActiveTab(4);
+              } catch (error) {
+                const msg = error?.message || 'Please fill all required address fields including Google Location.';
+                SimpleToast.show(msg, SimpleToast.SHORT);
+              } finally {
+                setLoader(false);
+              }
+            } else if (activeTab == 4) {
+              // Save work info
+              try {
+                setLoader(true);
+                await workInfoRef.current?.saveWorkInfo();
+                setActiveTab(5);
+              } catch (error) {
+                SimpleToast.show(
+                  error?.message || 'Failed to save work info. Please fill all required fields.',
+                  SimpleToast.SHORT,
+                );
+              } finally {
+                setLoader(false);
+              }
+            } else if (activeTab == 5) {
+              // Final step — last work experience is optional
+              try {
+                setLoader(true);
+                await lastWorkRef.current?.saveLastWorkExperience();
+              } catch (error) {
+                console.log('Last work exp optional save:', error);
+              } finally {
+                setLoader(false);
+                completeProfileFlow();
+              }
+            }
+          }}
+          style={{ width: 150 }}
+          disabled={loader}
+          loader={loader}
+        />
+      </View>
     </CommanView>
   );
 };
@@ -204,5 +227,20 @@ const styles = StyleSheet.create({
     fontFamily: Font?.Manrope_Bold,
     fontSize: 16,
     marginBottom: 10,
+  },
+  bottomButtonsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginVertical: 10,
+    paddingHorizontal: 16,
+  },
+  skipButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    backgroundColor: '#F5F5F7',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
   },
 });

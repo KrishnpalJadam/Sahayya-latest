@@ -606,11 +606,12 @@ const EditProfile = ({ navigation, route }) => {
   const handleImageSelected = images => {
     if (images && images.length > 0) {
       const selectedImage = images[0];
+      const imgUri = selectedImage?.uri || selectedImage?.path;
       const imageObj = {
-        uri: selectedImage?.path || selectedImage?.uri,
-        path: selectedImage?.path,
-        name: selectedImage?.filename || `${currentImageType}.jpg`,
-        type: selectedImage?.mime || 'image/jpeg',
+        uri: imgUri,
+        path: imgUri,
+        name: selectedImage?.fileName || selectedImage?.filename || `${currentImageType}.jpg`,
+        type: selectedImage?.type || selectedImage?.mime || 'image/jpeg',
       };
 
       // Set image based on type
@@ -730,9 +731,10 @@ const EditProfile = ({ navigation, route }) => {
     if (preferredWorkCities.length > 0) formData.append('preferred_work_location', preferredWorkCities.join(', '));
 
     // Profile Image (only if new image selected, not a remote URL)
-    if (profileImage?.path && !profileImage.path.startsWith('http')) {
+    const profileImgUri = profileImage?.uri || profileImage?.path;
+    if (profileImgUri && !profileImgUri.startsWith('http')) {
       formData.append('profile_picture', {
-        uri: profileImage.path || profileImage.uri,
+        uri: profileImgUri,
         name: profileImage.name || `profile_${Date.now()}.jpg`,
         type: profileImage.type || profileImage.mime || 'image/jpeg',
       });

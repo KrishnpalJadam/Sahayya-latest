@@ -29,9 +29,22 @@ import {
   SUBSCRIPTION_VERIFY_EXTRA_STAFF_PAYMENT 
 } from '../../../Backend/api_routes';
 import { initiatePayment } from '../../../Backend/razorpay';
+import ProfileStepRoller from '../../../Component/UI/ProfileStepRoller';
 import { useSelector } from 'react-redux';
 
 const NewStaffForm = ({ navigation, route }) => {
+  const scrollViewRef = React.useRef(null);
+  const sectionYRefs = React.useRef({});
+  const [activeStep, setActiveStep] = useState(0);
+
+  const scrollToStep = stepIndex => {
+    setActiveStep(stepIndex);
+    const targetY = sectionYRefs.current[stepIndex] || 0;
+    if (scrollViewRef.current) {
+      scrollViewRef.current.scrollTo({ y: Math.max(0, targetY - 10), animated: true });
+    }
+  };
+
   const data = route?.params?.userData;
   const userDetail = useSelector(state => state.userDetails);
   const adharNumber = route?.params?.adharNumber;
@@ -1358,7 +1371,7 @@ const NewStaffForm = ({ navigation, route }) => {
   };
 
   return (
-    <CommanView>
+    <CommanView scrollRef={scrollViewRef}>
       <HeaderForUser
         source_arrow={ImageConstant?.BackArrow}
         title={LocalizedStrings.NewStaffForm.title}
@@ -1368,10 +1381,25 @@ const NewStaffForm = ({ navigation, route }) => {
           navigation?.goBack();
         }}
       />
+      <ProfileStepRoller
+        steps={[
+          { id: 0, title: 'Personal Info', icon: '👤' },
+          { id: 1, title: 'Address & Map', icon: '📍' },
+          { id: 2, title: 'Role & Pay', icon: '💼' },
+          { id: 3, title: 'Verification', icon: '🛡️' },
+        ]}
+        activeStep={activeStep}
+        onStepPress={scrollToStep}
+      />
 
       <View>
         {/* Personal Details */}
-        <View style={styles.section}>
+        <View
+          style={styles.section}
+          onLayout={e => {
+            sectionYRefs.current[0] = e.nativeEvent.layout.y;
+          }}
+        >
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <Image
               source={ImageConstant.person}
@@ -1412,21 +1440,7 @@ const NewStaffForm = ({ navigation, route }) => {
             error={errors.lastName}
           />
 
-          <Input
-            style_title={{ color: '#8C8D8B' }}
-            placeholder={
-              LocalizedStrings.NewStaffForm.Email_Placeholder || 'Email'
-            }
-            title={LocalizedStrings.NewStaffForm.Email ? `${LocalizedStrings.NewStaffForm.Email} (Optional)` : 'Email (Optional)'}
-            value={email}
-            onChange={value => {
-              setEmail(value);
-              clearError('email');
-            }}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            error={errors.email}
-          />
+
 
           <Input
             style_title={{ color: '#8C8D8B' }}
@@ -1514,34 +1528,38 @@ const NewStaffForm = ({ navigation, route }) => {
             error={errors.dateOfBirth}
           />
 
-          <Input
-            style_title={{ color: '#8C8D8B' }}
-            placeholder={
-              LocalizedStrings.NewStaffForm.Street_Landmark || 'Street/Landmark'
-            }
-            title={LocalizedStrings.NewStaffForm.Home_Address || 'Home Address'}
-            value={street}
-            onChange={value => {
-              setStreet(value);
-              clearError('street');
-            }}
-            style_input={{ textAlign: 'start' }}
-            // style_inputContainer={{ height: 100 }}
-            multiline
-            numberOfLines={2}
-            error={errors.street}
-          />
-          <Input
-            style_title={{ color: '#8C8D8B' }}
-            placeholder="e.g. Phase 1, Model Town"
-            title="Area / Locality"
-            value={areaLocality}
-            onChange={value => {
-              setAreaLocality(value);
-              clearError('areaLocality');
-            }}
-            error={errors.areaLocality}
-          />
+          <TouchableOpacity
+            activeOpacity={0.8}
+            style={styles.nextSectionBtn}
+            onPress={() => scrollToStep(1)}
+          >
+            <Typography style={styles.nextSectionText}>
+              Next: Address & Location ↓
+            </Typography>
+          </TouchableOpacity>
+        </View>
+
+        {/* Section 1: Address & Location */}
+        <View
+          style={styles.section}
+          onLayout={e => {
+            sectionYRefs.current[1] = e.nativeEvent.layout.y;
+          }}
+        >
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+            <Image
+              source={ImageConstant.Location}
+              style={{ height: 20, width: 20, marginRight: 8, tintColor: '#D98579' }}
+              resizeMode="contain"
+            />
+            <Typography
+              type={Font?.Poppins_SemiBold}
+              style={styles.sectionTitle}
+            >
+              Address & Location
+            </Typography>
+          </View>
+
           <MapLocationPicker
             title="Pin Present Location (Google Maps)"
             location={{
@@ -1568,61 +1586,35 @@ const NewStaffForm = ({ navigation, route }) => {
             }}
           />
 
-          <View style={{ zIndex: 100 }}>
-            <GooglePlacesInput
-              title="Search Google Location (Mandatory)"
-              placeholder="Search for your location on Google Maps..."
-              onPlaceSelected={(location) => {
-                setGoogleLocation(location?.google_location || '');
-                setLat(location?.lat || '');
-                setLong(location?.long || '');
-                clearError('googleLocation');
-
-                if (location?.hasExtractedData) {
-                  if (location.street) setStreet(location.street);
-                  if (location.city) setCity(location.city);
-                  if (location.state) setStateName(location.state);
-                  if (location.pincode) setPincode(location.pincode);
-                }
-              }}
-              error={errors.googleLocation}
-            />
-          </View>
-          {googleLocation ? (
-            <View style={{ marginBottom: 15 }}>
-              <Typography size={12} color="green">✓ Location Selected</Typography>
-              <Typography size={11} color="gray">{googleLocation}</Typography>
-            </View>
-          ) : null}
-
-          <View style={{ borderBottomWidth: 1, borderBottomColor: '#E8E8E8', marginVertical: 15 }}>
-            <Typography size={16} style={{ fontWeight: '600', color: '#333', marginBottom: 5 }}>
-              Previous Owner Contact
-            </Typography>
-            <Typography size={12} color="#888" style={{ marginBottom: 10 }}>
-              If staff worked somewhere before
-            </Typography>
-          </View>
-
           <Input
             style_title={{ color: '#8C8D8B' }}
-            placeholder="Previous Owner Name"
-            title="Previous Owner Name"
-            value={prevOwnerName}
-            onChange={value => setPrevOwnerName(value)}
-          />
-          <Input
-            style_title={{ color: '#8C8D8B' }}
-            placeholder="Previous Owner Phone"
-            title="Previous Owner Phone"
-            value={prevOwnerPhone}
+            placeholder={
+              LocalizedStrings.NewStaffForm.Street_Landmark || 'Street/Landmark'
+            }
+            title={LocalizedStrings.NewStaffForm.Home_Address || 'Home Address'}
+            value={street}
             onChange={value => {
-              const digitsOnly = value.replace(/[^0-9]/g, '').slice(0, 10);
-              setPrevOwnerPhone(digitsOnly);
+              setStreet(value);
+              clearError('street');
             }}
-            keyboardType="phone-pad"
-            maxLength={10}
+            style_input={{ textAlign: 'start' }}
+            multiline
+            numberOfLines={2}
+            error={errors.street}
           />
+          <Input
+            style_title={{ color: '#8C8D8B' }}
+            placeholder="e.g. Phase 1, Model Town"
+            title="Area / Locality"
+            value={areaLocality}
+            onChange={value => {
+              setAreaLocality(value);
+              clearError('areaLocality');
+            }}
+            error={errors.areaLocality}
+          />
+
+
 
           <Input
             style_title={{ color: '#8C8D8B' }}
@@ -1677,78 +1669,24 @@ const NewStaffForm = ({ navigation, route }) => {
             </View>
           </View>
 
-          <View style={{ borderBottomWidth: 1, borderBottomColor: '#E8E8E8', marginVertical: 15 }}>
-            <Typography size={16} style={{ fontWeight: '600', color: '#333', marginBottom: 5 }}>
-              Permanent Address (Aadhaar)
-            </Typography>
-            <Typography size={12} color="#888" style={{ marginBottom: 10 }}>
-              As per Aadhaar card - non-editable later
-            </Typography>
-          </View>
-
-          <Input
-            style_title={{ color: '#8C8D8B' }}
-            placeholder="Street/Landmark"
-            title="Permanent Street/Landmark"
-            value={permStreet}
-            onChange={value => setPermStreet(value)}
-            style_input={{ textAlign: 'start' }}
-            multiline
-            numberOfLines={2}
-          />
-          <Input
-            style_title={{ color: '#8C8D8B' }}
-            placeholder="400050"
-            title="Permanent Pincode"
-            value={permPincode}
-            onChange={value => {
-              const numericValue = value.replace(/[^0-9]/g, '').slice(0, 6);
-              setPermPincode(numericValue);
-            }}
-            keyboardType="number-pad"
-            maxLength={6}
-          />
-          <View
-            style={{ flexDirection: 'row', justifyContent: 'space-between' }}
+          <TouchableOpacity
+            activeOpacity={0.8}
+            style={styles.nextSectionBtn}
+            onPress={() => scrollToStep(2)}
           >
-            <View style={{ flex: 1, marginRight: 6 }}>
-              <Input
-                style_title={{ color: '#8C8D8B', fontSize: 13 }}
-                placeholder="City"
-                title="City"
-                value={permCity}
-                onChange={value => setPermCity(value)}
-                style_input={{ paddingHorizontal: 6, fontSize: 12.5 }}
-              />
-            </View>
-            <View style={{ flex: 1, marginLeft: 6 }}>
-              <Input
-                style_title={{ color: '#8C8D8B', fontSize: 13 }}
-                placeholder="State"
-                title="State"
-                value={permStateName}
-                onChange={value => setPermStateName(value)}
-                style_input={{ paddingHorizontal: 6, fontSize: 12.5 }}
-              />
-            </View>
-          </View>
-
+            <Typography style={styles.nextSectionText}>
+              Next: Role & Salary ↓
+            </Typography>
+          </TouchableOpacity>
         </View>
 
-        {/* Step 1 Next Button */}
-        {currentStep === 1 && (
-          <View style={styles.bottomButton}>
-            <Button
-              title="Next"
-              onPress={handleNext}
-              main_style={styles.buttonStyle}
-            />
-          </View>
-        )}
-
-        {/* Step 2: Emergency + Work + Documents */}
-        {currentStep === 2 && (
-        <>
+        {/* Section 2: Role & Salary */}
+        <View
+          style={styles.section}
+          onLayout={e => {
+            sectionYRefs.current[2] = e.nativeEvent.layout.y;
+          }}
+        >
         <View style={styles.section}>
           <Typography type={Font?.Poppins_SemiBold} style={styles.sectionTitle}>
             Emergency Contact
@@ -1793,25 +1731,7 @@ const NewStaffForm = ({ navigation, route }) => {
             error={errors.emergencyContactNumber}
           />
 
-          <DropdownComponent
-            title={LocalizedStrings.AddNewMember?.relation || 'Relation'}
-            placeholder={
-              LocalizedStrings.AddNewMember?.select_relation ||
-              'Select Relation'
-            }
-            width={'100%'}
-            style_dropdown={{ marginHorizontal: 0 }}
-            selectedTextStyleNew={{ marginLeft: 10 }}
-            marginHorizontal={0}
-            style_title={{ textAlign: 'left' }}
-            data={relationOptions}
-            value={relation}
-            onChange={item => {
-              setRelation(item);
-              clearError('relation');
-            }}
-            error={errors.relation}
-          />
+
         </View>
 
         <View style={styles.section}>
@@ -1981,6 +1901,25 @@ const NewStaffForm = ({ navigation, route }) => {
             />
           )}
 
+          <TouchableOpacity
+            activeOpacity={0.8}
+            style={styles.nextSectionBtn}
+            onPress={() => scrollToStep(3)}
+          >
+            <Typography style={styles.nextSectionText}>
+              Next: Verification & Schedule ↓
+            </Typography>
+          </TouchableOpacity>
+        </View>
+
+        {/* Section 3: Verification & Schedule */}
+        <View
+          style={styles.section}
+          onLayout={e => {
+            sectionYRefs.current[3] = e.nativeEvent.layout.y;
+          }}
+        >
+
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 15, marginBottom: 4 }}>
             <Typography
               type={Font?.Poppins_Bold}
@@ -2050,60 +1989,7 @@ const NewStaffForm = ({ navigation, route }) => {
           ) : null}
         </View>
 
-        <View style={styles.section}>
-          <Typography type={Font?.Poppins_SemiBold} style={styles.sectionTitle}>
-            Preferred Work Cities
-          </Typography>
 
-          {preferredWorkCities.length > 0 && (
-            <View style={[styles.daysContainer, { marginBottom: 10 }]}>
-              {preferredWorkCities.map((city, idx) => (
-                <TouchableOpacity
-                  key={idx}
-                  style={[styles.dayChip, styles.dayChipSelected]}
-                  onPress={() => setPreferredWorkCities(prev => prev.filter(c => c !== city))}
-                >
-                  <Text style={[styles.dayChipText, styles.dayChipTextSelected]}>
-                    {city} ✕
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          )}
-
-          <View
-            style={{ zIndex: 50, position: 'relative', opacity: isAllIndiaSelected ? 0.45 : 1 }}
-            pointerEvents={isAllIndiaSelected ? 'none' : 'auto'}
-          >
-            <GooglePlacesInput
-              title="Search City"
-              placeholder="Type city name for suggestions..."
-              clearOnSelect={true}
-              onPlaceSelected={location => {
-                if (isAllIndiaSelected) return;
-                const city = location?.city || location?.data?.description?.split(',')[0];
-                if (city) addCityFromText(city);
-              }}
-            />
-          </View>
-
-          <View style={[styles.daysContainer, { marginTop: 8 }]}>
-            {[{ label: 'All India (Anywhere)', value: 'All India' }].map(opt => {
-              const isSelected = preferredWorkCities.includes(opt.value);
-              return (
-                <TouchableOpacity
-                  key={opt.value}
-                  style={[styles.dayChip, isSelected && styles.dayChipSelected]}
-                  onPress={() => togglePreferredCity(opt.value)}
-                >
-                  <Text style={[styles.dayChipText, isSelected && styles.dayChipTextSelected]}>
-                    {opt.label}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-        </View>
 
         <View style={styles.section}>
           <Typography type={Font?.Poppins_SemiBold} style={styles.sectionTitle}>
@@ -2212,36 +2098,38 @@ const NewStaffForm = ({ navigation, route }) => {
                 )}
               </View>
             </>
-          ) : (
-            <>
-              <View style={styles.uploadRow}>
-                <UploadBox
-                  title={LocalizedStrings.NewStaffForm.Police_Clearance_Certificate}
-                  icon={ImageConstant.Verify}
-                  styles_container={styles.uploadBox}
-                  onPress={() => handleImagePicker('policeClearance')}
-                  image={policeClearance}
-                />
-                <UploadBox
-                  title={LocalizedStrings.NewStaffForm.Aadhaar_Card_Details || 'Aadhaar Front'}
-                  icon={ImageConstant.Doc}
-                  styles_container={styles.uploadBox}
-                  onPress={() => handleImagePicker('aadharCard')}
-                  image={aadharCard}
-                />
-              </View>
-              <View style={styles.uploadRow}>
-                <UploadBox
-                  title={'Aadhaar Card Back'}
-                  icon={ImageConstant.Doc}
-                  styles_container={styles.uploadBox}
-                  onPress={() => handleImagePicker('aadharBack')}
-                  image={aadharBack}
-                />
-                <View style={styles.uploadBox} />
-              </View>
-            </>
-          )}
+          <View style={styles.uploadRow}>
+            <UploadBox
+              title={'Staff Photo'}
+              icon={ImageConstant.person}
+              styles_container={styles.uploadBox}
+              onPress={() => handleImagePicker('staffPhoto')}
+              image={staffPhoto}
+            />
+            <UploadBox
+              title={LocalizedStrings.NewStaffForm.Police_Clearance_Certificate || 'Police Verification'}
+              icon={ImageConstant.Verify}
+              styles_container={styles.uploadBox}
+              onPress={() => handleImagePicker('policeClearance')}
+              image={policeClearance}
+            />
+          </View>
+          <View style={styles.uploadRow}>
+            <UploadBox
+              title={LocalizedStrings.NewStaffForm.Aadhaar_Card_Details || 'Aadhaar Front'}
+              icon={ImageConstant.Doc}
+              styles_container={styles.uploadBox}
+              onPress={() => handleImagePicker('aadharCard')}
+              image={aadharCard}
+            />
+            <UploadBox
+              title={'Aadhaar Card Back'}
+              icon={ImageConstant.Doc}
+              styles_container={styles.uploadBox}
+              onPress={() => handleImagePicker('aadharBack')}
+              image={aadharBack}
+            />
+          </View>
         </View>
         </>
         )}
@@ -2306,16 +2194,30 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
   section: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    marginHorizontal: 12,
-    marginTop: 15,
-    borderWidth: 2,
-    borderColor: '#EBEBEA',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 18,
+    marginHorizontal: 16,
+    marginTop: 16,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: '#EFEFEF',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 6,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 16,
+    fontFamily: Font?.Poppins_SemiBold,
+    color: '#1A1A1A',
   },
   uploadRowSingle: {
     alignItems: 'center',
@@ -2417,6 +2319,24 @@ const styles = StyleSheet.create({
   dayChipTextSelected: {
     color: '#fff',
     fontWeight: '600',
+  },
+  nextSectionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFF5F3',
+    borderWidth: 1,
+    borderColor: '#D98579',
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  nextSectionText: {
+    color: '#D98579',
+    fontSize: 14,
+    fontFamily: Font?.Poppins_SemiBold,
   },
 });
 

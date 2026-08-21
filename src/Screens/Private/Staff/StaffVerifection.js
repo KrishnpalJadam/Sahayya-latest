@@ -320,7 +320,7 @@ const job_compensation_type = route?.params?.job_compensation_type || 'monthly';
   return (
     <CommanView>
       <HeaderForUser
-        title={LocalizedStrings.AddStaff.title}
+        title={LocalizedStrings.AddStaff?.title || 'Aadhaar OTP Verification'}
         style_title={styles.headerTitle}
         containerStyle={styles.headerContainer}
         source_arrow={ImageConstant?.BackArrow}
@@ -328,89 +328,98 @@ const job_compensation_type = route?.params?.job_compensation_type || 'monthly';
           navigation?.goBack();
         }}
       />
-      <View style={styles.card}>
-        <Typography type={Font?.Poppins_SemiBold} style={styles.otpTitle}>
-          {LocalizedStrings.AddStaff.Verify}
-        </Typography>
-        <Typography type={Font?.Poppins_Regular} style={styles.otpDesc}>
-          {LocalizedStrings.AddStaff.Description}
-          {last4}
-        </Typography>
-
-        <OtpInput
-          numberOfDigits={6}
-          focusColor="#D98579"
-          onTextChange={text => {
-            setOtp(text);
-            if (otpError) {
-              setOtpError('');
-            }
-          }}
-          textInputProps={{
-            keyboardType: 'number-pad',
-          }}
-          theme={{
-            containerStyle: { marginTop: 20, marginBottom: 20 },
-            pinCodeContainerStyle: {
-              borderWidth: 1,
-              borderColor: otpError ? 'red' : '#ccc',
-              borderRadius: 8,
-            },
-            pinCodeTextStyle: {
-              fontSize: 18,
-              fontFamily: Font?.Poppins_Medium,
-              color: '#000',
-            },
-          }}
-        />
-
-        {/* Error Message */}
-        {otpError ? (
-          <Typography
-            size={12}
-            color="red"
-            style={{ textAlign: 'center', marginBottom: 10 }}
-          >
-            {otpError}
+      <View style={styles.centerContainer}>
+        <View style={styles.card}>
+          <Typography type={Font?.Poppins_SemiBold} style={styles.otpTitle}>
+            {LocalizedStrings.AddStaff?.Verify || 'Verify Aadhaar OTP'}
           </Typography>
-        ) : null}
+          <Typography type={Font?.Poppins_Regular} style={styles.otpDesc}>
+            {(LocalizedStrings.AddStaff?.Description || 'Enter 6-digit OTP sent to mobile linked with Aadhaar') + (last4 ? ` (ending in ${last4})` : '')}
+          </Typography>
 
-        <TouchableOpacity
-          onPress={handleResend}
-          disabled={resendTimer > 0}
-          style={{ alignSelf: 'center' }}
-        >
-          {resendTimer > 0 ? (
+          <OtpInput
+            numberOfDigits={6}
+            focusColor="#D98579"
+            onTextChange={text => {
+              setOtp(text);
+              if (otpError) {
+                setOtpError('');
+              }
+            }}
+            textInputProps={{
+              keyboardType: 'number-pad',
+            }}
+            theme={{
+              containerStyle: { marginTop: 16, marginBottom: 16 },
+              pinCodeContainerStyle: {
+                borderWidth: 1,
+                borderColor: otpError ? 'red' : '#E5E7EB',
+                borderRadius: 10,
+                height: 48,
+                width: 44,
+              },
+              pinCodeTextStyle: {
+                fontSize: 18,
+                fontFamily: Font?.Poppins_Medium,
+                color: '#000',
+              },
+            }}
+          />
+
+          {/* Error Message */}
+          {otpError ? (
             <Typography
-              type={Font?.Poppins_Regular}
-              size={14}
-              color="#999"
-              style={{ marginTop: 10, marginBottom: 20 }}
+              size={12}
+              color="red"
+              style={{ textAlign: 'center', marginBottom: 10 }}
             >
-              {LocalizedStrings.AddStaff.Resend_Text} {resendTimer}s
+              {otpError}
             </Typography>
-          ) : (
-            <Typography
-              type={Font?.Poppins_Regular}
-              style={{ marginTop: 10, marginBottom: 20 }}
-            >
-              {LocalizedStrings.AddStaff.Resend_Text.split('?')[0]}?{' '}
-              <Typography type={Font?.Poppins_Regular} style={styles.resend}>
-                {LocalizedStrings.AadhaarOTPVerification?.resend || 'Resend'}
+          ) : null}
+
+          <TouchableOpacity
+            onPress={handleResend}
+            disabled={resendTimer > 0}
+            style={{ alignSelf: 'center' }}
+          >
+            {resendTimer > 0 ? (
+              <Typography
+                type={Font?.Poppins_Regular}
+                size={13}
+                color="#999"
+                style={{ marginTop: 6, marginBottom: 16 }}
+              >
+                {LocalizedStrings.AddStaff?.Resend_Text || 'Resend OTP in'} {resendTimer}s
               </Typography>
-            </Typography>
-          )}
-        </TouchableOpacity>
+            ) : (
+              <Typography
+                type={Font?.Poppins_Regular}
+                size={13}
+                style={{ marginTop: 6, marginBottom: 16 }}
+              >
+                {LocalizedStrings.AddStaff?.Resend_Text?.split('?')[0] || 'Didn\'t receive OTP'}?{' '}
+                <Typography type={Font?.Poppins_Medium} style={styles.resend}>
+                  {LocalizedStrings.AadhaarOTPVerification?.resend || 'Resend'}
+                </Typography>
+              </Typography>
+            )}
+          </TouchableOpacity>
 
-        <Button
-          onPress={handleVerify}
-          title={LocalizedStrings.AddStaff.Verify_Add_Staff}
-          main_style={styles.buttonStyle}
-          icon={ImageConstant?.Arrow}
-          loader={loading}
-          disabled={loading}
-        />
+          <Button
+            onPress={handleVerify}
+            title={LocalizedStrings.AddStaff?.Verify_Add_Staff || 'Submit'}
+            main_style={styles.buttonStyle}
+            icon={ImageConstant?.Arrow}
+            loader={loading}
+            disabled={loading}
+          />
+
+          <Typography type={Font?.Poppins_Regular} style={styles.noteText}>
+            We use Aadhaar for identity verification and to prevent fraudulent listings, enhancing trust within the Sahayya community.
+          </Typography>
+        </View>
       </View>
+
       <SimpleModal visible={Verify}>
         <View style={{ justifyContent: 'center', alignItems: 'center' }}>
           <View style={{ padding: 40 }}>
@@ -424,7 +433,7 @@ const job_compensation_type = route?.params?.job_compensation_type || 'monthly';
             type={Font?.Poppins_SemiBold}
             textAlign={'center'}
           >
-            {LocalizedStrings.StaffAddedSuccess.Title}
+            {LocalizedStrings.StaffAddedSuccess?.Title || 'Success'}
           </Typography>
           <Typography
             size={16}
@@ -433,10 +442,10 @@ const job_compensation_type = route?.params?.job_compensation_type || 'monthly';
             color="#8C8D8B"
             style={{ marginTop: 30 }}
           >
-            {LocalizedStrings.StaffAddedSuccess.Message}
+            {LocalizedStrings.StaffAddedSuccess?.Message || 'Staff member added successfully.'}
           </Typography>
           <Button
-            title={LocalizedStrings.StaffAddedSuccess.Done}
+            title={LocalizedStrings.StaffAddedSuccess?.Done || 'Done'}
             onPress={() => navigation.navigate('TabNavigation')}
             main_style={{ marginTop: 20, width: '100%' }}
             icon={ImageConstant?.Arrow}
@@ -452,75 +461,35 @@ export default StaffVerifection;
 const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontFamily: Font?.Poppins_SemiBold,
   },
-  profileWrapper: {
-    alignItems: 'center',
-    marginVertical: 0,
-  },
-  profileImage: {
-    height: 90,
-    width: 90,
-    borderRadius: 45,
-    alignSelf: 'flex-end',
-  },
-  profileName: { fontSize: 18, marginTop: 10 },
-  profileSub: { fontSize: 14, color: '#666' },
-  editIconWrapper: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    backgroundColor: '#fff',
-    borderRadius: 20,
-    padding: 4,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 1.5,
-  },
-  editIcon: {
-    width: 16,
-    height: 16,
-    tintColor: '#E87C6F',
+  centerContainer: {
+    paddingTop: 24,
+    paddingHorizontal: 16,
   },
   card: {
-    margin: 16,
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    padding: 20,
-    marginTop: 50,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: '#EBEBEA',
-    flex: 0.5,
-  },
-  avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    marginBottom: 10,
-  },
-  name: {
-    fontSize: 22,
-    marginTop: 5,
-    marginBottom: 5,
-  },
-  role: {
-    fontSize: 14,
-    color: '#8C8D8B',
-    marginBottom: 30,
-  },
-  info: {
-    fontSize: 14,
-    color: 'black',
-    marginVertical: 2,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 24,
+    borderWidth: 1,
+    borderColor: '#EFEFEF',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.06,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 3,
+      },
+    }),
   },
   otpTitle: {
-    // marginTop: 100,
-    alignContent: 'center',
     fontSize: 16,
+    fontFamily: Font?.Poppins_SemiBold,
+    color: '#1A1A1A',
+    textAlign: 'center',
   },
   otpDesc: {
     textAlign: 'center',
@@ -529,28 +498,22 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     fontSize: 13,
   },
-  otpContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginVertical: 10,
-  },
-  otpBox: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 6,
-    textAlign: 'center',
-    fontSize: 18,
-    width: 40,
-    height: 50,
-    marginHorizontal: 5,
-  },
   resend: {
-    color: '#f15a29',
-    marginTop: 10,
-    marginBottom: 20,
+    color: '#D98579',
+    fontFamily: Font?.Poppins_SemiBold,
   },
   buttonStyle: {
     width: '100%',
+    height: 48,
+    borderRadius: 12,
+  },
+  noteText: {
+    fontSize: 12,
+    color: '#8C8D8B',
+    textAlign: 'center',
+    marginTop: 20,
+    lineHeight: 18,
+    paddingHorizontal: 4,
   },
 });
 

@@ -83,22 +83,20 @@ const LocationMap = ({
       setSelectedCoordinate({latitude, longitude});
       if (mapRef.current) {
         setTimeout(() => {
-          mapRef.current?.animateToRegion(newRegion, 500);
+          mapRef.current?.animateToRegion(newRegion, 400);
         }, 100);
       }
     }
   }, [lat, long]);
 
-  const updateSelectedLocation = useCallback((latitude, longitude) => {
+  const updateSelectedLocation = useCallback((latitude, longitude, animate = false) => {
     if (!isValidCoordinate(latitude, longitude)) return;
 
-    const nextRegion = buildRegion(latitude, longitude);
     setSelectedCoordinate({latitude, longitude});
     
-    if (mapRef.current) {
-      setTimeout(() => {
-        mapRef.current?.animateToRegion(nextRegion, 500);
-      }, 50);
+    if (animate && mapRef.current) {
+      const nextRegion = buildRegion(latitude, longitude);
+      mapRef.current?.animateToRegion(nextRegion, 400);
     }
     
     onMarkerDragEnd?.({latitude, longitude});
@@ -132,7 +130,7 @@ const LocationMap = ({
       position => {
         setLoading(false);
         const {latitude, longitude} = position.coords;
-        updateSelectedLocation(latitude, longitude);
+        updateSelectedLocation(latitude, longitude, true);
       },
       error => {
         setLoading(false);
@@ -160,7 +158,7 @@ const LocationMap = ({
   }, [autoLocate, getCurrentLocation, lat, long]);
 
   const handleCoordinateChange = useCallback((coordinate) => {
-    updateSelectedLocation(coordinate.latitude, coordinate.longitude);
+    updateSelectedLocation(coordinate.latitude, coordinate.longitude, false);
   }, [updateSelectedLocation]);
 
   if (!region) {
@@ -186,15 +184,39 @@ const LocationMap = ({
         provider={PROVIDER_GOOGLE}
         style={styles.map}
         initialRegion={region}
-        onPress={event => handleCoordinateChange(event.nativeEvent.coordinate)}
+        onPress={event => {
+          const coords = event.nativeEvent?.coordinate;
+          if (coords?.latitude && coords?.longitude) {
+            handleCoordinateChange(coords);
+          }
+        }}
+        onRegionChangeComplete={(newRegion, isGesture) => {
+          if ((isGesture?.isGesture || isGesture) && newRegion?.latitude && newRegion?.longitude) {
+            handleCoordinateChange(newRegion);
+          }
+        }}
         showsUserLocation={hasLocationPermission}
         showsMyLocationButton={false}>
         {selectedCoordinate ? (
           <Marker
+            key="static-location-pin"
             coordinate={selectedCoordinate}
             draggable
+            tracksViewChanges={false}
+            onDrag={e => {
+              const coords = e.nativeEvent?.coordinate;
+              if (coords?.latitude && coords?.longitude) {
+                setSelectedCoordinate({
+                  latitude: coords.latitude,
+                  longitude: coords.longitude,
+                });
+              }
+            }}
             onDragEnd={e => {
-              handleCoordinateChange(e.nativeEvent.coordinate);
+              const coords = e.nativeEvent?.coordinate;
+              if (coords?.latitude && coords?.longitude) {
+                handleCoordinateChange(coords);
+              }
             }}
             title="Selected Location"
             description="Drag this pin or tap the map to adjust"

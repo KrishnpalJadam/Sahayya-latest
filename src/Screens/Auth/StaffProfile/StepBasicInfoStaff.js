@@ -154,9 +154,10 @@ const StepBasicInfoStaff = forwardRef((props, ref) => {
           if (formattedDob) formData.append('dob', formattedDob);
         }
 
-        if (profileImage?.path && !profileImage.path.startsWith('http')) {
+        const imgUri = profileImage?.uri || profileImage?.path;
+        if (imgUri && !imgUri.startsWith('http')) {
           formData.append('profile_picture', {
-            uri: profileImage.path || profileImage.uri,
+            uri: imgUri,
             name: profileImage.name || `profile_${Date.now()}.jpg`,
             type: profileImage.type || profileImage.mime || 'image/jpeg',
           });
@@ -201,11 +202,12 @@ const StepBasicInfoStaff = forwardRef((props, ref) => {
   const handleImageSelected = images => {
     if (images && images.length > 0) {
       const selected = images[0];
+      const uri = selected?.uri || selected?.path;
       setProfileImage({
-        uri: selected?.path || selected?.uri,
-        path: selected?.path,
-        name: selected?.filename || `profile_${Date.now()}.jpg`,
-        type: selected?.mime || 'image/jpeg',
+        uri: uri,
+        path: uri,
+        name: selected?.fileName || selected?.filename || `profile_${Date.now()}.jpg`,
+        type: selected?.type || selected?.mime || 'image/jpeg',
       });
     }
     setShowImageModal(false);
