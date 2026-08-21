@@ -1392,7 +1392,6 @@ const NewStaffForm = ({ navigation, route }) => {
         onStepPress={scrollToStep}
       />
 
-      <View>
         {/* Personal Details */}
         <View
           style={styles.section}
