@@ -2098,41 +2098,42 @@ const NewStaffForm = ({ navigation, route }) => {
                 )}
               </View>
             </>
-          <View style={styles.uploadRow}>
-            <UploadBox
-              title={'Staff Photo'}
-              icon={ImageConstant.person}
-              styles_container={styles.uploadBox}
-              onPress={() => handleImagePicker('staffPhoto')}
-              image={staffPhoto}
-            />
-            <UploadBox
-              title={LocalizedStrings.NewStaffForm.Police_Clearance_Certificate || 'Police Verification'}
-              icon={ImageConstant.Verify}
-              styles_container={styles.uploadBox}
-              onPress={() => handleImagePicker('policeClearance')}
-              image={policeClearance}
-            />
-          </View>
-          <View style={styles.uploadRow}>
-            <UploadBox
-              title={LocalizedStrings.NewStaffForm.Aadhaar_Card_Details || 'Aadhaar Front'}
-              icon={ImageConstant.Doc}
-              styles_container={styles.uploadBox}
-              onPress={() => handleImagePicker('aadharCard')}
-              image={aadharCard}
-            />
-            <UploadBox
-              title={'Aadhaar Card Back'}
-              icon={ImageConstant.Doc}
-              styles_container={styles.uploadBox}
-              onPress={() => handleImagePicker('aadharBack')}
-              image={aadharBack}
-            />
-          </View>
-        </View>
-        </>
-        )}
+          ) : (
+            <>
+              <View style={styles.uploadRow}>
+                <UploadBox
+                  title={'Staff Photo'}
+                  icon={ImageConstant.person}
+                  styles_container={styles.uploadBox}
+                  onPress={() => handleImagePicker('staffPhoto')}
+                  image={staffPhoto}
+                />
+                <UploadBox
+                  title={LocalizedStrings.NewStaffForm.Police_Clearance_Certificate || 'Police Verification'}
+                  icon={ImageConstant.Verify}
+                  styles_container={styles.uploadBox}
+                  onPress={() => handleImagePicker('policeClearance')}
+                  image={policeClearance}
+                />
+              </View>
+              <View style={styles.uploadRow}>
+                <UploadBox
+                  title={LocalizedStrings.NewStaffForm.Aadhaar_Card_Details || 'Aadhaar Front'}
+                  icon={ImageConstant.Doc}
+                  styles_container={styles.uploadBox}
+                  onPress={() => handleImagePicker('aadharCard')}
+                  image={aadharCard}
+                />
+                <UploadBox
+                  title={'Aadhaar Card Back'}
+                  icon={ImageConstant.Doc}
+                  styles_container={styles.uploadBox}
+                  onPress={() => handleImagePicker('aadharBack')}
+                  image={aadharBack}
+                />
+              </View>
+            </>
+          )}
 
       </View>
 
