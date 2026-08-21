@@ -31,9 +31,9 @@ import ProfileStepRoller from '../../../Component/UI/ProfileStepRoller';
 
 const Step1 = () => {
   const householdSteps = [
-    { id: 0, title: 'Personal', icon: '👤' },
-    { id: 1, title: 'Location', icon: '📍' },
-    { id: 2, title: 'Household', icon: '🏠' },
+    { id: 0, title: 'Personal', icon: ImageConstant.person },
+    { id: 1, title: 'Location', icon: ImageConstant.Location },
+    { id: 2, title: 'Household', icon: ImageConstant.Home },
   ];
   const userDetail = useSelector(store => store?.userDetails);
   const [activeTab, setActiveTab] = useState(0);

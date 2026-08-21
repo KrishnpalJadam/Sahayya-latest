@@ -1383,10 +1383,10 @@ const NewStaffForm = ({ navigation, route }) => {
       />
       <ProfileStepRoller
         steps={[
-          { id: 0, title: 'Personal Info', icon: '👤' },
-          { id: 1, title: 'Address & Map', icon: '📍' },
-          { id: 2, title: 'Role & Pay', icon: '💼' },
-          { id: 3, title: 'Verification', icon: '🛡️' },
+          { id: 0, title: 'Personal Info', icon: ImageConstant.person },
+          { id: 1, title: 'Address & Map', icon: ImageConstant.Location },
+          { id: 2, title: 'Role & Pay', icon: ImageConstant.Briefcase },
+          { id: 3, title: 'Verification', icon: ImageConstant.Verify },
         ]}
         activeStep={activeStep}
         onStepPress={scrollToStep}

@@ -22,11 +22,11 @@ import ProfileStepRoller from '../../../Component/UI/ProfileStepRoller';
 
 const StepFirst = () => {
   const staffSteps = [
-    { id: 1, title: 'Personal', icon: '👤' },
-    { id: 2, title: 'KYC', icon: '🛡️' },
-    { id: 3, title: 'Location', icon: '📍' },
-    { id: 4, title: 'Work Details', icon: '💼' },
-    { id: 5, title: 'Experience', icon: '📋' },
+    { id: 1, title: 'Personal', icon: ImageConstant.person },
+    { id: 2, title: 'KYC', icon: ImageConstant.Verify },
+    { id: 3, title: 'Location', icon: ImageConstant.Location },
+    { id: 4, title: 'Work Details', icon: ImageConstant.Briefcase },
+    { id: 5, title: 'Experience', icon: ImageConstant.fileText },
   ];
   const userTypes = useSelector(store => store?.userType);
   const userDetail = useSelector(store => store?.userDetails);

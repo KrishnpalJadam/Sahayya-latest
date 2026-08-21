@@ -5,6 +5,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Platform,
+  Image,
 } from 'react-native';
 import Typography from './Typography';
 import { Font } from '../../Constants/Font';
@@ -44,15 +45,34 @@ const ProfileStepRoller = ({ steps = [], activeStep = 0, onStepPress }) => {
                 isActive ? styles.activeTabItem : styles.inactiveTabItem,
               ]}
             >
-              <Typography
-                size={13}
-                type={isActive ? Font?.Poppins_SemiBold : Font?.Poppins_Medium}
-                color={isActive ? '#1A1A1A' : '#737373'}
-                style={styles.tabText}
-              >
-                {step.icon ? `${step.icon} ` : ''}
-                {step.title}
-              </Typography>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                {step.icon && (
+                  typeof step.icon === 'string' ? (
+                    <Typography
+                      size={13}
+                      type={isActive ? Font?.Poppins_SemiBold : Font?.Poppins_Medium}
+                      color={isActive ? '#1A1A1A' : '#737373'}
+                      style={[styles.tabText, { marginRight: 4 }]}
+                    >
+                      {step.icon}
+                    </Typography>
+                  ) : (
+                    <Image
+                      source={step.icon}
+                      style={{ width: 14, height: 14, marginRight: 6, tintColor: isActive ? '#1A1A1A' : '#737373' }}
+                      resizeMode="contain"
+                    />
+                  )
+                )}
+                <Typography
+                  size={13}
+                  type={isActive ? Font?.Poppins_SemiBold : Font?.Poppins_Medium}
+                  color={isActive ? '#1A1A1A' : '#737373'}
+                  style={styles.tabText}
+                >
+                  {step.title}
+                </Typography>
+              </View>
             </TouchableOpacity>
           );
         })}
