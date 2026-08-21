@@ -450,7 +450,7 @@ const Dashboard = ({ navigation }) => {
           main_style={{ width: '100%', marginBottom: 12 }}
         />
         <Button
-          onPress={() => navigation.navigate('SelectJob')}
+          onPress={() => navigation.navigate('Aadhar')}
           title={'+ ' + (LocalizedStrings.MyStaff?.Add_New_Staff || 'Add New Staff')}
           main_style={{ width: '100%' }}
         />
