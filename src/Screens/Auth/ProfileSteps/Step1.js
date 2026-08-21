@@ -27,7 +27,14 @@ import moment from 'moment';
 import LocalizedStrings from '../../../Constants/localization';
 import SimpleToast from 'react-native-simple-toast';
 
+import ProfileStepRoller from '../../../Component/UI/ProfileStepRoller';
+
 const Step1 = () => {
+  const householdSteps = [
+    { id: 0, title: 'Personal', icon: '👤' },
+    { id: 1, title: 'Location', icon: '📍' },
+    { id: 2, title: 'Household', icon: '🏠' },
+  ];
   const userDetail = useSelector(store => store?.userDetails);
   const [activeTab, setActiveTab] = useState(0);
   const [showImageModal, setShowImageModal] = useState(false);
@@ -538,6 +545,11 @@ const Step1 = () => {
             setActiveTab(activeTab - 1);
           }
         }}
+      />
+      <ProfileStepRoller
+        steps={householdSteps}
+        activeStep={activeTab}
+        onStepPress={index => setActiveTab(index)}
       />
       {renderContent()}
       <ImageModal

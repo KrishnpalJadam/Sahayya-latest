@@ -18,7 +18,16 @@ import { DELETE_ACCOUNT } from '../../../Backend/api_routes';
 import LocalizedStrings from '../../../Constants/localization';
 import SimpleToast from 'react-native-simple-toast';
 
+import ProfileStepRoller from '../../../Component/UI/ProfileStepRoller';
+
 const StepFirst = () => {
+  const staffSteps = [
+    { id: 1, title: 'Personal', icon: '👤' },
+    { id: 2, title: 'KYC', icon: '🛡️' },
+    { id: 3, title: 'Location', icon: '📍' },
+    { id: 4, title: 'Work Details', icon: '💼' },
+    { id: 5, title: 'Experience', icon: '📋' },
+  ];
   const userTypes = useSelector(store => store?.userType);
   const userDetail = useSelector(store => store?.userDetails);
   const [activeTab, setActiveTab] = useState(1); // Step 1: Basic Info (Photo, Name, Gender, DOB)
@@ -91,6 +100,11 @@ const StepFirst = () => {
         title={LocalizedStrings.EditProfile?.title || 'Complete Profile'}
         style_title={{ fontFamily: Font?.Manrope_SemiBold }}
         onBackPress
+      />
+      <ProfileStepRoller
+        steps={staffSteps}
+        activeStep={activeTab - 1}
+        onStepPress={index => setActiveTab(index + 1)}
       />
       {renderContent()}
       <Button
