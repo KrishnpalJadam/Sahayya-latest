@@ -2136,6 +2136,7 @@ const NewStaffForm = ({ navigation, route }) => {
           )}
 
       </View>
+    </View>
 
       {currentStep === 2 && (
       <View style={styles.bottomButton}>
