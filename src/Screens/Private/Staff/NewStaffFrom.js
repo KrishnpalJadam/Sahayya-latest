@@ -1486,15 +1486,6 @@ const NewStaffForm = ({ navigation, route }) => {
             error={errors.dateOfBirth}
           />
 
-          <TouchableOpacity
-            activeOpacity={0.8}
-            style={styles.nextSectionBtn}
-            onPress={() => setCurrentStep(1)}
-          >
-            <Typography style={styles.nextSectionText}>
-              Next: Address & Location ↓
-            </Typography>
-          </TouchableOpacity>
         </View>
         )}
 
@@ -1624,21 +1615,11 @@ const NewStaffForm = ({ navigation, route }) => {
             </View>
           </View>
 
-          <TouchableOpacity
-            activeOpacity={0.8}
-            style={styles.nextSectionBtn}
-            onPress={() => setCurrentStep(2)}
-          >
-            <Typography style={styles.nextSectionText}>
-              Next: Role & Salary ↓
-            </Typography>
-          </TouchableOpacity>
         </View>
         )}
 
         {/* Step 2: Role & Pay */}
         {currentStep === 2 && (
-        <View style={styles.section}>
         <View style={styles.section}>
           <Typography type={Font?.Poppins_SemiBold} style={styles.sectionTitle}>
             Emergency Contact
@@ -1853,16 +1834,6 @@ const NewStaffForm = ({ navigation, route }) => {
             />
           )}
 
-          <TouchableOpacity
-            activeOpacity={0.8}
-            style={styles.nextSectionBtn}
-            onPress={() => setCurrentStep(3)}
-          >
-            <Typography style={styles.nextSectionText}>
-              Next: Verification & Schedule ↓
-            </Typography>
-          </TouchableOpacity>
-        </View>
         </View>
         )}
 
