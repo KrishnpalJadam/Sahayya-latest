@@ -1620,6 +1620,7 @@ const NewStaffForm = ({ navigation, route }) => {
 
         {/* Step 2: Role & Pay */}
         {currentStep === 2 && (
+        <View>
         <View style={styles.section}>
           <Typography type={Font?.Poppins_SemiBold} style={styles.sectionTitle}>
             Emergency Contact
@@ -1834,6 +1835,7 @@ const NewStaffForm = ({ navigation, route }) => {
             />
           )}
 
+        </View>
         </View>
         )}
 
