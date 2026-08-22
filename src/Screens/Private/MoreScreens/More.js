@@ -180,21 +180,6 @@ const More = ({ navigation }) => {
             <Typography type={Font?.Poppins_Regular} size={12} color="#888">
               {LocalizedStrings.MoreOptions.household_owner}
             </Typography>
-            {userDetail?.email ? (
-              <Typography type={Font?.Poppins_Regular} size={11} color="#999" style={{ marginTop: 2 }}>
-                {userDetail.email}
-              </Typography>
-            ) : null}
-            {userDetail?.dob ? (
-              <Typography type={Font?.Poppins_Regular} size={11} color="#999">
-                DOB: {userDetail.dob}
-              </Typography>
-            ) : null}
-            {userDetail?.gender ? (
-              <Typography type={Font?.Poppins_Regular} size={11} color="#999" style={{ textTransform: 'capitalize' }}>
-                {userDetail.gender}
-              </Typography>
-            ) : null}
           </View>
           <TouchableOpacity
             style={styles.editBtn}

@@ -105,7 +105,7 @@ const ImageModal = ({
   const OpenDrive = async () => {
     try {
       const result = await pick({
-        type: [types.images, types.pdf],
+        type: [types.allFiles],
       });
       if (result && result.length > 0) {
         const assets = result.map(f => ({
