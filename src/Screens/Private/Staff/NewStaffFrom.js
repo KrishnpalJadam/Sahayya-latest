@@ -1868,6 +1868,7 @@ const NewStaffForm = ({ navigation, route }) => {
 
         {/* Step 3: Verification & Schedule */}
         {currentStep === 3 && (
+        <View>
         <View style={styles.section}>
 
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 15, marginBottom: 4 }}>
@@ -2085,6 +2086,7 @@ const NewStaffForm = ({ navigation, route }) => {
             </>
           )}
 
+      </View>
       </View>
       )}
 
