@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import React from 'react';
 import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
+import {pick, types, isErrorWithCode, errorCodes} from '@react-native-documents/picker';
 import {request, check, PERMISSIONS, RESULTS} from 'react-native-permissions';
 import SimpleToast from 'react-native-simple-toast';
 import { ImageConstant } from '../Constants/ImageConstant';
@@ -102,23 +103,26 @@ const ImageModal = ({
   };
 
   const OpenDrive = async () => {
-    await handlePermission(getPhotoPermission(), () => {
-      launchImageLibrary(
-        {
-          mediaType: 'photo',
-          maxWidth: 500,
-          maxHeight: 500,
-          quality: 0.7,
-          cropping: true,
-        },
-        response => {
-          if (!response.didCancel && response.assets) {
-            selected(response.assets, 'drive');
-            close();
-          }
-        },
-      );
-    });
+    try {
+      const result = await pick({
+        type: [types.images, types.pdf],
+      });
+      if (result && result.length > 0) {
+        const assets = result.map(f => ({
+          uri: f.uri,
+          name: f.name || 'document',
+          type: f.mimeType || f.type || 'application/octet-stream',
+        }));
+        selected(assets, 'drive');
+        close();
+      }
+    } catch (err) {
+      if (isErrorWithCode(err) && err.code === errorCodes.OPERATION_CANCELED) {
+        // User cancelled — do nothing
+      } else {
+        SimpleToast.show('Error selecting file. Please try again.');
+      }
+    }
   };
 
   return (
@@ -161,9 +165,7 @@ const ImageModal = ({
                   <View style={styles.iconContainer}>
                     <Image
                       style={styles.icon}
-                      source={{
-                        uri: 'https://cdn-icons-png.flaticon.com/128/685/685655.png',
-                      }}
+                      source={ImageConstant.Camera}
                     />
                   </View>
                   <Typography
@@ -179,9 +181,7 @@ const ImageModal = ({
                   <View style={styles.iconContainer}>
                     <Image
                       style={styles.icon}
-                      source={{
-                        uri: 'https://cdn-icons-png.flaticon.com/128/16025/16025439.png',
-                      }}
+                      source={ImageConstant.NewCamera}
                     />
                   </View>
                   <Typography
@@ -197,9 +197,7 @@ const ImageModal = ({
                   <View style={styles.iconContainer}>
                     <Image
                       style={styles.icon}
-                      source={{
-                        uri: 'https://cdn-icons-png.flaticon.com/128/2965/2965327.png',
-                      }}
+                      source={ImageConstant.fileText}
                     />
                   </View>
                   <Typography

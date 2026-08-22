@@ -72,6 +72,7 @@ const LocationMap = ({
   const [permissionMessage, setPermissionMessage] = useState('');
   const didAutoLocateRef = useRef(false);
   const mapRef = useRef(null);
+  const isDraggingRef = useRef(false);
 
   useEffect(() => {
     const latitude = parseCoordinate(lat);
@@ -81,7 +82,7 @@ const LocationMap = ({
       const newRegion = buildRegion(latitude, longitude);
       setRegion(newRegion);
       setSelectedCoordinate({latitude, longitude});
-      if (mapRef.current) {
+      if (mapRef.current && !isDraggingRef.current) {
         setTimeout(() => {
           mapRef.current?.animateToRegion(newRegion, 400);
         }, 100);
@@ -191,7 +192,8 @@ const LocationMap = ({
           }
         }}
         onRegionChangeComplete={(newRegion, isGesture) => {
-          if ((isGesture?.isGesture || isGesture) && newRegion?.latitude && newRegion?.longitude) {
+          const isUserGesture = typeof isGesture === 'object' ? isGesture?.isGesture : isGesture;
+          if (isUserGesture === true && !isDraggingRef.current && newRegion?.latitude && newRegion?.longitude) {
             handleCoordinateChange(newRegion);
           }
         }}
@@ -203,16 +205,11 @@ const LocationMap = ({
             coordinate={selectedCoordinate}
             draggable
             tracksViewChanges={false}
-            onDrag={e => {
-              const coords = e.nativeEvent?.coordinate;
-              if (coords?.latitude && coords?.longitude) {
-                setSelectedCoordinate({
-                  latitude: coords.latitude,
-                  longitude: coords.longitude,
-                });
-              }
+            onDragStart={() => {
+              isDraggingRef.current = true;
             }}
             onDragEnd={e => {
+              isDraggingRef.current = false;
               const coords = e.nativeEvent?.coordinate;
               if (coords?.latitude && coords?.longitude) {
                 handleCoordinateChange(coords);

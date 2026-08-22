@@ -1,4 +1,4 @@
-import { StyleSheet, View, ScrollView, Image, TouchableOpacity, Text, Alert } from 'react-native';
+import { StyleSheet, View, ScrollView, Image, TouchableOpacity, Text, Alert, Platform } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import CommanView from '../../../Component/CommanView';
 import Typography from '../../../Component/UI/Typography';
@@ -33,25 +33,10 @@ import ProfileStepRoller from '../../../Component/UI/ProfileStepRoller';
 import { useSelector } from 'react-redux';
 
 const NewStaffForm = ({ navigation, route }) => {
-  const scrollViewRef = React.useRef(null);
-  const sectionYRefs = React.useRef({});
-  const [activeStep, setActiveStep] = useState(0);
-
-  const scrollToStep = stepIndex => {
-    setActiveStep(stepIndex);
-    const targetY = sectionYRefs.current[stepIndex] || 0;
-    if (scrollViewRef.current) {
-      scrollViewRef.current.scrollTo({ y: Math.max(0, targetY - 10), animated: true });
-    }
-  };
 
   const data = route?.params?.userData;
   const userDetail = useSelector(state => state.userDetails);
   const adharNumber = route?.params?.adharNumber;
-  const jobId = route?.params?.job_id || null;
-  const jobCompensation = route?.params?.job_compensation || 0;
-  const jobTitle = route?.params?.job_title || '';
-  const jobCompensationType = route?.params?.job_compensation_type || 'monthly';
   const kycInfo = data?.kyc_information || data?.kycInformation || {};
   const existingPoliceClearance =
     data?.verification_certificate ||
@@ -130,7 +115,7 @@ const NewStaffForm = ({ navigation, route }) => {
 
   // API States
   const [loading, setLoading] = useState(false);
-  const [currentStep, setCurrentStep] = useState(1);
+  const [currentStep, setCurrentStep] = useState(0);
 
   // Error States
   const [errors, setErrors] = useState({
@@ -357,7 +342,6 @@ const NewStaffForm = ({ navigation, route }) => {
         data?.primary_role ||
         data?.role_designation ||
         data?.role ||
-        jobTitle ||
         '';
       if (rawRole) {
         const roleArr = Array.isArray(rawRole)
@@ -448,14 +432,6 @@ const NewStaffForm = ({ navigation, route }) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
-
-  // Auto-fill salary from job compensation if no salary set yet
-  useEffect(() => {
-    if (jobCompensation && jobCompensation > 0 && !salary) {
-      const cNum = Number(jobCompensation);
-      setSalary(!isNaN(cNum) ? (cNum % 1 === 0 ? String(Math.round(cNum)) : String(cNum)) : String(jobCompensation));
-    }
-  }, [jobCompensation]);
 
   // Clear city and state when pincode is cleared
   useEffect(() => {
@@ -866,7 +842,7 @@ const NewStaffForm = ({ navigation, route }) => {
     return !hasError;
   };
 
-  const validateStep1 = () => {
+  const validateStep0 = () => {
     const newErrors = {
       firstName: '',
       lastName: '',
@@ -874,12 +850,6 @@ const NewStaffForm = ({ navigation, route }) => {
       aadharNumber: '',
       gender: '',
       dateOfBirth: '',
-      street: '',
-      city: '',
-      stateName: '',
-      pincode: '',
-      areaLocality: '',
-      googleLocation: '',
     };
 
     let hasError = false;
@@ -910,6 +880,22 @@ const NewStaffForm = ({ navigation, route }) => {
       newErrors.dateOfBirth = 'Date of birth is required.';
       hasError = true;
     }
+
+    setErrors(prev => ({ ...prev, ...newErrors }));
+    return !hasError;
+  };
+
+  const validateStep1 = () => {
+    const newErrors = {
+      street: '',
+      city: '',
+      stateName: '',
+      pincode: '',
+      areaLocality: '',
+      googleLocation: '',
+    };
+
+    let hasError = false;
 
     if (!street || street.trim() === '') {
       newErrors.street = 'Street/Landmark is required.';
@@ -945,14 +931,6 @@ const NewStaffForm = ({ navigation, route }) => {
 
     setErrors(prev => ({ ...prev, ...newErrors }));
     return !hasError;
-  };
-
-  const handleNext = () => {
-    if (validateStep1()) {
-      setCurrentStep(2);
-    } else {
-      SimpleToast.show('Please fill all required fields', SimpleToast.SHORT);
-    }
   };
 
   // Handle form submission
@@ -1034,11 +1012,6 @@ const NewStaffForm = ({ navigation, route }) => {
     formData.append('relation', relationValue);
 
     formData.append('aadhar_number', aadharNumber?.trim() || '');
-
-    // Job assignment
-    if (jobId) {
-      formData.append('job_id', jobId);
-    }
 
     // Work Details - all optional (staff can be a fresher)
 
@@ -1371,10 +1344,10 @@ const NewStaffForm = ({ navigation, route }) => {
   };
 
   return (
-    <CommanView scrollRef={scrollViewRef}>
+    <CommanView>
       <HeaderForUser
         source_arrow={ImageConstant?.BackArrow}
-        title={LocalizedStrings.NewStaffForm.title}
+        title={isEditMode ? 'Edit Staff' : (LocalizedStrings.NewStaffForm.title || 'Add New Staff')}
         style_title={styles.headerTitle}
         containerStyle={styles.headerContainer}
         onPressLeftIcon={() => {
@@ -1388,17 +1361,15 @@ const NewStaffForm = ({ navigation, route }) => {
           { id: 2, title: 'Role & Pay', icon: ImageConstant.Briefcase },
           { id: 3, title: 'Verification', icon: ImageConstant.Verify },
         ]}
-        activeStep={activeStep}
-        onStepPress={scrollToStep}
+        activeStep={currentStep}
+        onStepPress={(idx) => {
+          if (idx < currentStep) setCurrentStep(idx);
+        }}
       />
 
-        {/* Personal Details */}
-        <View
-          style={styles.section}
-          onLayout={e => {
-            sectionYRefs.current[0] = e.nativeEvent.layout.y;
-          }}
-        >
+        {/* Step 0: Personal Details */}
+        {currentStep === 0 && (
+        <View style={styles.section}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <Image
               source={ImageConstant.person}
@@ -1460,18 +1431,6 @@ const NewStaffForm = ({ navigation, route }) => {
             error={errors.phoneNumber}
           />
 
-          {jobId && jobTitle ? (
-            <View style={{ backgroundColor: '#FFF8F6', padding: 14, borderRadius: 10, marginBottom: 15, borderWidth: 1, borderColor: '#D98579' }}>
-              <Typography size={12} color="#888" style={{ marginBottom: 4 }}>Assigned Job</Typography>
-              <Typography size={15} type={Font?.Poppins_SemiBold} color="#333">{jobTitle}</Typography>
-              {jobCompensation > 0 && (
-                <Typography size={13} color="#D98579" style={{ marginTop: 4 }}>
-                  ₹{parseFloat(jobCompensation).toLocaleString('en-IN')} / {jobCompensationType}
-                </Typography>
-              )}
-            </View>
-          ) : null}
-
           <Input
             editable={false}
             style_title={{ color: '#8C8D8B' }}
@@ -1530,21 +1489,18 @@ const NewStaffForm = ({ navigation, route }) => {
           <TouchableOpacity
             activeOpacity={0.8}
             style={styles.nextSectionBtn}
-            onPress={() => scrollToStep(1)}
+            onPress={() => setCurrentStep(1)}
           >
             <Typography style={styles.nextSectionText}>
               Next: Address & Location ↓
             </Typography>
           </TouchableOpacity>
         </View>
+        )}
 
-        {/* Section 1: Address & Location */}
-        <View
-          style={styles.section}
-          onLayout={e => {
-            sectionYRefs.current[1] = e.nativeEvent.layout.y;
-          }}
-        >
+        {/* Step 1: Address & Location */}
+        {currentStep === 1 && (
+        <View style={styles.section}>
           <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
             <Image
               source={ImageConstant.Location}
@@ -1671,21 +1627,18 @@ const NewStaffForm = ({ navigation, route }) => {
           <TouchableOpacity
             activeOpacity={0.8}
             style={styles.nextSectionBtn}
-            onPress={() => scrollToStep(2)}
+            onPress={() => setCurrentStep(2)}
           >
             <Typography style={styles.nextSectionText}>
               Next: Role & Salary ↓
             </Typography>
           </TouchableOpacity>
         </View>
+        )}
 
-        {/* Section 2: Role & Salary */}
-        <View
-          style={styles.section}
-          onLayout={e => {
-            sectionYRefs.current[2] = e.nativeEvent.layout.y;
-          }}
-        >
+        {/* Step 2: Role & Pay */}
+        {currentStep === 2 && (
+        <View style={styles.section}>
         <View style={styles.section}>
           <Typography type={Font?.Poppins_SemiBold} style={styles.sectionTitle}>
             Emergency Contact
@@ -1903,21 +1856,19 @@ const NewStaffForm = ({ navigation, route }) => {
           <TouchableOpacity
             activeOpacity={0.8}
             style={styles.nextSectionBtn}
-            onPress={() => scrollToStep(3)}
+            onPress={() => setCurrentStep(3)}
           >
             <Typography style={styles.nextSectionText}>
               Next: Verification & Schedule ↓
             </Typography>
           </TouchableOpacity>
         </View>
+        </View>
+        )}
 
-        {/* Section 3: Verification & Schedule */}
-        <View
-          style={styles.section}
-          onLayout={e => {
-            sectionYRefs.current[3] = e.nativeEvent.layout.y;
-          }}
-        >
+        {/* Step 3: Verification & Schedule */}
+        {currentStep === 3 && (
+        <View style={styles.section}>
 
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 15, marginBottom: 4 }}>
             <Typography
@@ -2135,36 +2086,54 @@ const NewStaffForm = ({ navigation, route }) => {
           )}
 
       </View>
-    </View>
+      )}
 
-      {currentStep === 2 && (
+      {/* Bottom Navigation Buttons */}
       <View style={styles.bottomButton}>
         <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 12, width: '90%' }}>
-          <TouchableOpacity
-            onPress={() => setCurrentStep(1)}
-            style={{
-              flex: 1,
-              height: 48,
-              borderRadius: 24,
-              backgroundColor: '#FFFFFF',
-              borderWidth: 1.5,
-              borderColor: '#D98579',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <Typography size={15} color="#D98579" type={Font?.Poppins_SemiBold}>
-              Back
-            </Typography>
-          </TouchableOpacity>
-          <View style={{ flex: 1.2, height: 48, justifyContent: 'center' }}>
+          {currentStep > 0 && (
+            <TouchableOpacity
+              onPress={() => setCurrentStep(prev => prev - 1)}
+              style={{
+                flex: 1,
+                height: 48,
+                borderRadius: 24,
+                backgroundColor: '#FFFFFF',
+                borderWidth: 1.5,
+                borderColor: '#D98579',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Typography size={15} color="#D98579" type={Font?.Poppins_SemiBold}>
+                Back
+              </Typography>
+            </TouchableOpacity>
+          )}
+          <View style={{ flex: currentStep > 0 ? 1.2 : 1, height: 48, justifyContent: 'center' }}>
             <Button
               title={
-                isEditMode
-                  ? LocalizedStrings.NewStaffForm.Update_Staff || 'Update Staff'
-                  : LocalizedStrings.NewStaffForm.Add_Staff
+                currentStep < 3
+                  ? LocalizedStrings.Auth?.next || 'Next'
+                  : isEditMode
+                    ? LocalizedStrings.NewStaffForm.Update_Staff || 'Update Staff'
+                    : LocalizedStrings.NewStaffForm.Add_Staff || 'Add Staff'
               }
-              onPress={() => handleSubmit()}
+              onPress={() => {
+                if (currentStep < 3) {
+                  if (currentStep === 0 && !validateStep0()) {
+                    SimpleToast.show('Please fill all required fields', SimpleToast.SHORT);
+                    return;
+                  }
+                  if (currentStep === 1 && !validateStep1()) {
+                    SimpleToast.show('Please fill all required fields', SimpleToast.SHORT);
+                    return;
+                  }
+                  setCurrentStep(prev => prev + 1);
+                } else {
+                  handleSubmit();
+                }
+              }}
               main_style={{ width: '100%', height: 48, justifyContent: 'center' }}
               style={{ marginVertical: 0, height: 48, borderRadius: 24 }}
               loader={loading}
@@ -2172,7 +2141,6 @@ const NewStaffForm = ({ navigation, route }) => {
           </View>
         </View>
       </View>
-      )}
 
       <ImageModal
         showModal={showImageModal}
