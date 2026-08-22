@@ -395,6 +395,7 @@ const Otp = ({ navigation, route }) => {
               fontSize: 18,
               fontFamily: Font?.Poppins_Medium,
               color: '#000',
+              textAlign: 'center',
             },
           }}
         />

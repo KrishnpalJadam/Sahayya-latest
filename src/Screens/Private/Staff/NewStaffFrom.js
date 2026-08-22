@@ -1596,10 +1596,7 @@ const NewStaffForm = ({ navigation, route }) => {
             <View style={{ flex: 1, marginLeft: 6 }}>
               <Input
                 style_title={{ color: '#8C8D8B', fontSize: 13 }}
-                placeholder={
-                  LocalizedStrings.NewStaffForm.State_Placeholder ||
-                  'Maharashtra'
-                }
+                placeholder={'Maharashtra'}
                 title={LocalizedStrings.NewStaffForm.State || 'State'}
                 value={stateName}
                 onChange={value => {

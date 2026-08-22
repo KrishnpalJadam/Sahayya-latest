@@ -362,6 +362,7 @@ const job_compensation_type = route?.params?.job_compensation_type || 'monthly';
                 fontSize: 18,
                 fontFamily: Font?.Poppins_Medium,
                 color: '#000',
+                textAlign: 'center',
               },
             }}
           />
