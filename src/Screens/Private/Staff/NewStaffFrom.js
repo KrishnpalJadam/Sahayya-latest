@@ -704,6 +704,7 @@ const NewStaffForm = ({ navigation, route }) => {
     // Validate Aadhaar Number
     if (!aadharNumber || aadharNumber.trim() === '') {
       newErrors.aadharNumber = 'Aadhaar Number is required.';
+      hasError = true;
     } else if (!/^\d{12}$/.test(aadharNumber)) {
       newErrors.aadharNumber = 'Aadhaar Number must be 12 digits.';
       hasError = true;
@@ -802,11 +803,7 @@ const NewStaffForm = ({ navigation, route }) => {
       }
     }
 
-    // Validate Relation (optional - only if emergency contact is provided)
-    if ((emergencyContactName || emergencyContactNumber) && (!relation || (!relation?.value && !relation))) {
-      newErrors.relation = 'Please select relation';
-      hasError = true;
-    }
+    // Relation — no UI field, skip validation
 
     // Work details are optional (staff can be a fresher)
 
