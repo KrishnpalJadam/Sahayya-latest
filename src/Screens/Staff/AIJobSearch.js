@@ -27,9 +27,9 @@ const AIJobSearch = ({navigation}) => {
       SUBSCRIPTION_USER_CURRENT,
       success => {
         setChecking(false);
-        const subscription = success?.data || success?.subscription;
-        const hasActiveSubscription = success?.is_active &&
-          subscription &&
+        const subscription = success?.subscription || success?.data?.subscription || success?.data;
+        const explicitlyInactive = success?.is_active === false || success?.data?.is_active === false;
+        const hasActiveSubscription = !explicitlyInactive && subscription &&
           (Array.isArray(subscription) ? subscription.length > 0 : true);
         if (hasActiveSubscription) {
           navigation.navigate('AIJobResults', {

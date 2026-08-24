@@ -127,6 +127,11 @@ const FindStaff = ({ navigation, route }) => {
   const [filterAge, setFilterAge] = useState(null);
   const [filterSalary, setFilterSalary] = useState(null);
   const [filterStayType, setFilterStayType] = useState(null);
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    return () => { mountedRef.current = false; };
+  }, []);
 
   const checkSubscription = useCallback(({ preserveOnError = false } = {}) => {
     const requestId = ++subscriptionRequestId.current;

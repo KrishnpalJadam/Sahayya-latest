@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   StyleSheet,
   View,
@@ -16,9 +16,11 @@ import { ImageConstant } from '../../Constants/ImageConstant';
 import Button from '../../Component/Button';
 import HeaderForUser from '../../Component/HeaderForUser';
 import CommanView from '../../Component/CommanView';
-import { POST_WITH_TOKEN } from '../../Backend/Backend';
+import { API, getToken } from '../../Backend/Backend';
 import { JobGetAIData } from '../../Backend/api_routes';
+import axios from 'axios';
 import {speakSearchQuery} from '../../Utils/speechOutput';
+import SimpleToast from 'react-native-simple-toast';
 
 const COMPENSATION_TYPE_OPTIONS = [
   { label: 'Monthly', value: 'monthly' },
@@ -47,8 +49,12 @@ const AIJobResults = ({ navigation, route }) => {
   const userDetails = useSelector(state => state?.userDetails);
   const userCity = userDetails?.addresses?.[0]?.city || userDetails?.city || '';
   const userState = userDetails?.addresses?.[0]?.state || userDetails?.state || '';
-  
-  console.log('AIJobResults - Received description:', description);
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    return () => { mountedRef.current = false; };
+  }, []);
+
   const [allJobs, setAllJobs] = useState([]);
   const [jobs, setJobs] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -91,16 +97,24 @@ const AIJobResults = ({ navigation, route }) => {
     setErrorMessage('');
     setStatusMessage('');
 
-    POST_WITH_TOKEN(
-      JobGetAIData,
-      {
+    axios({
+      method: 'post',
+      url: `${API}${JobGetAIData}`,
+      data: {
         query: description,
         query_text: description,
         user_city: userCity,
         user_state: userState,
       },
-      (response) => {
-        console.log('AIJobResults - API Response:', JSON.stringify(response));
+      timeout: 60000,
+      headers: {
+        Authorization: `Bearer ${getToken()}`,
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+    }).then((res) => {
+        if (!mountedRef.current) return;
+        const response = res?.data;
         if (response?.success === false) {
           setErrorMessage(response?.message || 'Something went wrong. Please try again.');
           setJobs([]);
@@ -127,43 +141,34 @@ const AIJobResults = ({ navigation, route }) => {
           compensationDisplay: formatCompensation(item),
           compensationType: item?.compensation_type || '',
           commitmentType: item?.commitment_type || '',
-          requiredSkills: item?.required_skills || '',
+          requiredSkills: typeof item?.required_skills === 'string' ? item.required_skills : (Array.isArray(item?.required_skills) ? item.required_skills.join(', ') : ''),
           additionalRequirements: item?.additional_requirements || '',
           preferredHours: item?.preferred_hours || '',
           raw: item,
         }));
 
-        const finalList = mapped;
-
         const backendMessage = response?.message || '';
         setStatusMessage(
-          finalList.length === 0
+          mapped.length === 0
             ? (backendMessage || 'No matching jobs found. Try adjusting your search.')
             : (response?.fallback ? backendMessage : '')
         );
-        setAllJobs(finalList);
-        setJobs(finalList);
+        setAllJobs(mapped);
+        setJobs(mapped);
         setIsLoading(false);
-      },
-      (error) => {
-        console.log('AIJobResults - API Error:', JSON.stringify(error));
-        setErrorMessage(
-          error?.data?.message ||
-            error?.data?.error ||
-            'Could not load jobs right now. Please try again.'
-        );
+    }).catch((error) => {
+        if (!mountedRef.current) return;
+        const isTimeout = error?.code === 'ECONNABORTED' || (error?.message && error.message.includes('timeout'));
+        const apiMsg = isTimeout
+          ? 'Search timed out. Please try a simpler query or check your connection.'
+          : (error?.response?.data?.message ||
+            error?.response?.data?.error ||
+            'Could not load jobs right now. Please try again.');
+        setErrorMessage(String(apiMsg));
         setJobs([]);
         setAllJobs([]);
         setIsLoading(false);
-      },
-      (fail) => {
-        console.log('AIJobResults - API Fail:', JSON.stringify(fail));
-        setErrorMessage('Network error. Please check your connection and try again.');
-        setJobs([]);
-        setAllJobs([]);
-        setIsLoading(false);
-      },
-    );
+    });
   };
 
   const roleOptions = React.useMemo(() => {
@@ -362,7 +367,7 @@ const AIJobResults = ({ navigation, route }) => {
               Reset Filters
             </Typography>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.applyBtn} onPress={applyFilters}>
+          <TouchableOpacity style={styles.applyBtn} onPress={() => { applyFilters(); setShowFilters(false); }}>
             <Typography color="#fff" type={Font?.Poppins_Medium}>
               Apply Filters
             </Typography>
