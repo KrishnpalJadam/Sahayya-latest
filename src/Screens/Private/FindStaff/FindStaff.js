@@ -350,7 +350,8 @@ const FindStaff = ({ navigation, route }) => {
 
         // Role and location matching is already applied by the backend. Keeping
         // one source of truth prevents correct candidates from being removed twice.
-        const finalList = mapped.filter(c => c.role || c.location);
+        // Only exclude candidates with absolutely no identifying information.
+        const finalList = mapped.filter(c => c.role || c.location || c.preferredLocation || c.salary || c.experience || c.tags?.length > 0);
 
         setAllCandidates(finalList);
         setCandidates(finalList);
