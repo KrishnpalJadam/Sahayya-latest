@@ -19,7 +19,8 @@ import Button from '../../../Component/Button';
 import HeaderForUser from '../../../Component/HeaderForUser';
 import CommanView from '../../../Component/CommanView';
 import LocalizedStrings from '../../../Constants/localization';
-import { POST_WITH_TOKEN, GET_WITH_TOKEN, API } from '../../../Backend/Backend';
+import { POST_WITH_TOKEN, GET_WITH_TOKEN, API, getToken } from '../../../Backend/Backend';
+import axios from 'axios';
 import { StaffGetAIData, CATEGORY, SUBSCRIPTION_USER_CURRENT } from '../../../Backend/api_routes';
 import { isPlaceholderImage } from '../../../Utils/ImageUtils';
 import { hasActivePaidSubscription } from '../../../Utils/subscription';
@@ -284,10 +285,20 @@ const FindStaff = ({ navigation, route }) => {
       requestPayload.radius_km = 50;
     }
 
-    POST_WITH_TOKEN(
-      StaffGetAIData,
-      requestPayload,
-      (response) => {
+    const aiTimeout = 60000;
+    axios({
+      method: 'post',
+      url: `${API}${StaffGetAIData}`,
+      data: requestPayload,
+      timeout: aiTimeout,
+      headers: {
+        Authorization: `Bearer ${getToken()}`,
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+    }).then((res) => {
+        if (!mountedRef.current) return;
+        const response = res?.data;
 
         if (response?.success === false) {
           setErrorMessage(response?.message || 'Something went wrong. Please try again.');
@@ -337,8 +348,8 @@ const FindStaff = ({ navigation, route }) => {
             age: getAge(item?.dob),
             salaryNum: Number(workInfo?.salary) || 0,
             salary: formatSalary(workInfo?.salary),
-            rating: item?.avg_rating || item?.rating || item?.staff_avg_rating || 0,
-            reviewsCount: item?.total_reviews || item?.reviews_count || 0,
+            rating: item?._average_rating || item?.avg_rating || item?.rating || item?.staff_avg_rating || 0,
+            reviewsCount: item?._review_count || item?.total_reviews || item?.reviews_count || 0,
             image: getCandidateImage(item),
             stayType: workInfo?.stay_type || item?.stay_type || '',
             isJobSeeking: (item?.is_job_seeking === true || item?.is_job_seeking === 1 || item?.is_available === true || item?.is_available === 1),
@@ -348,35 +359,25 @@ const FindStaff = ({ navigation, route }) => {
           };
         }).filter(c => c.isJobSeeking);
 
-        // Role and location matching is already applied by the backend. Keeping
-        // one source of truth prevents correct candidates from being removed twice.
-        // Only exclude candidates with absolutely no identifying information.
         const finalList = mapped.filter(c => c.role || c.location || c.preferredLocation || c.salary || c.experience || c.tags?.length > 0);
 
         setAllCandidates(finalList);
         setCandidates(finalList);
         setIsLoading(false);
-      },
-      (error) => {
-        console.log('FindStaff API ERROR:', JSON.stringify(error?.data || error));
-        const apiMsg =
-          error?.data?.message ||
-          error?.data?.error ||
-          (error?.data?.errors && JSON.stringify(error.data.errors)) ||
-          'Could not load staff. Please try again.';
+    }).catch((error) => {
+        if (!mountedRef.current) return;
+        console.log('FindStaff AI SEARCH ERROR:', JSON.stringify(error?.response?.data || error?.message || error));
+        const isTimeout = error?.code === 'ECONNABORTED' || (error?.message && error.message.includes('timeout'));
+        const apiMsg = isTimeout
+          ? 'Search timed out. Please try a simpler query or check your connection.'
+          : (error?.response?.data?.message ||
+            error?.response?.data?.error ||
+            'Could not load staff. Please try again.');
         setErrorMessage(String(apiMsg));
         setCandidates([]);
         setAllCandidates([]);
         setIsLoading(false);
-      },
-      (fail) => {
-        console.log('FindStaff NETWORK FAIL:', JSON.stringify(fail));
-        setErrorMessage('Network error. Please check your connection and try again.');
-        setCandidates([]);
-        setAllCandidates([]);
-        setIsLoading(false);
-      },
-    );
+    });
   };
 
   const regionOptions = React.useMemo(() => {
