@@ -88,7 +88,8 @@ const NewMember = ({ navigation, route }) => {
   };
 
   const handleMobileChange = value => {
-    setMobileNumber(value);
+    const cleaned = value.replace(/[^0-9]/g, '').slice(0, 15);
+    setMobileNumber(cleaned);
     if (errors.mobileNumber) {
       setErrors(prev => ({ ...prev, mobileNumber: '' }));
     }
