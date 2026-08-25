@@ -108,7 +108,10 @@ const job_compensation_type = route?.params?.job_compensation_type || 'monthly';
   const [loading, setLoading] = useState(false);
   const [otpError, setOtpError] = useState('');
   const [resendTimer, setResendTimer] = useState(30);
-  const last4 = adharNumber?.slice(-4) || '****';
+  const last4 = adharNumber?.slice(-4) || '';
+  const maskedAadhaar = adharNumber && adharNumber.length === 12
+    ? `XXXX-XXXX-${adharNumber.slice(-4)}`
+    : '';
 
   useEffect(() => {
     // Auto-send OTP on mount ONLY when not already sent (e.g. from ListingJob flow)
@@ -334,7 +337,8 @@ const job_compensation_type = route?.params?.job_compensation_type || 'monthly';
             {LocalizedStrings.AddStaff?.Verify || 'Verify Aadhaar OTP'}
           </Typography>
           <Typography type={Font?.Poppins_Regular} style={styles.otpDesc}>
-            {(LocalizedStrings.AddStaff?.Description || 'Enter 6-digit OTP sent to mobile linked with Aadhaar') + (last4 ? ` (ending in ${last4})` : '')}
+            {'An OTP has been sent to the mobile number linked with staff Aadhaar'}{' '}
+            {maskedAadhaar ? `${maskedAadhaar} (ending in ${last4})` : ''}
           </Typography>
 
           <OtpInput
