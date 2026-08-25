@@ -7,7 +7,8 @@ import { Font } from '../../../Constants/Font';
 import { ImageConstant } from '../../../Constants/ImageConstant';
 import LocalizedStrings from '../../../Constants/localization';
 import SimpleToast from 'react-native-simple-toast';
-import { API } from '../../../Backend/Backend';
+import { API, POST_WITH_TOKEN } from '../../../Backend/Backend';
+import { ReactivateStaff } from '../../../Backend/api_routes';
 import { isPlaceholderImage } from '../../../Utils/ImageUtils';
 
 const getProfileImage = (img) => {
@@ -19,6 +20,33 @@ const getProfileImage = (img) => {
 
 const StaffActionScreen = ({ navigation, route }) => {
   const staff = route?.params?.staff || {};
+  const itemStatus = (staff.status || staff.application_status || '').toLowerCase();
+  const isInactive = itemStatus === 'inactive' || itemStatus === 'terminated' || itemStatus === 'absent';
+  const [loading, setLoading] = useState(false);
+  
+  const handleReactivate = () => {
+    const staffId = staff?.id || staff?.staff?.id;
+    if (!staffId) return;
+    setLoading(true);
+
+    POST_WITH_TOKEN(
+      ReactivateStaff(staffId),
+      {},
+      res => {
+        setLoading(false);
+        SimpleToast.show('Staff reactivated successfully', SimpleToast.SHORT);
+        navigation.goBack();
+      },
+      err => {
+        setLoading(false);
+        SimpleToast.show(err?.data?.message || 'Failed to reactivate staff', SimpleToast.SHORT);
+      },
+      () => {
+        setLoading(false);
+        SimpleToast.show('Network error. Please try again.', SimpleToast.SHORT);
+      },
+    );
+  };
   
   // Resolve image and name exactly like HouseHoldStaffProfile
   const profileImageUrl = getProfileImage(staff?.image) || getProfileImage(staff?.staff?.image) || getProfileImage(staff?.user?.image);
@@ -166,7 +194,8 @@ const StaffActionScreen = ({ navigation, route }) => {
             <Typography size={20} color="#BBB" type={Font.Poppins_Regular}>›</Typography>
           </TouchableOpacity>
 
-          {/* Terminate Staff Card */}
+          {/* Terminate Staff Card — hidden when staff is inactive */}
+          {!isInactive && (
           <TouchableOpacity style={styles.actionCard} onPress={navigateToTerminate} activeOpacity={0.75}>
             <View style={[styles.iconCircle, { backgroundColor: '#FEF2F2' }]}>
               <Image source={ImageConstant.close} style={[styles.actionIcon, { tintColor: '#DC2626' }]} />
@@ -179,6 +208,23 @@ const StaffActionScreen = ({ navigation, route }) => {
             </View>
             <Typography size={20} color="#BBB" type={Font.Poppins_Regular}>›</Typography>
           </TouchableOpacity>
+          )}
+
+          {/* Reactivate Staff Card — shown only when staff is inactive */}
+          {isInactive && (
+          <TouchableOpacity style={styles.actionCard} onPress={handleReactivate} activeOpacity={0.75} disabled={loading}>
+            <View style={[styles.iconCircle, { backgroundColor: '#F0FDF4' }]}>
+              <Typography size={18} color="#16A34A" type={Font.Poppins_Bold}>✓</Typography>
+            </View>
+            <View style={styles.actionTextWrapper}>
+              <Typography size={15} type={Font.Poppins_SemiBold} color="#16A34A">Reactivate Staff</Typography>
+              <Typography size={12} type={Font.Poppins_Regular} color="#777" style={{ marginTop: 2 }}>
+                Re-add staff to your household
+              </Typography>
+            </View>
+            <Typography size={20} color="#BBB" type={Font.Poppins_Regular}>›</Typography>
+          </TouchableOpacity>
+          )}
         </View>
       </ScrollView>
     </CommanView>
