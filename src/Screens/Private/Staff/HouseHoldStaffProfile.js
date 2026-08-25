@@ -29,7 +29,7 @@ import DropdownComponent from '../../../Component/DropdownComponent';
 import Input from '../../../Component/Input';
 import UploadBox from '../../../Component/UploadBox';
 import { POST_FORM_DATA, POST_WITH_TOKEN, GET_WITH_TOKEN, API } from '../../../Backend/Backend';
-import { ReviewStore, StaffAvailableDetail, TerminateStaff, UpdateStaff } from '../../../Backend/api_routes';
+import { ReviewStore, StaffAvailableDetail, TerminateStaff, UpdateStaff, ReactivateStaff } from '../../../Backend/api_routes';
 import Date_Picker from '../../../Component/Date_Picker';
 import moment from 'moment';
 import { launchImageLibrary } from 'react-native-image-picker';
@@ -622,6 +622,30 @@ const HouseHoldStaffProfile = ({ navigation, route }) => {
       () => {
         console.log('--- admin/terminations FAIL (network) ---');
         setSubmitLoading(false);
+      },
+    );
+  };
+
+  const handleReactivate = () => {
+    if (!data?.id) return;
+    setSubmitLoading(true);
+
+    POST_WITH_TOKEN(
+      ReactivateStaff(data.id),
+      {},
+      res => {
+        setSubmitLoading(false);
+        SimpleToast.show('Staff reactivated successfully', SimpleToast.SHORT);
+        setData(prev => ({ ...prev, status: 'active', is_active: 1 }));
+        global.Profile?.();
+      },
+      err => {
+        setSubmitLoading(false);
+        SimpleToast.show(err?.data?.message || 'Failed to reactivate staff', SimpleToast.SHORT);
+      },
+      () => {
+        setSubmitLoading(false);
+        SimpleToast.show('Network error. Please try again.', SimpleToast.SHORT);
       },
     );
   };
@@ -1576,6 +1600,18 @@ const HouseHoldStaffProfile = ({ navigation, route }) => {
               }}>
               <Typography style={styles.blacklistButtonText}>
                 Report & Blacklist Staff
+              </Typography>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {!fromFindStaffAI && (data?.status === 'inactive' || data?.status === 'absent') && (
+          <View style={styles.actionFooter}>
+            <TouchableOpacity
+              style={[styles.actionButton, { backgroundColor: '#4CAF50' }]}
+              onPress={handleReactivate}>
+              <Typography style={[styles.actionButtonText, { color: '#fff' }]}>
+                Reactivate Employee
               </Typography>
             </TouchableOpacity>
           </View>

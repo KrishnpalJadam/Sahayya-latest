@@ -151,6 +151,7 @@ export const SUBSCRIPTION_VERIFY_EXTRA_STAFF_PAYMENT = 'subscription/verify-extr
 // TERMINATIONS
 // ===========================================
 export const TerminateStaff = 'admin/terminations';
+export const ReactivateStaff = (id) => `staff/${id}/reactivate`;
 
 // ===========================================
 // BLACKLIST STAFF
