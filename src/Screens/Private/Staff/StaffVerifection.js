@@ -350,13 +350,13 @@ const job_compensation_type = route?.params?.job_compensation_type || 'monthly';
               keyboardType: 'number-pad',
             }}
             theme={{
-              containerStyle: { marginTop: 16, marginBottom: 16 },
+              containerStyle: { marginTop: 16, marginBottom: 16, alignItems: 'center' },
               pinCodeContainerStyle: {
                 borderWidth: 1,
                 borderColor: otpError ? 'red' : '#E5E7EB',
                 borderRadius: 10,
                 height: 48,
-                width: 44,
+                width: 42,
               },
               pinCodeTextStyle: {
                 fontSize: 18,
