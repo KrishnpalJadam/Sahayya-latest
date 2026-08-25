@@ -514,10 +514,7 @@ const PostNewJob = ({ navigation, route }) => {
       validationErrors.endTime = 'End Time field is required.';
     }
 
-    // Validate time order
-    if (startTime && endTime && startTime >= endTime) {
-      validationErrors.endTime = 'End Time must be after Start Time.';
-    }
+    // Time order validation removed — overnight shifts (e.g. 7 PM to 7 AM) are valid
 
     // Validate Selected Days
     if (selectedDays.length === 0) {
