@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Image, TouchableOpacity, Linking, ScrollView } from 'react-native';
+import { View, StyleSheet, Image, TouchableOpacity, Linking, ScrollView, Modal } from 'react-native';
 import CommanView from '../../../Component/CommanView';
 import HeaderForUser from '../../../Component/HeaderForUser';
 import Typography from '../../../Component/UI/Typography';
@@ -23,8 +23,14 @@ const StaffActionScreen = ({ navigation, route }) => {
   const itemStatus = (staff.status || staff.application_status || '').toLowerCase();
   const isInactive = itemStatus === 'inactive' || itemStatus === 'terminated' || itemStatus === 'absent';
   const [loading, setLoading] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   
   const handleReactivate = () => {
+    setShowConfirm(true);
+  };
+
+  const confirmReactivate = () => {
+    setShowConfirm(false);
     const staffId = staff?.id || staff?.staff?.id;
     if (!staffId) return;
     setLoading(true);
@@ -227,6 +233,29 @@ const StaffActionScreen = ({ navigation, route }) => {
           )}
         </View>
       </ScrollView>
+
+      {/* Reactivate Confirmation Modal */}
+      <Modal visible={showConfirm} transparent animationType="fade" onRequestClose={() => setShowConfirm(false)}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalBox}>
+            <Typography size={17} type={Font.Poppins_SemiBold} color="#1A1A1A" style={{ textAlign: 'center' }}>
+              Reactivate Staff
+            </Typography>
+            <Typography size={14} type={Font.Poppins_Regular} color="#555" style={{ textAlign: 'center', marginTop: 12 }}>
+              Are you sure you want to reactivate this staff member?
+            </Typography>
+            <View style={styles.modalBtnRow}>
+              <TouchableOpacity style={styles.modalNoBtn} onPress={() => setShowConfirm(false)}>
+                <Typography size={14} type={Font.Poppins_Medium} color="#666">No</Typography>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.modalYesBtn} onPress={confirmReactivate}>
+                <Typography size={14} type={Font.Poppins_Medium} color="#fff">Yes, Reactivate</Typography>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
     </CommanView>
   );
 };
@@ -362,6 +391,46 @@ const styles = StyleSheet.create({
   },
   actionTextWrapper: {
     flex: 1,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalBox: {
+    width: '82%',
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    paddingHorizontal: 24,
+    paddingTop: 24,
+    paddingBottom: 20,
+    alignItems: 'center',
+  },
+  modalBtnRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    marginTop: 24,
+  },
+  modalNoBtn: {
+    flex: 1,
+    height: 42,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#CCC',
+    marginRight: 10,
+  },
+  modalYesBtn: {
+    flex: 1,
+    height: 42,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 10,
+    backgroundColor: '#16A34A',
+    marginLeft: 10,
   },
 });
 
