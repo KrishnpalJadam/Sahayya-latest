@@ -1255,7 +1255,18 @@ const PostNewJob = ({ navigation, route }) => {
                 onPress={() => setStayType([val])}
               >
                 <View style={[styles.checkbox, isSelected && styles.checkboxSelected]}>
-                  {isSelected && <View style={styles.checkboxInner} />}
+                  {isSelected && (
+                    <Image
+                      source={ImageConstant?.check}
+                      style={{
+                        width: 15,
+                        height: 15,
+                        position: 'absolute',
+                        tintColor: '#fff',
+                        zIndex: 99,
+                      }}
+                    />
+                  )}
                 </View>
                 <Typography size={14}>{option}</Typography>
               </TouchableOpacity>
