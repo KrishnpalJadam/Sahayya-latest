@@ -81,21 +81,15 @@ const PostNewJob = ({ navigation, route }) => {
       addressOptionsList.push(selectedAddress);
     }
 
-    return [
-      {
-        label: 'All India (Remote / Anywhere in India)',
-        value: 'all_india',
-        address: { isAllIndia: true, city: 'All', state: 'All India' },
-      },
-      ...addressOptionsList.map(addr => ({
-        label:
-          addr?.title ||
-          addr?.name ||
-          `${addr?.street || addr?.streetAddress || ''}, ${addr?.city || ''}`,
-        value: getAddressKey(addr),
-        address: addr,
-      })),
-    ];
+    return addressOptionsList.map(addr => ({
+      label:
+        addr?.title ||
+        addr?.name ||
+        `${addr?.street || addr?.streetAddress || ''}, ${addr?.city || ''}`.trim().replace(/^,\s*|\s*,$/g, '') ||
+        'Address',
+      value: getAddressKey(addr),
+      address: addr,
+    }));
   }, [selectedAddress, userAddresses]);
 
   // Working Schedule

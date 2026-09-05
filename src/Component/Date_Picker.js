@@ -27,7 +27,21 @@ const Date_Picker = ({
   useEffect(() => {
     // Update state with the selected date if provided
     if (selected_date) {
-      setDate(new Date(selected_date));
+      const parsed = moment(
+        selected_date,
+        ['YYYY-MM-DD', 'DD-MM-YYYY', 'DD/MM/YYYY', 'YYYY/MM/DD', moment.ISO_8601],
+        false,
+      );
+      if (parsed.isValid()) {
+        setDate(parsed.toDate());
+      } else {
+        const fallback = new Date(selected_date);
+        if (!isNaN(fallback.getTime())) {
+          setDate(fallback);
+        }
+      }
+    } else {
+      setDate(null);
     }
   }, [selected_date]);
 

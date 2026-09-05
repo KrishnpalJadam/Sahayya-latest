@@ -48,13 +48,24 @@ const NewStaffForm = ({ navigation, route }) => {
     data?.aadhar_front || data?.aadhaar_front || kycInfo?.aadhaar_front_path || '';
   const existingAadharBack =
     data?.aadhar_back || data?.aadhaar_back || kycInfo?.aadhaar_back_path || '';
-  const existingPhoneNumber =
+  const cleanPhone = num => {
+    if (!num) return '';
+    let str = String(num).replace(/\D/g, '');
+    if (str.length > 10 && str.startsWith('91')) {
+      str = str.slice(2);
+    }
+    return str;
+  };
+
+  const existingPhoneNumber = cleanPhone(
     data?.phone_number ||
     data?.mobile_number ||
     data?.mobile ||
     data?.phone ||
     data?.contact_number ||
-    '';
+    data?.aadhaar_details?.mobile_number ||
+    ''
+  );
   const existingPhoneCountryCode =
     data?.phone_number_country_code ||
     data?.phone_number_prefix ||
@@ -65,8 +76,10 @@ const NewStaffForm = ({ navigation, route }) => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [phoneNumberCountryCode, setPhoneNumberCountryCode] = useState('+91');
+  const [phoneNumber, setPhoneNumber] = useState(existingPhoneNumber || '');
+  const [phoneNumberCountryCode, setPhoneNumberCountryCode] = useState(
+    existingPhoneCountryCode.startsWith('+') ? existingPhoneCountryCode : `+${existingPhoneCountryCode}`
+  );
   const [aadharNumber, setAadharNumber] = useState(adharNumber || '');
   const [gender, setGender] = useState(null);
   const [dateOfBirth, setDateOfBirth] = useState('');
@@ -156,11 +169,26 @@ const NewStaffForm = ({ navigation, route }) => {
     { label: 'Daily', value: 'daily' },
   ];
 
-  // Salary Closing Date Options (1-28, since months vary)
-  const salaryClosingDateOptions = Array.from({ length: 28 }, (_, i) => ({
-    label: `${i + 1}${i === 0 ? 'st' : i === 1 ? 'nd' : i === 2 ? 'rd' : 'th'} of each month`,
-    value: i + 1,
-  }));
+  const getOrdinalSuffix = num => {
+    const j = num % 10,
+      k = num % 100;
+    if (j === 1 && k !== 11) return `${num}st`;
+    if (j === 2 && k !== 12) return `${num}nd`;
+    if (j === 3 && k !== 13) return `${num}rd`;
+    return `${num}th`;
+  };
+
+  // Salary Closing Date Options (End of month + 1st to 31st)
+  const salaryClosingDateOptions = [
+    { label: 'End of month (Last day of month)', value: 31 },
+    ...Array.from({ length: 31 }, (_, i) => {
+      const day = i + 1;
+      return {
+        label: day === 31 ? '31st of each month (End of month)' : `${getOrdinalSuffix(day)} of each month`,
+        value: day,
+      };
+    }),
+  ];
 
   // Working Days Options
   const workingDaysOptions = [
@@ -223,9 +251,9 @@ const NewStaffForm = ({ navigation, route }) => {
   const isEditMode = !!route?.params?.isEdit;
   const staffId = route?.params?.staffId || data?.staff_id || data?.id;
 
-  // Populate form with existing data when editing
+  // Populate form with existing data when editing or Aadhaar pre-fill
   useEffect(() => {
-    if (data && data.id) {
+    if (data && (data.id || data.user_id || data.first_name || data.name || data.aadhar_number || data.phone_number || data.mobile_number)) {
       // Personal Details
       if (data.first_name) setFirstName(data.first_name);
       if (data.last_name) setLastName(data.last_name);
@@ -243,44 +271,72 @@ const NewStaffForm = ({ navigation, route }) => {
       }
 
       if (data.email) setEmail(data.email);
-      if (existingPhoneNumber) setPhoneNumber(String(existingPhoneNumber));
+      if (existingPhoneNumber) setPhoneNumber(existingPhoneNumber);
       if (existingPhoneCountryCode) {
-        setPhoneNumberCountryCode(existingPhoneCountryCode);
+        setPhoneNumberCountryCode(
+          existingPhoneCountryCode.startsWith('+') ? existingPhoneCountryCode : `+${existingPhoneCountryCode}`
+        );
       }
       if (data.aadhar_number || data.aadhaar) setAadharNumber(data.aadhar_number || data.aadhaar);
 
       // Gender - find matching option
-      const userGender = data.gender || data.sex;
+      const userGender =
+        data?.gender ||
+        data?.sex ||
+        data?.aadhaar_details?.gender ||
+        data?.aadhaar_details?.sex ||
+        data?.aadhaar_data?.gender ||
+        data?.kyc_information?.gender ||
+        '';
       if (userGender) {
-        const genderOption = genderOptions.find(
-          opt =>
-            opt.value === userGender ||
-            opt.value.toLowerCase() === String(userGender).toLowerCase() ||
-            opt.label.toLowerCase() === String(userGender).toLowerCase()
-        );
+        const gStr = String(userGender).trim().toLowerCase();
+        let genderOption = null;
+        if (gStr === 'm' || gStr === 'male' || gStr.startsWith('m')) {
+          genderOption = { label: 'Male', value: 'male' };
+        } else if (gStr === 'f' || gStr === 'female' || gStr.startsWith('f')) {
+          genderOption = { label: 'Female', value: 'female' };
+        } else if (gStr === 'o' || gStr === 'other' || gStr.startsWith('o')) {
+          genderOption = { label: 'Other', value: 'other' };
+        } else {
+          genderOption = genderOptions.find(
+            opt =>
+              opt.value === gStr ||
+              opt.value.toLowerCase() === gStr ||
+              opt.label.toLowerCase() === gStr,
+          ) || {
+            label: String(userGender).charAt(0).toUpperCase() + String(userGender).slice(1),
+            value: gStr,
+          };
+        }
         if (genderOption) {
           setGender(genderOption);
-        } else {
-          setGender({
-            label: String(userGender).charAt(0).toUpperCase() + String(userGender).slice(1),
-            value: String(userGender).toLowerCase(),
-          });
         }
       }
 
       // Date of Birth
-      const userDob = data.dob || data.birthdate || data.date_of_birth || data.birth_date;
+      const userDob =
+        data?.dob ||
+        data?.birthdate ||
+        data?.date_of_birth ||
+        data?.birth_date ||
+        data?.aadhaar_details?.dob ||
+        data?.aadhaar_details?.date_of_birth ||
+        data?.aadhaar_data?.dob ||
+        data?.kyc_information?.dob ||
+        '';
       if (userDob) {
         // Handle different date formats
         const dobMoment = moment(
-          userDob,
-          ['YYYY-MM-DD', 'DD-MM-YYYY', 'DD/MM/YYYY', moment.ISO_8601],
-          true,
+          String(userDob).trim(),
+          ['YYYY-MM-DD', 'DD-MM-YYYY', 'DD/MM/YYYY', 'YYYY/MM/DD', moment.ISO_8601],
+          false,
         );
         if (dobMoment.isValid()) {
           setDateOfBirth(dobMoment.format('YYYY-MM-DD'));
+        } else if (/^\d{4}$/.test(String(userDob).trim())) {
+          setDateOfBirth(`${String(userDob).trim()}-01-01`);
         } else {
-          setDateOfBirth(userDob);
+          setDateOfBirth(String(userDob));
         }
       }
 
@@ -376,9 +432,36 @@ const NewStaffForm = ({ navigation, route }) => {
       const prevPhone = workInfo?.previous_owner_phone || workInfo?.prev_owner_phone || data?.previous_owner_phone || data?.prev_owner_phone;
       if (prevPhone) setPrevOwnerPhone(String(prevPhone));
 
+      // Emergency Contact prefill
+      const emName =
+        workInfo?.emergency_contact_name ||
+        data?.emergency_contact_name ||
+        data?.user_detail?.emergency_contact_name ||
+        data?.user_work_info?.emergency_contact_name ||
+        '';
+      if (emName) setEmergencyContactName(emName);
+
+      const rawEmPhone =
+        workInfo?.emergency_contact_number ||
+        workInfo?.emergency_contact_phone ||
+        workInfo?.emergency_phone ||
+        workInfo?.emergency_number ||
+        data?.emergency_contact_number ||
+        data?.emergency_contact_phone ||
+        data?.emergency_phone ||
+        data?.emergency_number ||
+        data?.user_detail?.emergency_contact_number ||
+        data?.user_detail?.emergency_contact_phone ||
+        data?.user_work_info?.emergency_contact_number ||
+        data?.user_work_info?.emergency_contact_phone ||
+        '';
+      if (rawEmPhone) {
+        let clean = String(rawEmPhone).replace(/\D/g, '');
+        if (clean.length > 10 && clean.startsWith('91')) clean = clean.slice(2);
+        setEmergencyContactNumber(clean.slice(0, 10));
+      }
+
       if (workInfo) {
-        if (workInfo.emergency_contact_name) setEmergencyContactName(workInfo.emergency_contact_name);
-        if (workInfo.emergency_contact_number) setEmergencyContactNumber(workInfo.emergency_contact_number);
         if (workInfo.salary) {
           const sNum = Number(workInfo.salary);
           setSalary(!isNaN(sNum) ? (sNum % 1 === 0 ? String(Math.round(sNum)) : String(sNum)) : String(workInfo.salary));
@@ -397,9 +480,24 @@ const NewStaffForm = ({ navigation, route }) => {
             setWorkingDays([]);
           }
         }
-        if (workInfo.salary_closing_date) {
-          const closingOption = salaryClosingDateOptions.find(opt => opt.value === Number(workInfo.salary_closing_date));
-          setSalaryClosingDate(closingOption || null);
+        if (
+          workInfo.salary_closing_date !== undefined &&
+          workInfo.salary_closing_date !== null &&
+          workInfo.salary_closing_date !== ''
+        ) {
+          const val = Number(workInfo.salary_closing_date);
+          const closingOption = salaryClosingDateOptions.find(
+            opt => opt.value === val,
+          );
+          setSalaryClosingDate(
+            closingOption || {
+              label:
+                val === 31
+                  ? 'End of month (Last day of month)'
+                  : `${getOrdinalSuffix(val)} of each month`,
+              value: val,
+            },
+          );
         }
         if (workInfo.preferred_work_location) {
           const raw = workInfo.preferred_work_location;
@@ -736,45 +834,6 @@ const NewStaffForm = ({ navigation, route }) => {
       }
     }
 
-    // Validate Street
-    if (!street || street.trim() === '') {
-      newErrors.street = 'Street/Landmark field is required.';
-      hasError = true;
-    } else if (street.trim().length < 5) {
-      newErrors.street = 'Street/Landmark must be at least 5 characters.';
-      hasError = true;
-    }
-
-    // Validate City
-    const cityError = validators.checkName('City', 2, 50, city);
-    if (cityError) {
-      newErrors.city = cityError;
-      hasError = true;
-    }
-
-    // Validate State
-    const stateError = validators.checkName('State', 2, 50, stateName);
-    if (stateError) {
-      newErrors.stateName = stateError;
-      hasError = true;
-    }
-
-    // Validate Pincode
-    if (!pincode || pincode.trim() === '') {
-      newErrors.pincode = 'Pincode field is required.';
-      hasError = true;
-    } else if (!/^\d{6}$/.test(pincode)) {
-      newErrors.pincode = 'Pincode must be 6 digits.';
-      hasError = true;
-    }
-
-    if (!areaLocality || areaLocality.trim() === '') {
-      newErrors.areaLocality = 'Area / Locality field is required.';
-      hasError = true;
-    }
-
-    // Google Location is optional — staff can add it later
-
     // Validate Emergency Contact Name (optional - only if provided)
     if (emergencyContactName && emergencyContactName.trim()) {
       const emergencyNameError = validators.checkAlphabet(
@@ -829,12 +888,6 @@ const NewStaffForm = ({ navigation, route }) => {
       }
     }
 
-    // Validate Google Location
-    if (!googleLocation || googleLocation.trim() === '') {
-      newErrors.googleLocation = 'Please select a Google Location.';
-      hasError = true;
-    }
-
     setErrors(newErrors);
     return !hasError;
   };
@@ -875,54 +928,6 @@ const NewStaffForm = ({ navigation, route }) => {
 
     if (!dateOfBirth) {
       newErrors.dateOfBirth = 'Date of birth is required.';
-      hasError = true;
-    }
-
-    setErrors(prev => ({ ...prev, ...newErrors }));
-    return !hasError;
-  };
-
-  const validateStep1 = () => {
-    const newErrors = {
-      street: '',
-      city: '',
-      stateName: '',
-      pincode: '',
-      areaLocality: '',
-      googleLocation: '',
-    };
-
-    let hasError = false;
-
-    if (!street || street.trim() === '') {
-      newErrors.street = 'Street/Landmark is required.';
-      hasError = true;
-    } else if (street.trim().length < 5) {
-      newErrors.street = 'Street/Landmark must be at least 5 characters.';
-      hasError = true;
-    }
-
-    const cityError = validators.checkName('City', 2, 50, city);
-    if (cityError) { newErrors.city = cityError; hasError = true; }
-
-    const stateError = validators.checkName('State', 2, 50, stateName);
-    if (stateError) { newErrors.stateName = stateError; hasError = true; }
-
-    if (!pincode || pincode.trim() === '') {
-      newErrors.pincode = 'Pincode is required.';
-      hasError = true;
-    } else if (!/^\d{6}$/.test(pincode)) {
-      newErrors.pincode = 'Pincode must be 6 digits.';
-      hasError = true;
-    }
-
-    if (!areaLocality || areaLocality.trim() === '') {
-      newErrors.areaLocality = 'Area/Locality is required.';
-      hasError = true;
-    }
-
-    if (!googleLocation || googleLocation.trim() === '') {
-      newErrors.googleLocation = 'Please select a Google Location.';
       hasError = true;
     }
 
@@ -1354,9 +1359,8 @@ const NewStaffForm = ({ navigation, route }) => {
       <ProfileStepRoller
         steps={[
           { id: 0, title: 'Personal Info', icon: ImageConstant.person },
-          { id: 1, title: 'Address & Map', icon: ImageConstant.Location },
-          { id: 2, title: 'Role & Pay', icon: ImageConstant.Briefcase },
-          { id: 3, title: 'Verification', icon: ImageConstant.Verify },
+          { id: 1, title: 'Role & Pay', icon: ImageConstant.Briefcase },
+          { id: 2, title: 'Verification', icon: ImageConstant.Verify },
         ]}
         activeStep={currentStep}
         onStepPress={(idx) => {
@@ -1486,134 +1490,10 @@ const NewStaffForm = ({ navigation, route }) => {
         </View>
         )}
 
-        {/* Step 1: Address & Location */}
+        
+
+        {/* Step 1: Role & Pay */}
         {currentStep === 1 && (
-        <View style={styles.section}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
-            <Image
-              source={ImageConstant.Location}
-              style={{ height: 20, width: 20, marginRight: 8, tintColor: '#D98579' }}
-              resizeMode="contain"
-            />
-            <Typography
-              type={Font?.Poppins_SemiBold}
-              style={styles.sectionTitle}
-            >
-              Address & Location
-            </Typography>
-          </View>
-
-          <MapLocationPicker
-            title="Pin Present Location (Google Maps)"
-            location={{
-              google_location: googleLocation,
-              lat: lat,
-              long: long,
-              street: street,
-              area_locality: areaLocality,
-              city: city,
-              state: stateName,
-              pincode: pincode,
-            }}
-            selectedLabel={[areaLocality, city, stateName].filter(Boolean).join(', ')}
-            onConfirm={(location) => {
-              setGoogleLocation(location?.google_location || '');
-              setLat(location?.lat ? String(location.lat) : '');
-              setLong(location?.long ? String(location.long) : '');
-              if (location?.street) setStreet(location.street);
-              if (location?.area_locality) setAreaLocality(location.area_locality);
-              if (location?.city) setCity(location.city);
-              if (location?.state) setStateName(location.state);
-              if (location?.pincode) setPincode(location.pincode);
-              clearError('googleLocation');
-            }}
-          />
-
-          <Input
-            style_title={{ color: '#8C8D8B' }}
-            placeholder={
-              LocalizedStrings.NewStaffForm.Street_Landmark || 'Street/Landmark'
-            }
-            title={LocalizedStrings.NewStaffForm.Home_Address || 'Home Address'}
-            value={street}
-            onChange={value => {
-              setStreet(value);
-              clearError('street');
-            }}
-            style_input={{ textAlign: 'start' }}
-            multiline
-            numberOfLines={2}
-            error={errors.street}
-          />
-          <Input
-            style_title={{ color: '#8C8D8B' }}
-            placeholder="e.g. Phase 1, Model Town"
-            title="Area / Locality"
-            value={areaLocality}
-            onChange={value => {
-              setAreaLocality(value);
-              clearError('areaLocality');
-            }}
-            error={errors.areaLocality}
-          />
-
-
-
-          <Input
-            style_title={{ color: '#8C8D8B' }}
-            placeholder={
-              LocalizedStrings.NewStaffForm.Pincode_Placeholder || '400050'
-            }
-            title={LocalizedStrings.NewStaffForm.Pincode || 'Pincode'}
-            value={pincode}
-            onChange={value => {
-              // Only allow numbers and limit to 6 digits
-              const numericValue = value.replace(/[^0-9]/g, '').slice(0, 6);
-              setPincode(numericValue);
-              clearError('pincode');
-            }}
-            keyboardType="number-pad"
-            maxLength={6}
-            error={errors.pincode}
-          />
-          <View
-            style={{ flexDirection: 'row', justifyContent: 'space-between' }}
-          >
-            <View style={{ flex: 1, marginRight: 6 }}>
-              <Input
-                style_title={{ color: '#8C8D8B', fontSize: 13 }}
-                placeholder={LocalizedStrings.NewStaffForm.City || 'Mumbai'}
-                title={LocalizedStrings.NewStaffForm.City || 'City'}
-                value={city}
-                onChange={value => {
-                  setCity(value);
-                  clearError('city');
-                }}
-                style_input={{ paddingHorizontal: 6, fontSize: 12.5 }}
-                error={errors.city}
-              />
-            </View>
-            <View style={{ flex: 1, marginLeft: 6 }}>
-              <Input
-                style_title={{ color: '#8C8D8B', fontSize: 13 }}
-                placeholder={'Maharashtra'}
-                title={LocalizedStrings.NewStaffForm.State || 'State'}
-                value={stateName}
-                onChange={value => {
-                  setStateName(value);
-                  clearError('stateName');
-                }}
-                style_input={{ paddingHorizontal: 6, fontSize: 12.5 }}
-                error={errors.stateName}
-              />
-            </View>
-          </View>
-
-        </View>
-        )}
-
-        {/* Step 2: Role & Pay */}
-        {currentStep === 2 && (
         <View style={styles.section}>
           <Typography type={Font?.Poppins_SemiBold} style={styles.sectionTitle}>
             Emergency Contact
@@ -1828,8 +1708,8 @@ const NewStaffForm = ({ navigation, route }) => {
         </View>
         )}
 
-        {/* Step 3: Verification & Schedule */}
-        {currentStep === 3 && (
+        {/* Step 2: Verification & Schedule */}
+        {currentStep === 2 && (
         <View>
         <View style={styles.section}>
 
@@ -1904,38 +1784,7 @@ const NewStaffForm = ({ navigation, route }) => {
 
 
 
-        <View style={styles.section}>
-          <Typography type={Font?.Poppins_SemiBold} style={styles.sectionTitle}>
-            Languages Spoken
-          </Typography>
-          <View style={styles.daysContainer}>
-            {languagesList.map((lang, index) => {
-              const isSelected = selectedLanguages.includes(lang);
-              return (
-                <TouchableOpacity
-                  key={index}
-                  style={[styles.dayChip, isSelected && styles.dayChipSelected]}
-                  onPress={() => toggleLanguage(lang)}
-                >
-                  {isSelected && (
-                    <Image
-                      source={ImageConstant?.check}
-                      style={{
-                        width: 12,
-                        height: 12,
-                        tintColor: '#fff',
-                        marginRight: 4,
-                      }}
-                    />
-                  )}
-                  <Text style={[styles.dayChipText, isSelected && styles.dayChipTextSelected]}>
-                    {lang}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-        </View>
+
 
         <View style={styles.section}>
           <Typography type={Font?.Poppins_SemiBold} style={styles.sectionTitle}>
@@ -2077,19 +1926,15 @@ const NewStaffForm = ({ navigation, route }) => {
           <View style={{ flex: currentStep > 0 ? 1.2 : 1, height: 48, justifyContent: 'center' }}>
             <Button
               title={
-                currentStep < 3
+                currentStep < 2
                   ? LocalizedStrings.Auth?.next || 'Next'
                   : isEditMode
                     ? LocalizedStrings.NewStaffForm.Update_Staff || 'Update Staff'
                     : LocalizedStrings.NewStaffForm.Add_Staff || 'Add Staff'
               }
               onPress={() => {
-                if (currentStep < 3) {
+                if (currentStep < 2) {
                   if (currentStep === 0 && !validateStep0()) {
-                    SimpleToast.show('Please fill all required fields', SimpleToast.SHORT);
-                    return;
-                  }
-                  if (currentStep === 1 && !validateStep1()) {
                     SimpleToast.show('Please fill all required fields', SimpleToast.SHORT);
                     return;
                   }

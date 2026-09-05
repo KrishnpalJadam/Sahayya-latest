@@ -16,21 +16,28 @@ import SimpleToast from 'react-native-simple-toast';
 
 const buildSafeStaffPayload = rawUser => {
   const user = rawUser && typeof rawUser === 'object' ? rawUser : {};
+  let rawPhone = user?.phone_number || user?.mobile_number || user?.mobile || user?.phone || user?.contact_number || '';
+  let cleanPhone = String(rawPhone || '').replace(/\D/g, '');
+  if (cleanPhone.length > 10 && cleanPhone.startsWith('91')) {
+    cleanPhone = cleanPhone.slice(2);
+  }
 
   return {
-    id: user?.id,
+    id: user?.id || user?.user_id,
     user_id: user?.user_id || user?.id,
     name: user?.name,
     first_name: user?.first_name,
     last_name: user?.last_name,
     email: user?.email,
-    phone_number: user?.phone_number || user?.mobile_number || user?.mobile,
+    phone_number: cleanPhone,
+    mobile_number: cleanPhone,
     phone_number_prefix:
       user?.phone_number_prefix ||
       user?.phone_number_country_code ||
-      user?.country_code,
-    gender: user?.gender,
-    dob: user?.dob,
+      user?.country_code ||
+      '+91',
+    gender: user?.gender || user?.sex || user?.aadhaar_details?.gender || user?.aadhaar_details?.sex || null,
+    dob: user?.dob || user?.date_of_birth || user?.birthdate || user?.birth_date || user?.aadhaar_details?.dob || user?.aadhaar_details?.date_of_birth || null,
     aadhar_number: user?.aadhar_number || user?.aadhaar,
     aadhar__verify: user?.aadhar__verify,
     image: user?.image,
@@ -42,6 +49,8 @@ const buildSafeStaffPayload = rawUser => {
     aadhar_back: user?.aadhar_back || user?.aadhaar_back || null,
     verification_certificate: user?.verification_certificate || null,
     relation: user?.relation || null,
+    emergency_contact_name: user?.emergency_contact_name || user?.user_work_info?.emergency_contact_name || user?.userWorkInfo?.emergency_contact_name || user?.work_info?.emergency_contact_name || null,
+    emergency_contact_number: user?.emergency_contact_number || user?.user_work_info?.emergency_contact_number || user?.userWorkInfo?.emergency_contact_number || user?.work_info?.emergency_contact_number || null,
   };
 };
 

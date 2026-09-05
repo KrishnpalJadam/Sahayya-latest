@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import {
   View,
   StyleSheet,
@@ -6,14 +6,14 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Image,
+  RefreshControl,
 } from 'react-native';
-import CommanView from '../../Component/CommanView';
 import HeaderForUser from '../../Component/HeaderForUser';
 import Typography from '../../Component/UI/Typography';
 import { Font } from '../../Constants/Font';
 import { ImageConstant } from '../../Constants/ImageConstant';
 import { GET_WITH_TOKEN } from '../../Backend/Backend';
-import { EarningSummary } from '../../Backend/api_routes';
+import { EarningSummary, MyAdvances } from '../../Backend/api_routes';
 import { useIsFocused } from '@react-navigation/native';
 import moment from 'moment';
 import PaymentReceipt from '../../Component/PaymentReceipt';
@@ -21,226 +21,306 @@ import { useSelector } from 'react-redux';
 
 const STATUS_FILTERS = ['All', 'Paid', 'Pending', 'Advance'];
 
+const parseDateSafely = (dateStr) => {
+  if (!dateStr) return moment();
+  const formats = ['YYYY-MM-DD', 'DD/MM/YYYY', 'DD-MM-YYYY', 'YYYY-MM-DD HH:mm:ss', moment.ISO_8601];
+  const parsed = moment(dateStr, formats);
+  return parsed.isValid() ? parsed : moment();
+};
+
 const StaffPaymentHistory = ({ navigation }) => {
   const isFocused = useIsFocused();
   const userDetail = useSelector(state => state?.userDetails);
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState('All');
   const [receiptPayment, setReceiptPayment] = useState(null);
 
-  const normalizeRecord = (p, i) => ({
-    id: p.payment_id || p.id || `norm_${i}`,
-    amount: p.amount || p.net_salary || 0,
-    status: p.status || 'Paid',
-    type: p.type || 'salary',
-    month: p.month || '',
-    date: p.paid_on || p.date || p.created_at || '',
-    paid_by: p.paid_by || 'Employer',
-    payment_mode: p.payment_mode || 'cash',
-    raw: p,
-  });
+  const staffName = userDetail?.name ||
+    (userDetail?.first_name ? `${userDetail.first_name} ${userDetail.last_name || ''}`.trim() : 'Staff Member');
 
   const fetchHistory = useCallback(() => {
     setLoading(true);
-    // Fetch last 12 months of earnings
     const now = new Date();
-    const months = [];
-    for (let i = 0; i < 12; i++) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      months.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
-    }
+    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
-    // Fetch current month first to get job_id
+    // First try the dedicated staff payment history endpoint, fallback to earnings summary
     GET_WITH_TOKEN(
-      `${EarningSummary}?month=${months[0]}`,
-      success => {
-        const data = success?.data;
-        const earningData = Array.isArray(data) && data.length > 0 ? data[0] : (data && !Array.isArray(data) ? data : null);
-        const jobId = earningData?.job_id || earningData?.job_details?.id;
-
-        if (!jobId) {
-          // No job — try to get payment history from summary directly
-          const history = earningData?.payment_history || [];
-          setRecords(history.map(normalizeRecord));
+      'staff/payment-history',
+      res => {
+        const list = res?.data || [];
+        if (Array.isArray(list) && list.length > 0) {
+          setRecords(list);
           setLoading(false);
+          setRefreshing(false);
           return;
         }
-
-        // Fetch all months with job_id
-        const allRecords = [];
-        let completed = 0;
-
-        months.forEach(month => {
-          GET_WITH_TOKEN(
-            `${EarningSummary}?job_id=${jobId}&month=${month}`,
-            res => {
-              const d = res?.data;
-              const ed = Array.isArray(d) && d.length > 0 ? d[0] : (d && !Array.isArray(d) ? d : null);
-              if (ed) {
-                const amount = ed.total_payable_amount || ed.net_salary || ed.base_salary || 0;
-                if (amount > 0) {
-                  allRecords.push({
-                    id: ed.payment_id || ed.id || `salary_${month}`,
-                    amount: amount,
-                    status: ed.payment_status || ed.status || 'Pending',
-                    type: 'salary',
-                    month: month,
-                    date: ed.payment_date || ed.paid_on || `${month}-01`,
-                    paid_by: ed.employer || ed.employer_name || 'Employer',
-                    payment_mode: ed.payment_mode || 'cash',
-                    raw: {
-                      ...ed,
-                      net_salary: ed.total_payable_amount || ed.net_salary || 0,
-                      amount: ed.total_payable_amount || ed.net_salary || 0,
-                      status: ed.payment_status || ed.status || 'Pending',
-                      staff_name: ed.staff_name || ed.employer || 'Staff',
-                      salary_period: month,
-                      created_at: ed.payment_date || ed.paid_on || `${month}-01`,
-                      monthly_salary: ed.salary_summary?.current_monthly_salary || 0,
-                      worked_days: ed.attendance_summary?.present_days || 0,
-                      total_days: ed.attendance_summary?.total_working_days || 0,
-                      salary_breakdown: ed.earnings_breakdown || {},
-                      advance_payment: ed.deductions?.advance_repayment?.amount || 0,
-                      payment_id: ed.payment_id || `SAL-${ed.job_id || '--'}-${month}`,
-                      payment_mode: ed.payment_mode || 'Cash',
-                    },
-                  });
-                }
-                // Add payment history entries
-                const ph = ed.payment_history || [];
-                ph.forEach((p, i) => {
-                  allRecords.push({
-                    id: p.payment_id || p.id || `ph_${month}_${i}`,
-                    amount: p.amount || p.net_salary || 0,
-                    status: p.status || 'Paid',
-                    type: p.type || 'salary',
-                    month: p.month || month,
-                    date: p.paid_on || p.date || p.created_at || `${month}-01`,
-                    paid_by: p.paid_by || ed.employer || 'Employer',
-                    payment_mode: p.payment_mode || 'cash',
-                    raw: p,
-                  });
-                });
-              }
-              completed++;
-              if (completed === months.length) {
-                // Sort by date descending
-                const sorted = allRecords.sort((a, b) => new Date(b.date) - new Date(a.date));
-                // Deduplicate by id
-                const seen = new Set();
-                const unique = sorted.filter(r => {
-                  if (seen.has(r.id)) return false;
-                  seen.add(r.id);
-                  return true;
-                });
-                setRecords(unique);
-                setLoading(false);
-              }
-            },
-            () => {
-              completed++;
-              if (completed === months.length) {
-                const sorted = allRecords.sort((a, b) => new Date(b.date) - new Date(a.date));
-                setRecords(sorted);
-                setLoading(false);
-              }
-            },
-            () => {
-              completed++;
-              if (completed === months.length) {
-                setRecords(allRecords);
-                setLoading(false);
-              }
-            },
-          );
-        });
+        // If empty, fetch from EarningSummary & MyAdvances
+        fetchFromEarningsSummary(currentMonth);
       },
-      () => { setLoading(false); },
-      () => { setLoading(false); },
+      () => {
+        // Fallback to earnings summary
+        fetchFromEarningsSummary(currentMonth);
+      },
+      () => {
+        fetchFromEarningsSummary(currentMonth);
+      }
     );
   }, []);
 
-  React.useEffect(() => {
-    if (isFocused) fetchHistory();
+  const fetchFromEarningsSummary = (monthStr) => {
+    GET_WITH_TOKEN(
+      `${EarningSummary}?month=${monthStr}`,
+      success => {
+        const data = success?.data;
+        const ed = Array.isArray(data) && data.length > 0 ? data[0] : (data && !Array.isArray(data) ? data : null);
+        const allList = [];
+
+        if (ed) {
+          const employerName = ed.employer || ed.employer_name || userDetail?.employer_name || 'Employer';
+          const monthlySal = Number(ed.salary_summary?.current_monthly_salary || ed.total_payable_amount || 0);
+
+          // Add current month record
+          if (monthlySal > 0 || Number(ed.total_payable_amount || 0) > 0) {
+            const amount = Number(ed.total_payable_amount || monthlySal || 0);
+            allList.push({
+              id: ed.payment_id || `salary_${monthStr}`,
+              amount: amount,
+              status: ed.payment_status ? (ed.payment_status.charAt(0).toUpperCase() + ed.payment_status.slice(1)) : 'Pending',
+              type: 'salary',
+              month: moment(monthStr, 'YYYY-MM').format('MMMM YYYY'),
+              date: ed.payment_date || `${monthStr}-01`,
+              paid_by: employerName,
+              payment_mode: ed.payment_mode || 'Cash',
+              raw: {
+                ...ed,
+                net_salary: amount,
+                amount: amount,
+                status: ed.payment_status || 'Pending',
+                staff_name: staffName,
+                employer_name: employerName,
+                salary_period: moment(monthStr, 'YYYY-MM').format('MMMM YYYY'),
+                created_at: ed.payment_date || `${monthStr}-01`,
+                monthly_salary: monthlySal,
+                salary_breakdown: ed.earnings_breakdown || {},
+                pf_deduction: Number(ed.deductions?.provident_fund?.amount || 0),
+                tax_deduction: Number(ed.deductions?.income_tax?.amount || 0),
+                payment_id: ed.payment_id || `SAL-${monthStr}`,
+                payment_mode: ed.payment_mode || 'Cash',
+              },
+            });
+          }
+
+          // Add past payments from payment_history
+          const ph = ed.payment_history || [];
+          ph.forEach((p, idx) => {
+            const pAmt = Number(p.amount || p.net_salary || 0);
+            const pDate = p.paid_on || p.date || p.created_at || '';
+            allList.push({
+              id: p.payment_id || p.id || `ph_${idx}`,
+              amount: pAmt,
+              status: p.status ? (p.status.charAt(0).toUpperCase() + p.status.slice(1)) : 'Paid',
+              type: p.type || 'salary',
+              month: p.month || '',
+              date: pDate,
+              paid_by: p.paid_by || employerName,
+              payment_mode: p.payment_mode || 'Cash',
+              raw: {
+                ...p,
+                net_salary: pAmt,
+                amount: pAmt,
+                status: p.status || 'Paid',
+                staff_name: staffName,
+                employer_name: p.paid_by || employerName,
+                salary_period: p.month || '',
+                created_at: pDate,
+                monthly_salary: monthlySal,
+                salary_breakdown: p.salary_breakdown || ed.earnings_breakdown || {},
+                payment_id: p.payment_id || p.id || `SAL-${idx}`,
+                payment_mode: p.payment_mode || 'Cash',
+              },
+            });
+          });
+        }
+
+        // Also fetch advances for completeness
+        GET_WITH_TOKEN(
+          MyAdvances,
+          advRes => {
+            const advances = advRes?.data || [];
+            advances.forEach((adv, idx) => {
+              const advAmt = Number(adv.amount || 0);
+              const advEmployer = adv.employer ? (adv.employer.name || `${adv.employer.first_name || ''} ${adv.employer.last_name || ''}`.trim()) : 'Employer';
+              allList.push({
+                id: `adv_${adv.id || idx}`,
+                amount: advAmt,
+                status: adv.status === 'active' ? 'Active' : 'Cleared',
+                type: 'advance',
+                month: moment(adv.given_date).format('MMMM YYYY'),
+                date: adv.given_date || adv.created_at,
+                paid_by: advEmployer,
+                payment_mode: 'Cash / Transfer',
+                raw: {
+                  ...adv,
+                  amount: advAmt,
+                  net_salary: advAmt,
+                  advance_payment: advAmt,
+                  status: adv.status === 'active' ? 'Active' : 'Cleared',
+                  staff_name: staffName,
+                  employer_name: advEmployer,
+                  salary_period: moment(adv.given_date).format('MMMM YYYY'),
+                  created_at: adv.given_date || adv.created_at,
+                  payment_id: `ADV-${adv.id || idx}`,
+                  payment_mode: 'Cash / Transfer',
+                },
+              });
+            });
+
+            // Sort safely by date descending
+            allList.sort((a, b) => {
+              const timeA = parseDateSafely(a.date).valueOf();
+              const timeB = parseDateSafely(b.date).valueOf();
+              return timeB - timeA;
+            });
+
+            setRecords(allList);
+            setLoading(false);
+            setRefreshing(false);
+          },
+          () => {
+            setRecords(allList);
+            setLoading(false);
+            setRefreshing(false);
+          },
+          () => {
+            setRecords(allList);
+            setLoading(false);
+            setRefreshing(false);
+          }
+        );
+      },
+      () => {
+        setLoading(false);
+        setRefreshing(false);
+      },
+      () => {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    );
+  };
+
+  useEffect(() => {
+    if (isFocused) {
+      fetchHistory();
+    }
   }, [isFocused, fetchHistory]);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchHistory();
+  };
 
   const getStatusColor = status => {
     const s = (status || '').toLowerCase();
     if (s === 'paid') return '#0A8F08';
+    if (s === 'active') return '#16A34A';
     if (s === 'advance') return '#D98579';
+    if (s === 'cleared') return '#666666';
     return '#FF9800';
   };
 
   const filteredRecords = useMemo(() => {
     if (selectedStatus === 'All') return records;
-    return records.filter(r => r.status?.toLowerCase() === selectedStatus.toLowerCase() || r.type?.toLowerCase() === selectedStatus.toLowerCase());
+    return records.filter(r => {
+      const st = (r?.status || '').toLowerCase();
+      const tp = (r?.type || '').toLowerCase();
+      const sel = selectedStatus.toLowerCase();
+      return st === sel || tp === sel;
+    });
   }, [records, selectedStatus]);
 
-  const renderItem = ({ item }) => (
-    <TouchableOpacity
-      style={styles.row}
-      activeOpacity={0.7}
-      onPress={() => setReceiptPayment(item?.raw || item)}
-    >
-      <View style={styles.iconCircle}>
-        <Typography type={Font?.Poppins_SemiBold} size={14} color="#D98579">{"\u20B9"}</Typography>
-      </View>
-      <View style={{ flex: 1, marginLeft: 12 }}>
-        <Typography type={Font?.Poppins_SemiBold} size={14}>
-          {"\u20B9"}{Number(item.amount || 0).toLocaleString('en-IN')}
-        </Typography>
-        <Typography type={Font?.Poppins_Regular} size={12} color="#888">
-          {item.type === 'advance' ? 'Advance' : `Salary - ${item.month || ''}`}
-        </Typography>
-        <Typography type={Font?.Poppins_Regular} size={11} color="#aaa">
-          {item.date ? moment(item.date).format('DD MMM YYYY') : '--'}
-        </Typography>
-        <Typography type={Font?.Poppins_Regular} size={11} color="#aaa">
-          Paid by: {item.paid_by || 'Employer'} - {item.payment_mode}
-        </Typography>
-      </View>
-      <View style={{ alignItems: 'flex-end' }}>
-        <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) + '20' }]}>
-          <Typography type={Font?.Poppins_SemiBold} size={11} color={getStatusColor(item.status)}>
-            {item.status || 'Paid'}
+  const handleOpenSlip = (item) => {
+    const raw = item?.raw || {};
+    const amt = Number(raw?.amount || raw?.net_salary || item?.amount || 0);
+    const slipData = {
+      ...raw,
+      amount: amt,
+      net_salary: amt,
+      status: raw?.status || item?.status || 'Paid',
+      staff_name: raw?.staff_name || staffName,
+      employer_name: raw?.employer_name || item?.paid_by || 'Employer',
+      salary_period: raw?.salary_period || item?.month || moment(item?.date).format('MMMM YYYY'),
+      created_at: raw?.created_at || item?.date || new Date().toISOString(),
+      monthly_salary: Number(raw?.monthly_salary || raw?.basic_salary || amt),
+      worked_days: raw?.worked_days || 0,
+      total_days: raw?.total_days || 0,
+      salary_breakdown: raw?.salary_breakdown || {},
+      pf_deduction: Number(raw?.pf_deduction || 0),
+      tax_deduction: Number(raw?.tax_deduction || 0),
+      advance_payment: Number(raw?.advance_payment || 0),
+      payment_id: raw?.payment_id || item?.id || 'SLP',
+      payment_mode: raw?.payment_mode || item?.payment_mode || 'Cash',
+    };
+    setReceiptPayment(slipData);
+  };
+
+  const renderItem = ({ item }) => {
+    const amount = Number(item?.amount || 0);
+    const formattedDate = item?.date ? parseDateSafely(item.date).format('DD MMM YYYY') : '--';
+    const statusColor = getStatusColor(item?.status);
+
+    return (
+      <TouchableOpacity
+        style={styles.row}
+        activeOpacity={0.7}
+        onPress={() => handleOpenSlip(item)}
+      >
+        <View style={styles.iconCircle}>
+          <Typography type={Font?.Poppins_SemiBold} size={15} color="#D98579">{"\u20B9"}</Typography>
+        </View>
+
+        <View style={{ flex: 1, marginLeft: 12 }}>
+          <Typography type={Font?.Poppins_SemiBold} size={14}>
+            {"\u20B9"}{amount.toLocaleString('en-IN')}
+          </Typography>
+          <Typography type={Font?.Poppins_Regular} size={12} color="#666">
+            {item?.type === 'advance' ? 'Advance Payment' : `Salary - ${item?.month || ''}`}
+          </Typography>
+          <Typography type={Font?.Poppins_Regular} size={11} color="#999">
+            {formattedDate} · {item?.paid_by || 'Employer'} ({item?.payment_mode || 'Cash'})
           </Typography>
         </View>
-        <TouchableOpacity
-          style={styles.receiptBtn}
-          onPress={() => {
-            const receiptData = {
-              ...item.raw,
-              net_salary: item.raw?.net_salary || item.raw?.amount || item.amount || 0,
-              amount: item.raw?.amount || item.raw?.net_salary || item.amount || 0,
-              status: item.raw?.status || item.status || 'Paid',
-              staff_name: item.raw?.staff_name || userDetail?.name || 'Staff',
-              salary_period: item.raw?.salary_period || item.month || '',
-              created_at: item.raw?.created_at || item.date || new Date().toISOString(),
-              monthly_salary: item.raw?.monthly_salary || 0,
-              worked_days: item.raw?.worked_days || 0,
-              total_days: item.raw?.total_days || 0,
-              salary_breakdown: item.raw?.salary_breakdown || {},
-              advance_payment: item.raw?.advance_payment || 0,
-            };
-            setReceiptPayment(receiptData);
-          }}
-        >
-          <Image source={ImageConstant?.fileText} style={styles.receiptIcon} />
-          <Typography size={11} color="#D98579" type={Font?.Poppins_Medium}>View Slip</Typography>
-        </TouchableOpacity>
-      </View>
-    </TouchableOpacity>
-  );
+
+        <View style={{ alignItems: 'flex-end', justifyContent: 'center' }}>
+          <View style={[styles.statusBadge, { backgroundColor: statusColor + '20' }]}>
+            <Typography type={Font?.Poppins_SemiBold} size={11} color={statusColor}>
+              {item?.status || 'Paid'}
+            </Typography>
+          </View>
+          <TouchableOpacity
+            style={styles.receiptBtn}
+            onPress={() => handleOpenSlip(item)}
+          >
+            <Image source={ImageConstant?.fileText} style={styles.receiptIcon} />
+            <Typography size={11} color="#D98579" type={Font?.Poppins_Medium}>View Slip</Typography>
+          </TouchableOpacity>
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   return (
-    <CommanView>
-      <HeaderForUser
-        title="Payment History"
-        source_arrow={ImageConstant?.BackArrow}
-        onPressLeftIcon={() => navigation.goBack()}
-        style_title={{ fontSize: 18 }}
-      />
+    <View style={styles.container}>
+      <View style={styles.headerWrapper}>
+        <HeaderForUser
+          title="Payment History"
+          source_arrow={ImageConstant?.BackArrow}
+          onPressLeftIcon={() => navigation.goBack()}
+          style_title={{ fontSize: 18 }}
+        />
+      </View>
 
       {/* Filter chips */}
       <View style={styles.filterRow}>
@@ -251,7 +331,7 @@ const StaffPaymentHistory = ({ navigation }) => {
             onPress={() => setSelectedStatus(f)}
           >
             <Typography
-              type={Font?.Poppins_Regular}
+              type={selectedStatus === f ? Font?.Poppins_SemiBold : Font?.Poppins_Regular}
               size={12}
               color={selectedStatus === f ? '#D98579' : '#555'}
             >
@@ -268,10 +348,18 @@ const StaffPaymentHistory = ({ navigation }) => {
       ) : (
         <FlatList
           data={filteredRecords}
-          keyExtractor={item => item.id}
+          keyExtractor={(item, index) => String(item?.id || index)}
           renderItem={renderItem}
-          contentContainerStyle={{ paddingBottom: 100 }}
+          contentContainerStyle={styles.listContent}
           ItemSeparatorComponent={() => <View style={styles.separator} />}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={['#D98579']}
+              tintColor="#D98579"
+            />
+          }
           ListEmptyComponent={() => (
             <View style={styles.empty}>
               <Typography type={Font?.Poppins_Regular} size={14} color="#888">
@@ -282,22 +370,33 @@ const StaffPaymentHistory = ({ navigation }) => {
         />
       )}
 
-      <PaymentReceipt
-        visible={!!receiptPayment}
-        onClose={() => setReceiptPayment(null)}
-        paymentData={receiptPayment}
-        userDetails={userDetail}
-      />
-    </CommanView>
+      {receiptPayment && (
+        <PaymentReceipt
+          visible={!!receiptPayment}
+          onClose={() => setReceiptPayment(null)}
+          paymentData={receiptPayment}
+          userDetails={userDetail}
+        />
+      )}
+    </View>
   );
 };
 
 export default StaffPaymentHistory;
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+  },
+  headerWrapper: {
+    paddingHorizontal: 20,
+    backgroundColor: '#FFFFFF',
+  },
   filterRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    paddingHorizontal: 20,
     paddingVertical: 10,
     gap: 8,
   },
@@ -306,17 +405,21 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#E0E0E0',
+    backgroundColor: '#FAFAFA',
   },
   chipActive: {
     borderColor: '#D98579',
     backgroundColor: '#FFF5EE',
   },
+  listContent: {
+    paddingHorizontal: 20,
+    paddingBottom: 40,
+  },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 14,
-    paddingHorizontal: 4,
   },
   iconCircle: {
     width: 42,

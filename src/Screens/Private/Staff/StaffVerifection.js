@@ -15,41 +15,90 @@ import { userDetails as userDetailsAction } from '../../../Redux/action';
 import { POST_FORM_DATA, POST_WITH_TOKEN } from '../../../Backend/Backend';
 import { AADHAR_SAVE, AADHAR_VERFIY, ApplicantsStatus } from '../../../Backend/api_routes';
 
-const buildSafeStaffPayload = (baseUser = {}, verifiedUser = {}) => {
+const buildSafeStaffPayload = (baseUser = {}, verifiedUser = {}, aadhaarDetails = {}) => {
   const nextUser = verifiedUser && typeof verifiedUser === 'object' ? verifiedUser : {};
   const prevUser = baseUser && typeof baseUser === 'object' ? baseUser : {};
+  const aadharInfo = aadhaarDetails && typeof aadhaarDetails === 'object' ? aadhaarDetails : {};
+
+  const rawPhone =
+    nextUser?.phone_number ||
+    nextUser?.mobile_number ||
+    nextUser?.phone ||
+    nextUser?.mobile ||
+    nextUser?.contact_number ||
+    aadharInfo?.mobile_number ||
+    aadharInfo?.phone_number ||
+    aadharInfo?.phone ||
+    aadharInfo?.mobile ||
+    aadharInfo?.contact_number ||
+    prevUser?.phone_number ||
+    prevUser?.mobile_number ||
+    prevUser?.phone ||
+    prevUser?.mobile ||
+    prevUser?.contact_number ||
+    '';
+
+  let cleanPhone = String(rawPhone || '').replace(/\D/g, '');
+  if (cleanPhone.length > 10 && cleanPhone.startsWith('91')) {
+    cleanPhone = cleanPhone.slice(2);
+  }
 
   return {
     id: nextUser?.id || prevUser?.id,
-    user_id: nextUser?.user_id || prevUser?.user_id,
-    name: nextUser?.name || prevUser?.name,
-    first_name: nextUser?.first_name || prevUser?.first_name,
-    last_name: nextUser?.last_name || prevUser?.last_name,
+    user_id: nextUser?.user_id || prevUser?.user_id || nextUser?.id || prevUser?.id,
+    name: nextUser?.name || prevUser?.name || aadharInfo?.name,
+    first_name: nextUser?.first_name || prevUser?.first_name || (aadharInfo?.name ? aadharInfo.name.split(' ')[0] : ''),
+    last_name:
+      nextUser?.last_name ||
+      prevUser?.last_name ||
+      (aadharInfo?.name && aadharInfo.name.split(' ').length > 1 ? aadharInfo.name.split(' ').slice(1).join(' ') : ''),
     email: nextUser?.email || prevUser?.email,
-    phone_number:
-      nextUser?.phone_number ||
-      nextUser?.mobile_number ||
-      prevUser?.phone_number ||
-      prevUser?.mobile_number,
+    phone_number: cleanPhone,
+    mobile_number: cleanPhone,
     phone_number_prefix:
       nextUser?.phone_number_prefix ||
       nextUser?.phone_number_country_code ||
       prevUser?.phone_number_prefix ||
-      prevUser?.phone_number_country_code,
-    gender: nextUser?.gender || prevUser?.gender,
-    dob: nextUser?.dob || prevUser?.dob,
-    aadhar_number: nextUser?.aadhar_number || prevUser?.aadhar_number,
+      prevUser?.phone_number_country_code ||
+      '+91',
+    gender:
+      nextUser?.gender ||
+      nextUser?.sex ||
+      aadharInfo?.gender ||
+      aadharInfo?.sex ||
+      prevUser?.gender ||
+      prevUser?.sex ||
+      null,
+    dob:
+      nextUser?.dob ||
+      nextUser?.date_of_birth ||
+      nextUser?.birthdate ||
+      nextUser?.birth_date ||
+      aadharInfo?.dob ||
+      aadharInfo?.date_of_birth ||
+      aadharInfo?.birthdate ||
+      aadharInfo?.birth_date ||
+      prevUser?.dob ||
+      prevUser?.date_of_birth ||
+      prevUser?.birthdate ||
+      prevUser?.birth_date ||
+      null,
+    aadhaar_details: aadharInfo,
+    aadhar_number: nextUser?.aadhar_number || prevUser?.aadhar_number || aadharInfo?.aadhaar_number,
     aadhar__verify:
       nextUser?.aadhar__verify !== undefined
         ? nextUser?.aadhar__verify
-        : prevUser?.aadhar__verify,
-    image: nextUser?.image || prevUser?.image,
+        : prevUser?.aadhar__verify !== undefined
+          ? prevUser?.aadhar__verify
+          : 1,
+    image: nextUser?.image || prevUser?.image || aadharInfo?.photo,
     upi_id: nextUser?.upi_id || prevUser?.upi_id,
-    addresses: Array.isArray(nextUser?.addresses) && nextUser.addresses.length > 0
-      ? nextUser.addresses
-      : Array.isArray(prevUser?.addresses) && prevUser.addresses.length > 0
-        ? prevUser.addresses
-        : [],
+    addresses:
+      Array.isArray(nextUser?.addresses) && nextUser.addresses.length > 0
+        ? nextUser.addresses
+        : Array.isArray(prevUser?.addresses) && prevUser.addresses.length > 0
+          ? prevUser.addresses
+          : [],
     user_work_info:
       nextUser?.user_work_info ||
       nextUser?.userWorkInfo ||
@@ -87,6 +136,24 @@ const buildSafeStaffPayload = (baseUser = {}, verifiedUser = {}) => {
       prevUser?.user_work_info?.emergency_contact_relation ||
       nextUser?.work_info?.emergency_contact_relation ||
       prevUser?.work_info?.emergency_contact_relation ||
+      null,
+    emergency_contact_name:
+      nextUser?.emergency_contact_name ||
+      nextUser?.user_work_info?.emergency_contact_name ||
+      nextUser?.work_info?.emergency_contact_name ||
+      prevUser?.emergency_contact_name ||
+      prevUser?.user_work_info?.emergency_contact_name ||
+      prevUser?.work_info?.emergency_contact_name ||
+      null,
+    emergency_contact_number:
+      nextUser?.emergency_contact_number ||
+      nextUser?.emergency_contact_phone ||
+      nextUser?.user_work_info?.emergency_contact_number ||
+      nextUser?.work_info?.emergency_contact_number ||
+      prevUser?.emergency_contact_number ||
+      prevUser?.emergency_contact_phone ||
+      prevUser?.user_work_info?.emergency_contact_number ||
+      prevUser?.work_info?.emergency_contact_number ||
       null,
   };
 };
@@ -249,11 +316,12 @@ const job_compensation_type = route?.params?.job_compensation_type || 'monthly';
           setOtpError(errorMsg);
           return;
         }
-        const verifiedUser = success?.data?.user || success?.user || null;
+        const verifiedUser = success?.data?.user || success?.user || success?.data || null;
+        const aadhaarDetails = success?.aadhaar_details || success?.data?.aadhaar_details || success?.raw_data?.data || null;
         if (verifiedUser && typeof verifiedUser === 'object') {
           dispatch(userDetailsAction(verifiedUser));
         }
-        const mergedUserData = buildSafeStaffPayload(userData, verifiedUser);
+        const mergedUserData = buildSafeStaffPayload(userData, verifiedUser, aadhaarDetails);
 
         const goToNewStaff = () => {
           navigation.navigate('NewStaffFrom', {
