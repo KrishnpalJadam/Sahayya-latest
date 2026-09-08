@@ -12,20 +12,6 @@ import Typography from '../../../Component/UI/Typography';
 import { POST_FORM_DATA } from '../../../Backend/Backend';
 import { PROFILE_UPDATE } from '../../../Backend/api_routes';
 import ImageModal from '../../../Component/Modals/ImageModal';
-import React, {
-  useState,
-  useEffect,
-  useImperativeHandle,
-  forwardRef,
-} from 'react';
-import { View, StyleSheet, Text, Image, TouchableOpacity } from 'react-native';
-import UploadBox from '../../../Component/UploadBox';
-import { ImageConstant } from '../../../Constants/ImageConstant';
-import { Font } from '../../../Constants/Font';
-import Typography from '../../../Component/UI/Typography';
-import { POST_FORM_DATA } from '../../../Backend/Backend';
-import { PROFILE_UPDATE } from '../../../Backend/api_routes';
-import ImageModal from '../../../Component/Modals/ImageModal';
 import { isValidForm } from '../../../Backend/Utility';
 import LocalizedStrings from '../../../Constants/localization';
 import { validators } from '../../../Backend/Validator';
