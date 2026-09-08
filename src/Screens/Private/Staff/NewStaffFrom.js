@@ -1369,7 +1369,7 @@ const NewStaffForm = ({ navigation, route }) => {
       />
 
         {/* Step 0: Personal Details */}
-        {currentStep === 0 && (
+        <View style={{ display: currentStep === 0 ? 'flex' : 'none' }}>
         <View style={styles.section}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <Image
@@ -1706,10 +1706,10 @@ const NewStaffForm = ({ navigation, route }) => {
           )}
 
         </View>
-        )}
+        </View>
 
         {/* Step 2: Verification & Schedule */}
-        {currentStep === 2 && (
+        <View style={{ display: currentStep === 2 ? 'flex' : 'none' }}>
         <View>
         <View style={styles.section}>
 
@@ -1899,7 +1899,7 @@ const NewStaffForm = ({ navigation, route }) => {
 
       </View>
       </View>
-      )}
+      </View>
 
       {/* Bottom Navigation Buttons */}
       <View style={styles.bottomButton}>
