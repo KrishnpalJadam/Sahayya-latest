@@ -12,6 +12,20 @@ import Typography from '../../../Component/UI/Typography';
 import { POST_FORM_DATA } from '../../../Backend/Backend';
 import { PROFILE_UPDATE } from '../../../Backend/api_routes';
 import ImageModal from '../../../Component/Modals/ImageModal';
+import React, {
+  useState,
+  useEffect,
+  useImperativeHandle,
+  forwardRef,
+} from 'react';
+import { View, StyleSheet, Text, Image, TouchableOpacity } from 'react-native';
+import UploadBox from '../../../Component/UploadBox';
+import { ImageConstant } from '../../../Constants/ImageConstant';
+import { Font } from '../../../Constants/Font';
+import Typography from '../../../Component/UI/Typography';
+import { POST_FORM_DATA } from '../../../Backend/Backend';
+import { PROFILE_UPDATE } from '../../../Backend/api_routes';
+import ImageModal from '../../../Component/Modals/ImageModal';
 import { isValidForm } from '../../../Backend/Utility';
 import LocalizedStrings from '../../../Constants/localization';
 import { validators } from '../../../Backend/Validator';
@@ -26,11 +40,6 @@ const KYCVerificationStaff = forwardRef(({ userDetail, prefillFromProfile = true
 
   useEffect(() => {
     if (!prefillFromProfile) {
-      setUploadedImages({
-        verification_certificate: null,
-        aadhar_front: null,
-        aadhar_back: null,
-      });
       return;
     }
 
@@ -47,40 +56,42 @@ const KYCVerificationStaff = forwardRef(({ userDetail, prefillFromProfile = true
       );
     };
 
-    setUploadedImages({
-      verification_certificate: isValidPath(userDetail?.verification_certificate)
-        ? { uri: userDetail.verification_certificate }
-        : isValidPath(kycInfo?.verification_certificate)
-        ? { uri: kycInfo.verification_certificate }
-        : isValidPath(kycInfo?.police_verification_path)
-        ? { uri: kycInfo.police_verification_path }
-        : isValidPath(kycInfo?.police_clearance_certificate_path)
-        ? { uri: kycInfo.police_clearance_certificate_path }
-        : null,
-      aadhar_front: isValidPath(userDetail?.aadhar_front)
-        ? { uri: userDetail.aadhar_front }
-        : isValidPath(kycInfo?.aadhar_front)
-        ? { uri: kycInfo.aadhar_front }
-        : isValidPath(kycInfo?.aadhaar_front_path)
-        ? { uri: kycInfo.aadhaar_front_path }
-        : isValidPath(kycInfo?.adharfront_path)
-        ? { uri: kycInfo.adharfront_path }
-        : null,
-      aadhar_back: isValidPath(userDetail?.aadhar_back)
-        ? { uri: userDetail.aadhar_back }
-        : isValidPath(kycInfo?.aadhar_back)
-        ? { uri: kycInfo.aadhar_back }
-        : isValidPath(kycInfo?.aadhaar_back_path)
-        ? { uri: kycInfo.aadhaar_back_path }
-        : isValidPath(kycInfo?.adharbackend_path)
-        ? { uri: kycInfo.adharbackend_path }
-        : null,
-    });
+    setUploadedImages(prev => ({
+      verification_certificate: prev.verification_certificate || (
+        isValidPath(userDetail?.verification_certificate)
+          ? { uri: userDetail.verification_certificate }
+          : isValidPath(kycInfo?.verification_certificate)
+          ? { uri: kycInfo.verification_certificate }
+          : isValidPath(kycInfo?.police_verification_path)
+          ? { uri: kycInfo.police_verification_path }
+          : isValidPath(kycInfo?.police_clearance_certificate_path)
+          ? { uri: kycInfo.police_clearance_certificate_path }
+          : null
+      ),
+      aadhar_front: prev.aadhar_front || (
+        isValidPath(userDetail?.aadhar_front)
+          ? { uri: userDetail.aadhar_front }
+          : isValidPath(kycInfo?.aadhar_front)
+          ? { uri: kycInfo.aadhar_front }
+          : isValidPath(kycInfo?.aadhaar_front_path)
+          ? { uri: kycInfo.aadhaar_front_path }
+          : isValidPath(kycInfo?.adharfront_path)
+          ? { uri: kycInfo.adharfront_path }
+          : null
+      ),
+      aadhar_back: prev.aadhar_back || (
+        isValidPath(userDetail?.aadhar_back)
+          ? { uri: userDetail.aadhar_back }
+          : isValidPath(kycInfo?.aadhar_back)
+          ? { uri: kycInfo.aadhar_back }
+          : isValidPath(kycInfo?.aadhaar_back_path)
+          ? { uri: kycInfo.aadhaar_back_path }
+          : isValidPath(kycInfo?.adharbackend_path)
+          ? { uri: kycInfo.adharbackend_path }
+          : null
+      ),
+    }));
   }, [prefillFromProfile, userDetail]);
-
-  const [currentImageType, setCurrentImageType] = useState('');
-
-  const [showImageModal, setShowImageModal] = useState(false);
 
   const [errors, setErrors] = useState({});
 

@@ -344,144 +344,135 @@ const Step1 = () => {
   };
 
   const renderContent = () => {
-    switch (activeTab) {
-      case 0:
-        return (
-          <>
-            <View>
-              <View style={styles.imageContainer}>
-                <Image
-                  source={
-                    !imageLoadError &&
-                    selectedPhoto?.path || selectedPhoto?.uri
-                      ? { uri: selectedPhoto.path || selectedPhoto.uri }
-                      : ImageConstant.user
-                  }
-                  style={styles.profileImage}
-                  onError={() => setImageLoadError(true)}
-                />
-                <TouchableOpacity
-                  style={styles.changePhotoButton}
-                  onPress={() => setShowImageModal(true)}
+    return (
+      <View style={{ flex: 1 }}>
+        <View style={{ flex: 1, display: activeTab === 0 ? 'flex' : 'none' }}>
+          <View>
+            <View style={styles.imageContainer}>
+              <Image
+                source={
+                  !imageLoadError &&
+                  selectedPhoto?.path || selectedPhoto?.uri
+                    ? { uri: selectedPhoto.path || selectedPhoto.uri }
+                    : ImageConstant.user
+                }
+                style={styles.profileImage}
+                onError={() => setImageLoadError(true)}
+              />
+              <TouchableOpacity
+                style={styles.changePhotoButton}
+                onPress={() => setShowImageModal(true)}
+              >
+                <Image source={ImageConstant?.Camera} />
+                <Typography
+                  type={Font?.Poppins_Medium}
+                  color={'#D98579'}
+                  style={styles.changePhotoText}
                 >
-                  <Image source={ImageConstant?.Camera} />
-                  <Typography
-                    type={Font?.Poppins_Medium}
-                    color={'#D98579'}
-                    style={styles.changePhotoText}
-                  >
-                    {LocalizedStrings.EditProfile?.change_photo ||
-                      'Change Photo'}
-                  </Typography>
-                </TouchableOpacity>
-                {/* <Button title={"Change Photo"} linerColor={["#fff","#fff"]} title_style={{color:"#D98579"}} icon={ImageConstant?.Camera}/> */}
-              </View>
+                  {LocalizedStrings.EditProfile?.change_photo ||
+                    'Change Photo'}
+                </Typography>
+              </TouchableOpacity>
             </View>
-            <View style={styles.basicInfoContainer}>
-              <Typography style={styles.sectionTitle}>
-                {LocalizedStrings.EditProfile?.Personal_Details ||
-                  'Basic Information'}
-              </Typography>
-              <Input
-                title={
-                  LocalizedStrings.EditProfile?.first_name ||
-                  LocalizedStrings.EditProfile?.Name ||
-                  'First Name'
-                }
-                value={firstName}
-                onChange={text => {
-                  setFirstName(text);
-                  if (error?.firstName) setError({ ...error, firstName: null });
-                }}
-                error={error?.firstName}
-              />
-              <Input
-                title={LocalizedStrings.EditProfile?.last_name || 'Last Name'}
-                value={lastName}
-                onChange={text => {
-                  setLastName(text);
-                  if (error?.lastName) setError({ ...error, lastName: null });
-                }}
-                error={error?.lastName}
-              />
-              <Input
-                title={LocalizedStrings.EditProfile?.email || 'Email Address'}
-                placeholder="e.g. name@example.com"
-                value={email}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                onChange={text => {
-                  setEmail(text);
-                  if (error?.email) setError({ ...error, email: null });
-                }}
-                error={error?.email}
-              />
-              <DropdownComponent
-                title={LocalizedStrings.EditProfile?.Gender || 'Gender'}
-                placeholder={''}
-                width={'100%'}
-                style_dropdown={styles.dropdownStyle}
-                selectedTextStyleNew={styles.selectedTextStyle}
-                marginHorizontal={0}
-                value={gender?.value}
-                style_title={styles.dropdownTitle}
-                data={[
-                  {
-                    label: LocalizedStrings.EditProfile?.Male || 'Male',
-                    value: 'male',
-                  },
-                  {
-                    label: LocalizedStrings.EditProfile?.Female || 'Female',
-                    value: 'female',
-                  },
-                  {
-                    label: LocalizedStrings.EditProfile?.Other || 'Other',
-                    value: 'other',
-                  },
-                ]}
-                onChange={item => {
-                  setGender(item || null);
-                  if (error?.gender) setError({ ...error, gender: null });
-                }}
-                error={error?.gender}
-              />
-              <Date_Picker
-                title={
-                  LocalizedStrings.EditProfile?.Date_of_Birth || 'Date of Birth'
-                }
-                placeholder={''}
-                allowFutureDates={false}
-                disablePastDates={false}
-                ageRestrict={true}
-                onChange={d => {
-                  setDob(d);
-                }}
-                selected_date={dob}
-                onConfirm={d => {
-                  setDob(d);
-                  if (error?.dob) setError({ ...error, dob: null });
-                }}
-                error={error?.dob}
-              />
-            </View>
-          </>
-        );
-      case 1:
-        return (
-          <>
-            <StepLocation ref={stepLocationRef} onAddressCountChange={setAddressCount} />
-          </>
-        );
-      case 2:
-        return (
-          <>
-            <StepHousehold ref={stepHouseholdRef} addressCount={addressCount} />
-          </>
-        );
+          </View>
+          <View style={styles.basicInfoContainer}>
+            <Typography style={styles.sectionTitle}>
+              {LocalizedStrings.EditProfile?.Personal_Details ||
+                'Basic Information'}
+            </Typography>
+            <Input
+              title={
+                LocalizedStrings.EditProfile?.first_name ||
+                LocalizedStrings.EditProfile?.Name ||
+                'First Name'
+              }
+              value={firstName}
+              onChange={text => {
+                setFirstName(text);
+                if (error?.firstName) setError({ ...error, firstName: null });
+              }}
+              error={error?.firstName}
+            />
+            <Input
+              title={LocalizedStrings.EditProfile?.last_name || 'Last Name'}
+              value={lastName}
+              onChange={text => {
+                setLastName(text);
+                if (error?.lastName) setError({ ...error, lastName: null });
+              }}
+              error={error?.lastName}
+            />
+            <Input
+              title={LocalizedStrings.EditProfile?.email || 'Email Address'}
+              placeholder="e.g. name@example.com"
+              value={email}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              onChange={text => {
+                setEmail(text);
+                if (error?.email) setError({ ...error, email: null });
+              }}
+              error={error?.email}
+            />
+            <DropdownComponent
+              title={LocalizedStrings.EditProfile?.Gender || 'Gender'}
+              placeholder={''}
+              width={'100%'}
+              style_dropdown={styles.dropdownStyle}
+              selectedTextStyleNew={styles.selectedTextStyle}
+              marginHorizontal={0}
+              value={gender?.value}
+              style_title={styles.dropdownTitle}
+              data={[
+                {
+                  label: LocalizedStrings.EditProfile?.Male || 'Male',
+                  value: 'male',
+                },
+                {
+                  label: LocalizedStrings.EditProfile?.Female || 'Female',
+                  value: 'female',
+                },
+                {
+                  label: LocalizedStrings.EditProfile?.Other || 'Other',
+                  value: 'other',
+                },
+              ]}
+              onChange={item => {
+                setGender(item || null);
+                if (error?.gender) setError({ ...error, gender: null });
+              }}
+              error={error?.gender}
+            />
+            <Date_Picker
+              title={
+                LocalizedStrings.EditProfile?.Date_of_Birth || 'Date of Birth'
+              }
+              placeholder={''}
+              allowFutureDates={false}
+              disablePastDates={false}
+              ageRestrict={true}
+              onChange={d => {
+                setDob(d);
+              }}
+              selected_date={dob}
+              onConfirm={d => {
+                setDob(d);
+                if (error?.dob) setError({ ...error, dob: null });
+              }}
+              error={error?.dob}
+            />
+          </View>
+        </View>
 
-      default:
-        return null;
-    }
+        <View style={{ flex: 1, display: activeTab === 1 ? 'flex' : 'none' }}>
+          <StepLocation ref={stepLocationRef} onAddressCountChange={setAddressCount} />
+        </View>
+
+        <View style={{ flex: 1, display: activeTab === 2 ? 'flex' : 'none' }}>
+          <StepHousehold ref={stepHouseholdRef} addressCount={addressCount} />
+        </View>
+      </View>
+    );
   };
 
   const confirmLogout = () => {
