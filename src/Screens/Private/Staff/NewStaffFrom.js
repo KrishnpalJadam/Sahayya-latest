@@ -1488,12 +1488,12 @@ const NewStaffForm = ({ navigation, route }) => {
           />
 
         </View>
-        )}
+        </View>
 
         
 
         {/* Step 1: Role & Pay */}
-        {currentStep === 1 && (
+        <View style={{ display: currentStep === 1 ? 'flex' : 'none' }}>
         <View style={styles.section}>
           <Typography type={Font?.Poppins_SemiBold} style={styles.sectionTitle}>
             Emergency Contact
@@ -1537,8 +1537,10 @@ const NewStaffForm = ({ navigation, route }) => {
             maxLength={10}
             error={errors.emergencyContactNumber}
           />
+        </View>
 
-
+        {/* Step 1: Role & Pay Details */}
+        <View style={styles.section}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <Image
               source={ImageConstant.Verify}
@@ -1706,7 +1708,7 @@ const NewStaffForm = ({ navigation, route }) => {
           )}
 
         </View>
-        </View>
+      </View>
 
         {/* Step 2: Verification & Schedule */}
         <View style={{ display: currentStep === 2 ? 'flex' : 'none' }}>
