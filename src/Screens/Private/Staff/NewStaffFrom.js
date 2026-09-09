@@ -753,11 +753,10 @@ const NewStaffForm = ({ navigation, route }) => {
 
     let hasError = false;
 
-    // Validate First Name — use checkName (allows numbers/hyphens/apostrophes)
-    // instead of checkAlphabet which rejects digits entirely
+    // Validate First Name — minimum 1 char
     const firstNameError = validators.checkName(
       'First Name',
-      2,
+      1,
       50,
       firstName,
     );
@@ -766,16 +765,18 @@ const NewStaffForm = ({ navigation, route }) => {
       hasError = true;
     }
 
-    // Validate Last Name
-    const lastNameError = validators.checkName(
-      'Last Name',
-      2,
-      50,
-      lastName,
-    );
-    if (lastNameError) {
-      newErrors.lastName = lastNameError;
-      hasError = true;
+    // Validate Last Name (optional — only validate if provided)
+    if (lastName && lastName.trim() !== '') {
+      const lastNameError = validators.checkName(
+        'Last Name',
+        1,
+        50,
+        lastName,
+      );
+      if (lastNameError) {
+        newErrors.lastName = lastNameError;
+        hasError = true;
+      }
     }
 
     // Validate Email (optional - only validate format if provided)
@@ -788,9 +789,10 @@ const NewStaffForm = ({ navigation, route }) => {
     }
 
     // Validate Phone Number
+    const cleanPhone = (phoneNumber || '').replace(/\D/g, '');
     const phoneError = validators.checkFixPhoneNumber(
       'Phone Number',
-      phoneNumber,
+      cleanPhone,
       10,
       10,
     );
@@ -799,36 +801,41 @@ const NewStaffForm = ({ navigation, route }) => {
       hasError = true;
     }
 
-    // Validate Aadhaar Number
-    if (!aadharNumber || aadharNumber.trim() === '') {
-      newErrors.aadharNumber = 'Aadhaar Number is required.';
-      hasError = true;
-    } else if (!/^\d{12}$/.test(aadharNumber)) {
+    // Validate Aadhaar Number — strip spaces first
+    const cleanAadhaar = (aadharNumber || '').replace(/\s+/g, '');
+    if (!cleanAadhaar) {
+      if (!data) {
+        newErrors.aadharNumber = 'Aadhaar Number is required.';
+        hasError = true;
+      }
+    } else if (!/^\d{12}$/.test(cleanAadhaar)) {
       newErrors.aadharNumber = 'Aadhaar Number must be 12 digits.';
       hasError = true;
     }
 
     // Validate Gender
-    if (!gender || (!gender?.value && !gender)) {
+    const gVal = gender?.value || (typeof gender === 'string' ? gender : '');
+    if (!gVal || !String(gVal).trim()) {
       newErrors.gender = 'Please select gender';
       hasError = true;
     }
 
     // Validate Date of Birth
     if (!dateOfBirth) {
-      newErrors.dateOfBirth = 'Date of birth field is required.';
-      hasError = true;
+      if (!data) {
+        newErrors.dateOfBirth = 'Date of birth field is required.';
+        hasError = true;
+      }
     } else {
       const selectedDate = moment(
-        dateOfBirth,
-        ['YYYY-MM-DD', 'DD-MM-YYYY', moment.ISO_8601],
-        true,
+        String(dateOfBirth).trim(),
+        ['YYYY-MM-DD', 'DD-MM-YYYY', 'DD/MM/YYYY', 'YYYY/MM/DD', moment.ISO_8601],
+        false,
       );
-      const today = moment();
       if (!selectedDate.isValid()) {
         newErrors.dateOfBirth = 'Invalid date format for Date of Birth.';
         hasError = true;
-      } else if (selectedDate.isAfter(today)) {
+      } else if (selectedDate.isAfter(moment())) {
         newErrors.dateOfBirth = 'Date of birth cannot be in the future.';
         hasError = true;
       }
@@ -836,9 +843,9 @@ const NewStaffForm = ({ navigation, route }) => {
 
     // Validate Emergency Contact Name (optional - only if provided)
     if (emergencyContactName && emergencyContactName.trim()) {
-      const emergencyNameError = validators.checkAlphabet(
+      const emergencyNameError = validators.checkName(
         'Emergency Contact Name',
-        2,
+        1,
         50,
         emergencyContactName,
       );
@@ -850,28 +857,19 @@ const NewStaffForm = ({ navigation, route }) => {
 
     // Validate Emergency Contact Number (optional - only if provided)
     if (emergencyContactNumber && emergencyContactNumber.trim()) {
-      const emergencyPhoneError = validators.checkFixPhoneNumber(
-        'Emergency Contact Number',
-        emergencyContactNumber,
-        10,
-        10,
-      );
-      if (emergencyPhoneError) {
-        newErrors.emergencyContactNumber = emergencyPhoneError;
+      const cleanEmPhone = emergencyContactNumber.replace(/\D/g, '');
+      if (cleanEmPhone.length !== 10) {
+        newErrors.emergencyContactNumber = 'Emergency Contact Number must be 10 digits.';
         hasError = true;
       }
     }
 
-    // Relation — no UI field, skip validation
-
-    // Work details are optional (staff can be a fresher)
-
     // Validate Joining Date only if provided
     if (joiningDate) {
       const joinDateParsed = moment(
-        joiningDate,
-        ['YYYY-MM-DD', 'DD-MM-YYYY', moment.ISO_8601],
-        true,
+        String(joiningDate).trim(),
+        ['YYYY-MM-DD', 'DD-MM-YYYY', 'DD/MM/YYYY', 'YYYY/MM/DD', moment.ISO_8601],
+        false,
       );
       if (!joinDateParsed.isValid()) {
         newErrors.joiningDate = 'Invalid joining date format.';
@@ -880,16 +878,16 @@ const NewStaffForm = ({ navigation, route }) => {
     }
 
     // Validate Salary only if provided
-    if (salary && salary.trim() !== '') {
-      const salaryError = validators.priceCheck('Salary', salary);
-      if (salaryError) {
-        newErrors.salary = salaryError;
+    if (salary && String(salary).trim() !== '') {
+      const salNum = Number(salary);
+      if (isNaN(salNum) || salNum < 0) {
+        newErrors.salary = 'Please enter a valid salary amount.';
         hasError = true;
       }
     }
 
     setErrors(newErrors);
-    return !hasError;
+    return { isValid: !hasError, errors: newErrors };
   };
 
   const validateStep0 = () => {
@@ -904,31 +902,50 @@ const NewStaffForm = ({ navigation, route }) => {
 
     let hasError = false;
 
-    const firstNameError = validators.checkName('First Name', 2, 50, firstName);
+    const firstNameError = validators.checkName('First Name', 1, 50, firstName);
     if (firstNameError) { newErrors.firstName = firstNameError; hasError = true; }
 
-    const lastNameError = validators.checkName('Last Name', 2, 50, lastName);
-    if (lastNameError) { newErrors.lastName = lastNameError; hasError = true; }
+    if (lastName && lastName.trim() !== '') {
+      const lastNameError = validators.checkName('Last Name', 1, 50, lastName);
+      if (lastNameError) { newErrors.lastName = lastNameError; hasError = true; }
+    }
 
-    const phoneError = validators.checkFixPhoneNumber('Phone Number', phoneNumber, 10, 10);
+    const cleanPhone = (phoneNumber || '').replace(/\D/g, '');
+    const phoneError = validators.checkFixPhoneNumber('Phone Number', cleanPhone, 10, 10);
     if (phoneError) { newErrors.phoneNumber = phoneError; hasError = true; }
 
-    if (!aadharNumber || aadharNumber.trim() === '') {
-      newErrors.aadharNumber = 'Aadhaar Number is required.';
-      hasError = true;
-    } else if (!/^\d{12}$/.test(aadharNumber)) {
+    const cleanAadhaar = (aadharNumber || '').replace(/\s+/g, '');
+    if (!cleanAadhaar) {
+      if (!data) {
+        newErrors.aadharNumber = 'Aadhaar Number is required.';
+        hasError = true;
+      }
+    } else if (!/^\d{12}$/.test(cleanAadhaar)) {
       newErrors.aadharNumber = 'Aadhaar Number must be 12 digits.';
       hasError = true;
     }
 
-    if (!gender || (!gender?.value && !gender)) {
+    const gVal = gender?.value || (typeof gender === 'string' ? gender : '');
+    if (!gVal || !String(gVal).trim()) {
       newErrors.gender = 'Please select gender.';
       hasError = true;
     }
 
     if (!dateOfBirth) {
-      newErrors.dateOfBirth = 'Date of birth is required.';
-      hasError = true;
+      if (!data) {
+        newErrors.dateOfBirth = 'Date of birth is required.';
+        hasError = true;
+      }
+    } else {
+      const selectedDate = moment(
+        String(dateOfBirth).trim(),
+        ['YYYY-MM-DD', 'DD-MM-YYYY', 'DD/MM/YYYY', 'YYYY/MM/DD', moment.ISO_8601],
+        false,
+      );
+      if (!selectedDate.isValid()) {
+        newErrors.dateOfBirth = 'Invalid date format for Date of Birth.';
+        hasError = true;
+      }
     }
 
     setErrors(prev => ({ ...prev, ...newErrors }));
@@ -939,9 +956,11 @@ const NewStaffForm = ({ navigation, route }) => {
   const handleSubmit = () => {
     if (loading) return;
 
-    if (!validateForm()) {
+    const validationRes = validateForm();
+    if (!validationRes.isValid) {
+      const firstError = Object.values(validationRes.errors).find(err => err && err.trim() !== '');
       SimpleToast.show(
-        'Please fill all required fields correctly',
+        firstError || 'Please fill all required fields correctly',
         SimpleToast.SHORT,
       );
       return;
