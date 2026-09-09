@@ -212,33 +212,36 @@ const Dashboard = ({ navigation }) => {
         <View style={[styles.dot, { backgroundColor: getStatusColor(itemStatus) }]} />
         {isActive && (
           <View style={styles.statusRow}>
-            {['present', 'absent', 'late'].map(s => (
-              <TouchableOpacity
-                key={s}
-                style={[styles.statusBtn,
-                  (status[item.id] === s || item?.attendance_details?.status === s) && styles[`${s}Btn`]]}
-                onPress={() => {
-                  if (s === 'absent' || s === 'late') {
-                    setLeaveModal({ visible: true, type: s, staff: item, remarks: '', leaveType: null, lateDuration: null });
-                    setModalErrors({});
-                  } else {
-                    handleStatusChange(item, s);
-                  }
-                }}
-              >
-                <Image
-                  source={s === 'present' ? ImageConstant?.present : s === 'absent' ? ImageConstant?.absent : ImageConstant?.late}
-                  tintColor={(status[item.id] === s || item?.attendance_details?.status === s) ? '#fff' : '#000'}
-                  style={{ width: 16, height: 16, marginRight: 6 }}
-                />
-                <Typography
-                  type={Font?.Poppins_Medium}
-                  color={(status[item.id] === s || item?.attendance_details?.status === s) ? '#fff' : '#000'}
+            {['present', 'absent', 'late'].map(s => {
+              const currentStatus = status[item.id] || item?.attendance_details?.status || item?.attendance_status || 'present';
+              const isSelected = currentStatus === s;
+              return (
+                <TouchableOpacity
+                  key={s}
+                  style={[styles.statusBtn, isSelected && styles[`${s}Btn`]]}
+                  onPress={() => {
+                    if (s === 'absent' || s === 'late') {
+                      setLeaveModal({ visible: true, type: s, staff: item, remarks: '', leaveType: null, lateDuration: null });
+                      setModalErrors({});
+                    } else {
+                      handleStatusChange(item, s);
+                    }
+                  }}
                 >
-                  {s === 'present' ? LocalizedStrings.Dashboard?.Present : s === 'absent' ? LocalizedStrings.Dashboard?.Absent : LocalizedStrings.Dashboard?.Late}
-                </Typography>
-              </TouchableOpacity>
-            ))}
+                  <Image
+                    source={s === 'present' ? ImageConstant?.present : s === 'absent' ? ImageConstant?.absent : ImageConstant?.late}
+                    tintColor={isSelected ? '#fff' : '#000'}
+                    style={{ width: 16, height: 16, marginRight: 6 }}
+                  />
+                  <Typography
+                    type={Font?.Poppins_Medium}
+                    color={isSelected ? '#fff' : '#000'}
+                  >
+                    {s === 'present' ? LocalizedStrings.Dashboard?.Present : s === 'absent' ? LocalizedStrings.Dashboard?.Absent : LocalizedStrings.Dashboard?.Late}
+                  </Typography>
+                </TouchableOpacity>
+              );
+            })}
           </View>
         )}
       </View>
