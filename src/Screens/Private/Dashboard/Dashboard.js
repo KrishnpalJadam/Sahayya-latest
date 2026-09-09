@@ -90,6 +90,23 @@ const Dashboard = ({ navigation }) => {
     }, () => {}, () => {});
   };
 
+  const getStaffStatus = item => {
+    if (!item) return 'inactive';
+    if (
+      item.is_active === 0 ||
+      item.is_active === '0' ||
+      item.is_active === false ||
+      item.status === 'inactive' ||
+      item.status === 'terminated' ||
+      item.application_status === 'terminated' ||
+      item.application_status === 'inactive'
+    ) {
+      return item.status === 'terminated' || item.application_status === 'terminated' ? 'terminated' : 'inactive';
+    }
+    const st = (item.status || item.application_status || '').toLowerCase();
+    return st || 'active';
+  };
+
   const getFilteredActive = () => {
     // Merge attendance info into allStaffList
     let mergedList = allStaffList.map(staff => {
@@ -106,14 +123,15 @@ const Dashboard = ({ navigation }) => {
     const inactiveTabValue = LocalizedStrings.MyStaff?.Inactive || 'Inactive';
 
     let list = mergedList.filter(item => {
-      const itemStatus = (item.status || item.application_status || '').toLowerCase();
+      const itemStatus = getStaffStatus(item);
+      const isTerminatedOrInactive = itemStatus === 'inactive' || itemStatus === 'terminated' || itemStatus === 'absent';
       if (activeTab === activeTabValue) {
         // Active tab: show only active/hired/present staff (NOT inactive or terminated)
-        return itemStatus === 'active' || itemStatus === 'hired' || itemStatus === 'present' || itemStatus === 'accepted' || itemStatus === 'approved';
+        return !isTerminatedOrInactive && (itemStatus === 'active' || itemStatus === 'hired' || itemStatus === 'present' || itemStatus === 'accepted' || itemStatus === 'approved');
       }
       if (activeTab === inactiveTabValue) {
         // Inactive tab: show inactive AND terminated staff together
-        return itemStatus === 'inactive' || itemStatus === 'terminated' || itemStatus === 'absent';
+        return isTerminatedOrInactive;
       }
       return true;
     });
@@ -134,10 +152,10 @@ const Dashboard = ({ navigation }) => {
     let list = allStaffList;
     if (activeTab !== (LocalizedStrings.MyStaff?.All || 'All')) {
       list = list.filter(item => {
-        const st = item.status?.toLowerCase() || item.application_status?.toLowerCase();
+        const st = getStaffStatus(item);
         if (activeTab === (LocalizedStrings.MyStaff?.Active || 'Active')) return st === 'active' || st === 'present' || st === 'hired' || st === 'accepted' || st === 'approved';
         if (activeTab === (LocalizedStrings.MyStaff?.On_Leave || 'On Leave')) return st === 'on_leave' || st === 'on leave' || st === 'leave';
-        if (activeTab === (LocalizedStrings.MyStaff?.Inactive || 'Inactive')) return st === 'inactive' || st === 'absent';
+        if (activeTab === (LocalizedStrings.MyStaff?.Inactive || 'Inactive')) return st === 'inactive' || st === 'absent' || st === 'terminated';
         if (activeTab === 'Terminated') return st === 'terminated';
         return true;
       });
@@ -158,9 +176,8 @@ const Dashboard = ({ navigation }) => {
     switch (s?.toLowerCase()) {
       case 'active': case 'present': case 'hired': case 'accepted': case 'approved': return '#4CAF50';
       case 'on_leave': case 'on leave': case 'leave': return '#FFC107';
-      case 'inactive': case 'absent': return '#F44336';
-      case 'terminated': return '#7B2D2D';
-      default: return '#999';
+      case 'inactive': case 'absent': case 'terminated': return '#F44336';
+      default: return '#F44336';
     }
   };
 
@@ -192,8 +209,8 @@ const Dashboard = ({ navigation }) => {
   };
 
   const renderActiveStaffCard = ({ item }) => {
-    const itemStatus = (item.status || item.application_status || '').toLowerCase();
-    const isActive = itemStatus === 'active' || itemStatus === 'hired' || itemStatus === 'present';
+    const itemStatus = getStaffStatus(item);
+    const isActive = !['inactive', 'terminated', 'absent'].includes(itemStatus) && (itemStatus === 'active' || itemStatus === 'hired' || itemStatus === 'present' || itemStatus === 'accepted' || itemStatus === 'approved');
 
     return (
       <View style={styles.card}>
