@@ -949,7 +949,7 @@ const NewStaffForm = ({ navigation, route }) => {
     }
 
     setErrors(prev => ({ ...prev, ...newErrors }));
-    return !hasError;
+    return { isValid: !hasError, errors: newErrors };
   };
 
   // Handle form submission
@@ -1620,36 +1620,6 @@ const NewStaffForm = ({ navigation, route }) => {
             </View>
           )}
 
-          {/* Skills & Expertise Section */}
-          <Typography type={Font?.Poppins_Bold} size={14} style={{ marginTop: 12, marginBottom: 8 }}>
-            Skills & Expertise
-          </Typography>
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: 12 }}>
-            {['Cooking', 'Cleaning', 'Driving', 'Child Care', 'Elderly Care', 'Pet Care', 'Patient Care', 'Gardening', 'Housekeeping', 'Ironing', 'Washing'].map((skill, idx) => {
-              const isSelected = selectedSkills.includes(skill);
-              return (
-                <TouchableOpacity
-                  key={idx}
-                  onPress={() => setSelectedSkills(prev => prev.includes(skill) ? prev.filter(s => s !== skill) : [...prev, skill])}
-                  style={{
-                    backgroundColor: isSelected ? '#D98579' : '#F7F7F7',
-                    borderRadius: 20,
-                    paddingHorizontal: 14,
-                    paddingVertical: 6,
-                    marginRight: 8,
-                    marginBottom: 8,
-                    borderWidth: 1,
-                    borderColor: isSelected ? '#D98579' : '#E5E5E5',
-                  }}
-                >
-                  <Typography size={12} color={isSelected ? '#FFFFFF' : '#444444'} type={Font?.Poppins_Medium}>
-                    {isSelected ? `✓ ${skill}` : skill}
-                  </Typography>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-
           <Date_Picker
             title={LocalizedStrings.NewStaffForm.Joining_Date || 'Joining Date'}
             placeholder="DD-MM-YYYY"
@@ -1955,9 +1925,13 @@ const NewStaffForm = ({ navigation, route }) => {
               }
               onPress={() => {
                 if (currentStep < 2) {
-                  if (currentStep === 0 && !validateStep0()) {
-                    SimpleToast.show('Please fill all required fields', SimpleToast.SHORT);
-                    return;
+                  if (currentStep === 0) {
+                    const step0Res = validateStep0();
+                    if (!step0Res.isValid) {
+                      const firstErr = Object.values(step0Res.errors).find(err => err && err.trim() !== '');
+                      SimpleToast.show(firstErr || 'Please fill all required fields', SimpleToast.SHORT);
+                      return;
+                    }
                   }
                   setCurrentStep(prev => prev + 1);
                 } else {
