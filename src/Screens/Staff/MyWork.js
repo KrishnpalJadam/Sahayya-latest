@@ -189,7 +189,9 @@ const MyWork = () => {
           return status === 'accepted' || status === 'approved' || status === 'active';
         });
 
-        const directlyAdded =
+        const isUserInactive = userDetail?.is_active === 0 || userDetail?.status === 'inactive' || userDetail?.is_staff_added === 0 || myWorkData?.is_active === 0 || myWorkData?.status === 'inactive';
+
+        const directlyAdded = !isUserInactive && (
           !!myWorkData?.houseowner ||
           !!myWorkData?.employer_details ||
           !!myWorkData?.added_by_user ||
@@ -200,10 +202,10 @@ const MyWork = () => {
           !!success?.houseowner ||
           !!success?.employer ||
           !!success?.workplace ||
-          !!success?.current_employer ||
-          !!userDetail?.added_by;
+          !!success?.current_employer
+        );
 
-        const hasJob = !!activeJob || directlyAdded;
+        const hasJob = !isUserInactive && (!!activeJob || directlyAdded);
         setHasActiveJob(hasJob);
 
         // Determine employer name
