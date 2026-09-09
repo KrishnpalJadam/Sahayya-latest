@@ -80,14 +80,17 @@ const AttendanceScreen = ({ navigation, route }) => {
     GET_WITH_TOKEN(
       ActiveTodayUser,
       (success) => {
-        const staff = success?.data || [];
+        const staff = success?.active_staff || success?.data?.active_staff || success?.data || [];
         const list = Array.isArray(staff) ? staff : [];
         if (list.length > 0) {
           const formatted = list.map((item) => ({
-            value: item?.staff?.id || item?.id,
+            value: item?.id || item?.staff?.id,
             label: getStaffName(item),
           }));
           setStaffList(formatted);
+          if (!selectedStaff && formatted.length > 0) {
+            setSelectedStaff(formatted[0]);
+          }
         } else {
           // Fallback to ListStaff if no active staff today
           fetchStaffListFallback();
@@ -113,6 +116,9 @@ const AttendanceScreen = ({ navigation, route }) => {
           label: getStaffName(item),
         }));
         setStaffList(formatted);
+        if (!selectedStaff && formatted.length > 0) {
+          setSelectedStaff(formatted[0]);
+        }
       },
       (error) => {
         SimpleToast.show("Failed to load staff list", SimpleToast.SHORT);
