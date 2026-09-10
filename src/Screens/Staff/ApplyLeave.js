@@ -68,17 +68,20 @@ const ApplyLeave = ({ navigation, route }) => {
     employer: '',
   });
 
+  const hasLoadedRef = React.useRef(false);
+
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    if (isFocused) {
+    if (isFocused && !hasLoadedRef.current) {
+      hasLoadedRef.current = true;
       fetchLeaveTypes();
-      checkActiveLeave();
-      fetchEmployers();
+      checkActiveLeave(true);
+      fetchEmployers(true);
     }
   }, [isFocused]);
 
-  const checkActiveLeave = () => {
-    setCheckingLeave(true);
+  const checkActiveLeave = (showLoader = false) => {
+    if (showLoader) setCheckingLeave(true);
     GET_WITH_TOKEN(
       myWork,
       success => {
@@ -112,8 +115,8 @@ const ApplyLeave = ({ navigation, route }) => {
     );
   };
 
-  const fetchEmployers = () => {
-    setCheckingEmployers(true);
+  const fetchEmployers = (showLoader = false) => {
+    if (showLoader) setCheckingEmployers(true);
     GET_WITH_TOKEN(
       ApprovedJobs,
       success => {
