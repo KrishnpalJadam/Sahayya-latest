@@ -15,13 +15,13 @@ import { myWork, EarningSummary as EarningSummaryRoute, AttendanceStaff, Approve
 import SimpleToast from 'react-native-simple-toast';
 
 const formatDate = (dateString) => {
-  if (!dateString || dateString === 'null' || dateString === 'undefined') return 'Not Found';
+  if (!dateString || dateString === 'null' || dateString === 'undefined') return 'N/A';
   try {
     const d = moment(dateString);
-    if (!d.isValid()) return 'Not Found';
+    if (!d.isValid()) return 'N/A';
     return d.format('MMMM D, YYYY');
   } catch (e) {
-    return 'Not Found';
+    return 'N/A';
   }
 };
 
@@ -148,6 +148,60 @@ const MyWork = () => {
     }
 
     return Math.round(calculatedPayable);
+  };
+
+  const getJoinedDate = () => {
+    const activeJobApp = jobApplications.find(app => {
+      const status = (app?.status || app?.application_status || '').toLowerCase();
+      return status === 'accepted' || status === 'approved' || status === 'active';
+    });
+
+    const rawDate =
+      earningSummary?.joined_date ||
+      activeJobApp?.joined_date ||
+      activeJobApp?.updated_at ||
+      activeJobApp?.created_at ||
+      activeJobApp?.available_from ||
+      jobApplications?.[0]?.joined_date ||
+      jobApplications?.[0]?.updated_at ||
+      jobApplications?.[0]?.created_at ||
+      jobApplications?.[0]?.available_from ||
+      workData?.joined_date ||
+      workData?.updated_at ||
+      workData?.created_at ||
+      earningSummary?.start_date ||
+      userDetail?.user_work_info?.created_at ||
+      userDetail?.created_at ||
+      null;
+
+    if (!rawDate || rawDate === 'null' || rawDate === 'undefined') return 'N/A';
+    try {
+      const d = moment(rawDate);
+      if (!d.isValid()) return 'N/A';
+      return d.format('MMMM D, YYYY');
+    } catch (e) {
+      return 'N/A';
+    }
+  };
+
+  const getRoleName = () => {
+    const activeJobApp = jobApplications.find(app => {
+      const status = (app?.status || app?.application_status || '').toLowerCase();
+      return status === 'accepted' || status === 'approved' || status === 'active';
+    });
+
+    const role =
+      userDetail?.user_work_info?.primary_role ||
+      userDetail?.work_info?.primary_role ||
+      activeJobApp?.job?.title ||
+      jobApplications?.[0]?.job?.title ||
+      workData?.user_work_info?.primary_role ||
+      workData?.job_title ||
+      earningSummary?.job_details?.job_title ||
+      (earningSummary?.role && earningSummary.role !== 'Job Role' ? earningSummary.role : null) ||
+      'Staff';
+
+    return role;
   };
 
   const STATUS_COLORS = {
@@ -405,7 +459,7 @@ const MyWork = () => {
                 {LocalizedStrings.staffSection?.MyWork?.role || 'Role'}:{' '}
               </Typography>
               <Typography type={Font.Poppins_SemiBold} size={13}>
-                {earningSummary?.job_details?.job_title || earningSummary?.role || activeJobApplication?.job?.title || jobApplications?.[0]?.job?.title || workData?.user_work_info?.primary_role || '--'}
+                {getRoleName()}
               </Typography>
             </View>
             <View style={styles.rowInline}>
@@ -413,7 +467,7 @@ const MyWork = () => {
                 {LocalizedStrings.staffSection?.MyWork?.joined || 'Joined'}:{' '}
               </Typography>
               <Typography type={Font.Poppins_SemiBold} size={13}>
-                {formatDate(activeJobApplication?.available_from || activeJobApplication?.created_at || jobApplications?.[0]?.available_from || jobApplications?.[0]?.created_at || workData?.created_at)}
+                {getJoinedDate()}
               </Typography>
             </View>
 
