@@ -57,14 +57,15 @@ const EarningSummary = ({ route }) => {
   }, []);
 
   const fetchAttendanceSummary = useCallback((staffId) => {
-    if (!staffId) return;
+    const resolvedId = staffId || userDetail?.id || userDetail?.user_id || userDetail?.user_info?.id || summary2?.staff_id || summary2?.user_id;
+    if (!resolvedId) return;
     const now = new Date();
     const month = now.getMonth() + 1;
     const year = now.getFullYear();
     const daysInMonth = new Date(year, month, 0).getDate();
 
     const formData = new FormData();
-    formData.append('id', staffId);
+    formData.append('id', resolvedId);
     formData.append('month', month);
     formData.append('year', year);
 
@@ -87,7 +88,7 @@ const EarningSummary = ({ route }) => {
       },
       () => {},
     );
-  }, []);
+  }, [userDetail, summary2]);
 
   const fetchAdvanceBalance = useCallback(() => {
     GET_WITH_TOKEN(
@@ -121,9 +122,16 @@ const EarningSummary = ({ route }) => {
         retryCountRef.current = 0;
         const data = success?.data;
         if (Array.isArray(data) && data.length > 0) {
-          setSummary2(data[0]);
+          const item = data[0];
+          setSummary2(item);
+          if (item?.staff_id || item?.user_id) {
+            fetchAttendanceSummary(item.staff_id || item.user_id);
+          }
         } else if (data && !Array.isArray(data)) {
           setSummary2(data);
+          if (data?.staff_id || data?.user_id) {
+            fetchAttendanceSummary(data.staff_id || data.user_id);
+          }
         } else {
           setSummary2(null);
         }
@@ -275,11 +283,14 @@ const EarningSummary = ({ route }) => {
   const bonusAmount = Number(summary2?.earnings_breakdown?.performance_bonus?.amount || 0);
   const overtimeAmount = Number(summary2?.earnings_breakdown?.overtime_pay?.amount || 0);
 
-  // Use backend provided attendance summary
-  const backendDaysWorked = summary2?.attendance_summary?.present_days !== undefined
-    ? Number(summary2.attendance_summary.present_days) + Number(summary2.attendance_summary.late_arrivals || 0)
-    : 0;
-  const backendDaysInPeriod = summary2?.attendance_summary?.days_in_period || 30;
+  // Use actual attendance summary if available from AttendanceStaff, fallback to backend earnings/summary
+  const backendDaysWorked = (attendanceSummary?.totalWorked > 0)
+    ? attendanceSummary.totalWorked
+    : (summary2?.attendance_summary?.present_days !== undefined
+      ? Number(summary2.attendance_summary.present_days) + Number(summary2.attendance_summary.late_arrivals || 0)
+      : 0);
+
+  const backendDaysInPeriod = attendanceSummary?.daysInMonth || summary2?.attendance_summary?.days_in_period || 30;
 
   let displayedBaseSalary = Number(summary2?.earnings_breakdown?.base_salary?.amount || 0);
   if (isPending && monthlySalary > 0 && backendDaysInPeriod > 0) {

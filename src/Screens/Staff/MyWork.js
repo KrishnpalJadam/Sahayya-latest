@@ -119,9 +119,11 @@ const MyWork = () => {
     const bonusAmount = Number(earningSummary?.earnings_breakdown?.performance_bonus?.amount || 0);
     const overtimeAmount = Number(earningSummary?.earnings_breakdown?.overtime_pay?.amount || 0);
 
-    const backendDaysWorked = earningSummary?.attendance_summary?.present_days !== undefined
-      ? Number(earningSummary.attendance_summary.present_days) + Number(earningSummary.attendance_summary.late_arrivals || 0)
-      : (attendanceStats?.totalWorked || 0);
+    const backendDaysWorked = (attendanceStats?.totalWorked > 0)
+      ? attendanceStats.totalWorked
+      : (earningSummary?.attendance_summary?.present_days !== undefined
+        ? Number(earningSummary.attendance_summary.present_days) + Number(earningSummary.attendance_summary.late_arrivals || 0)
+        : 0);
 
     const backendDaysInPeriod = Number(earningSummary?.attendance_summary?.days_in_period || 30);
 
