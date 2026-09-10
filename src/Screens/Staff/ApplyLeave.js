@@ -16,18 +16,30 @@ import {
   LeaveList,
   ApplyLeave as ApplyLeaveRoute,
   myWork,
-  PROFILE,
   ApprovedJobs,
 } from '../../Backend/api_routes';
 import SimpleToast from 'react-native-simple-toast';
 import moment from 'moment';
 import { useSelector } from 'react-redux';
 
+const buildName = (obj) => {
+  if (!obj) return null;
+  const first = (obj?.first_name || obj?.employer_first_name || obj?.fname || '').trim();
+  const last = (obj?.last_name || obj?.employer_last_name || obj?.lname || '').trim();
+  const name = (obj?.name || '').trim();
+  let full = (first || last) ? `${first} ${last}`.trim() : name;
+  if (!full || full === 'null' || full === 'undefined' || full.toLowerCase() === 'user') {
+    return null;
+  }
+  return full;
+};
+
 const ApplyLeave = ({ navigation, route }) => {
   const isFocused = useIsFocused();
   const userDetail = useSelector(store => store?.userDetails);
   const [leaveList, setLeaveList] = useState([]);
   const paramHouseownerId = route?.params?.houseownerId;
+
   // Form state variables
   const [leaveType, setLeaveType] = useState(null);
   const [startDate, setStartDate] = useState('');
@@ -39,10 +51,12 @@ const ApplyLeave = ({ navigation, route }) => {
   const [pendingLeave, setPendingLeave] = useState(null);
   const [checkingLeave, setCheckingLeave] = useState(true);
 
-  // Employer selection for multi-job staff
+  // Employer selection for multi-job / single-job staff
   const [employers, setEmployers] = useState([]);
   const [selectedEmployer, setSelectedEmployer] = useState(null);
   const [hasMultipleEmployers, setHasMultipleEmployers] = useState(false);
+  const [isNotEmployed, setIsNotEmployed] = useState(false);
+  const [checkingEmployers, setCheckingEmployers] = useState(true);
   const [singleJobId, setSingleJobId] = useState(null);
 
   // Error states
@@ -56,23 +70,12 @@ const ApplyLeave = ({ navigation, route }) => {
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    fetchLeaveTypes();
-    checkActiveLeave();
-    fetchEmployers();
-    if (!paramHouseownerId) {
-      const fromUser =
-        userDetail?.added_by ||
-        userDetail?.houseowner_id ||
-        userDetail?.house_owner_id ||
-        userDetail?.employer_id ||
-        null;
-      if (fromUser) {
-        setHouseownerId(fromUser);
-      } else {
-        fetchHouseownerFromProfile();
-      }
+    if (isFocused) {
+      fetchLeaveTypes();
+      checkActiveLeave();
+      fetchEmployers();
     }
-  }, [isFocused]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isFocused]);
 
   const checkActiveLeave = () => {
     setCheckingLeave(true);
@@ -82,8 +85,6 @@ const ApplyLeave = ({ navigation, route }) => {
         const leaves = success?.data?.leave_requests || [];
         const today = moment().startOf('day');
 
-        // Only block if there's an APPROVED leave with end_date in the future
-        // Pending leaves should NOT block — employer may take time to review
         const blockingLeave = leaves.find(leave => {
           const status = (leave?.status || '').toString().toLowerCase();
           if (status === 'approved') {
@@ -93,7 +94,6 @@ const ApplyLeave = ({ navigation, route }) => {
           return false;
         });
 
-        // Show warning for pending leaves (but don't block)
         const pendingLeave = leaves.find(leave => {
           const status = (leave?.status || '').toString().toLowerCase();
           return status === 'pending';
@@ -112,84 +112,152 @@ const ApplyLeave = ({ navigation, route }) => {
     );
   };
 
-  const fetchHouseownerFromProfile = () => {
-    GET_WITH_TOKEN(
-      PROFILE,
-      success => {
-        const profile = success?.data;
-        const ownerId =
-          profile?.added_by ||
-          profile?.houseowner_id ||
-          profile?.employer_id ||
-          null;
-        if (ownerId) {
-          setHouseownerId(ownerId);
-        } else {
-          // Fall back to myWork API
-          fetchHouseownerFromMyWork();
-        }
-      },
-      () => fetchHouseownerFromMyWork(),
-      () => fetchHouseownerFromMyWork(),
-    );
-  };
-
-  const fetchHouseownerFromMyWork = () => {
-    GET_WITH_TOKEN(
-      myWork,
-      success => {
-        const data = success?.data;
-        const ownerId = data?.added_by || null;
-        if (ownerId) {
-          setHouseownerId(ownerId);
-        }
-      },
-      () => {},
-      () => {},
-    );
-  };
-
   const fetchEmployers = () => {
+    setCheckingEmployers(true);
     GET_WITH_TOKEN(
       ApprovedJobs,
       success => {
         const jobs = success?.data || [];
-        if (jobs.length > 1) {
-          const mapped = jobs.map((job, index) => ({
-            value: job?.job_details?.job_id || index,
-            label: `${job?.employer || 'Unknown'} - ${job?.role || 'Staff'}`,
-            employerName: job?.employer || 'Unknown',
-            jobId: job?.job_details?.job_id || null,
-            houseownerId:
+        const mappedList = [];
+
+        if (Array.isArray(jobs) && jobs.length > 0) {
+          jobs.forEach((job, index) => {
+            const empId =
               job?.job_details?.employer_id ||
               job?.employer_id ||
               job?.creator?.id ||
-              null,
-          }));
-          setEmployers(mapped);
-          setHasMultipleEmployers(true);
-          if (houseownerId && !selectedEmployer) {
-            const match = mapped.find(e => e.houseownerId === houseownerId);
-            if (match) {
-              setSelectedEmployer(match);
+              job?.houseowner_id ||
+              null;
+            const jId = job?.job_details?.job_id || job?.job_id || null;
+            const empName = job?.employer || job?.creator?.name || job?.employer_details?.name || 'Employer';
+            const roleName = job?.role || job?.job_details?.role || 'Staff';
+
+            if (empId) {
+              mappedList.push({
+                value: jId || empId || index,
+                label: `${empName}${roleName ? ' (' + roleName + ')' : ''}`,
+                employerName: empName,
+                jobId: jId,
+                houseownerId: empId,
+              });
             }
-          }
-        } else if (jobs.length === 1) {
-          const single = jobs[0];
-          const employerId =
-            single?.job_details?.employer_id ||
-            single?.employer_id ||
-            single?.creator?.id ||
-            null;
-          setSingleJobId(single?.job_details?.job_id || null);
-          if (employerId && !houseownerId) {
-            setHouseownerId(employerId);
-          }
+          });
         }
+
+        fetchEmployersFromMyWork(mappedList);
       },
-      () => {},
-      () => {},
+      () => {
+        fetchEmployersFromMyWork([]);
+      },
+      () => {
+        fetchEmployersFromMyWork([]);
+      },
     );
+  };
+
+  const fetchEmployersFromMyWork = (existingList = []) => {
+    GET_WITH_TOKEN(
+      myWork,
+      success => {
+        const myWorkData = success?.data || success;
+        const mappedList = [...existingList];
+
+        const jobApps = success?.jobApplications || userDetail?.applications || success?.job_applications || [];
+        if (Array.isArray(jobApps) && jobApps.length > 0) {
+          jobApps.forEach((app, index) => {
+            const status = (app?.status || app?.application_status || '').toLowerCase();
+            if (status === 'accepted' || status === 'approved' || status === 'active') {
+              const empId = app?.job?.user_id || app?.job?.created_by || app?.employer_id || app?.added_by || null;
+              const empName = app?.job?.user?.name || app?.employer_name || app?.job?.houseowner?.name || 'Employer';
+              const roleName = app?.job?.title || app?.role || 'Staff';
+              if (empId && !mappedList.some(e => Number(e.houseownerId) === Number(empId))) {
+                mappedList.push({
+                  value: app?.job_id || app?.job?.id || index,
+                  label: `${empName}${roleName ? ' (' + roleName + ')' : ''}`,
+                  employerName: empName,
+                  jobId: app?.job_id || app?.job?.id || null,
+                  houseownerId: empId,
+                });
+              }
+            }
+          });
+        }
+
+        const directOwnerId =
+          myWorkData?.added_by ||
+          myWorkData?.houseowner_id ||
+          myWorkData?.employer_id ||
+          myWorkData?.houseowner?.id ||
+          myWorkData?.employer_details?.id ||
+          userDetail?.added_by ||
+          userDetail?.houseowner_id ||
+          null;
+
+        if (directOwnerId && !mappedList.some(e => Number(e.houseownerId) === Number(directOwnerId))) {
+          const empName =
+            buildName(myWorkData?.houseowner) ||
+            buildName(myWorkData?.employer_details) ||
+            buildName(myWorkData?.added_by_user) ||
+            userDetail?.added_by_name ||
+            'Employer';
+          mappedList.push({
+            value: myWorkData?.job_id || directOwnerId,
+            label: empName,
+            employerName: empName,
+            jobId: myWorkData?.job_id || null,
+            houseownerId: directOwnerId,
+          });
+        }
+
+        processEmployersList(mappedList);
+      },
+      () => {
+        processEmployersList(existingList);
+      },
+      () => {
+        processEmployersList(existingList);
+      },
+    );
+  };
+
+  const processEmployersList = (list) => {
+    const uniqueEmployers = [];
+    const seen = new Set();
+    list.forEach(emp => {
+      const key = `${emp.houseownerId}_${emp.jobId}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        uniqueEmployers.push(emp);
+      }
+    });
+
+    setEmployers(uniqueEmployers);
+    setCheckingEmployers(false);
+
+    if (uniqueEmployers.length === 0) {
+      setIsNotEmployed(true);
+      setHasMultipleEmployers(false);
+      setSelectedEmployer(null);
+      setHouseownerId(null);
+    } else if (uniqueEmployers.length === 1) {
+      setIsNotEmployed(false);
+      setHasMultipleEmployers(false);
+      const single = uniqueEmployers[0];
+      setSelectedEmployer(single);
+      setHouseownerId(single.houseownerId);
+      setSingleJobId(single.jobId);
+    } else {
+      setIsNotEmployed(false);
+      setHasMultipleEmployers(true);
+      if (paramHouseownerId) {
+        const match = uniqueEmployers.find(e => Number(e.houseownerId) === Number(paramHouseownerId));
+        if (match) {
+          setSelectedEmployer(match);
+          setHouseownerId(match.houseownerId);
+          setSingleJobId(match.jobId);
+        }
+      }
+    }
   };
 
   const fetchLeaveTypes = () => {
@@ -197,14 +265,12 @@ const ApplyLeave = ({ navigation, route }) => {
       LeaveList,
       success => {
         const leaveTypes = success?.data?.map(item => ({
-          
           value: item.id,
           label: item.name,
         }));
         setLeaveList(leaveTypes || []);
       },
       error => {
-        console.log('error----', error);
         SimpleToast.show('Failed to load leave types', SimpleToast.SHORT);
       },
       fail => {
@@ -213,15 +279,18 @@ const ApplyLeave = ({ navigation, route }) => {
     );
   };
 
-  // Clear error handler
   const clearError = field => {
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
     }
   };
 
-  // Validation function
   const validateForm = () => {
+    if (isNotEmployed) {
+      SimpleToast.show('You are currently not employed with any employer.', SimpleToast.SHORT);
+      return false;
+    }
+
     const newErrors = {
       leaveType: '',
       startDate: '',
@@ -236,13 +305,11 @@ const ApplyLeave = ({ navigation, route }) => {
       hasError = true;
     }
 
-    // Validate Leave Type
     if (!leaveType || (!leaveType?.value && !leaveType)) {
       newErrors.leaveType = 'Please select leave type';
       hasError = true;
     }
 
-    // Validate Start Date
     if (!startDate || startDate.trim() === '') {
       newErrors.startDate = 'Start date field is required.';
       hasError = true;
@@ -258,7 +325,6 @@ const ApplyLeave = ({ navigation, route }) => {
       }
     }
 
-    // Validate End Date
     if (!endDate || endDate.trim() === '') {
       newErrors.endDate = 'End date field is required.';
       hasError = true;
@@ -284,7 +350,6 @@ const ApplyLeave = ({ navigation, route }) => {
       }
     }
 
-    // Validate Reason
     if (!reason || reason.trim() === '') {
       newErrors.reason = 'Reason field is required.';
       hasError = true;
@@ -300,15 +365,25 @@ const ApplyLeave = ({ navigation, route }) => {
     return !hasError;
   };
 
-  // Handle form submission
   const handleSubmit = () => {
     if (loading) return;
+
+    if (isNotEmployed) {
+      SimpleToast.show('You are currently not employed with any employer.', SimpleToast.SHORT);
+      return;
+    }
 
     if (!validateForm()) {
       SimpleToast.show(
         'Please fill all required fields correctly',
         SimpleToast.SHORT,
       );
+      return;
+    }
+
+    const targetHouseownerId = selectedEmployer?.houseownerId || houseownerId;
+    if (!targetHouseownerId) {
+      SimpleToast.show('No employer selected. Please try again.', SimpleToast.SHORT);
       return;
     }
 
@@ -328,14 +403,8 @@ const ApplyLeave = ({ navigation, route }) => {
           )
         : moment(endDate).format('YYYY-MM-DD');
 
-    if (!houseownerId) {
-      SimpleToast.show('Houseowner not found. Please try again.', SimpleToast.SHORT);
-      setLoading(false);
-      return;
-    }
-
     const body = {
-      houseowner_id: Number(houseownerId),
+      houseowner_id: Number(targetHouseownerId),
       job_id: selectedEmployer?.jobId || singleJobId || null,
       leave_type_id: Number(leaveType?.value || leaveType),
       start_date: startDateFormatted,
@@ -373,7 +442,8 @@ const ApplyLeave = ({ navigation, route }) => {
       },
     );
   };
-  if (checkingLeave) {
+
+  if (checkingLeave || checkingEmployers) {
     return (
       <CommanView>
         <HeaderForUser
@@ -388,8 +458,52 @@ const ApplyLeave = ({ navigation, route }) => {
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <ActivityIndicator size="large" color="#D98579" />
           <Typography type={Font.Poppins_Regular} style={{ marginTop: 12, color: '#888' }}>
-            Checking leave status...
+            Loading leave form...
           </Typography>
+        </View>
+      </CommanView>
+    );
+  }
+
+  if (isNotEmployed) {
+    return (
+      <CommanView>
+        <HeaderForUser
+          title={
+            LocalizedStrings.staffSection?.StaffDashboard?.apply_leave ||
+            'Apply Leave'
+          }
+          style_title={{ fontSize: 18 }}
+          source_arrow={ImageConstant?.BackArrow}
+          onPressLeftIcon={() => navigation.goBack()}
+        />
+        <View style={styles.blockedContainer}>
+          <View style={styles.blockedCard}>
+            <View style={styles.blockedIconCircle}>
+              <Image
+                source={ImageConstant.lines}
+                style={styles.blockedIcon}
+                resizeMode="contain"
+              />
+            </View>
+            <Typography
+              type={Font.Poppins_SemiBold}
+              style={styles.blockedTitle}
+            >
+              Cannot Apply for Leave
+            </Typography>
+            <Typography
+              type={Font.Poppins_Regular}
+              style={styles.blockedMessage}
+            >
+              You are currently not employed with any employer. You can only apply for leave once you have an active job.
+            </Typography>
+            <Button
+              onPress={() => navigation.goBack()}
+              title="Go Back"
+              main_style={styles.button}
+            />
+          </View>
         </View>
       </CommanView>
     );
@@ -530,7 +644,7 @@ const ApplyLeave = ({ navigation, route }) => {
             </View>
           )}
 
-          {hasMultipleEmployers && (
+          {hasMultipleEmployers ? (
             <DropdownComponent
               title="Select Employer"
               placeholder="Select employer"
@@ -554,7 +668,18 @@ const ApplyLeave = ({ navigation, route }) => {
               }}
               error={errors.employer}
             />
-          )}
+          ) : selectedEmployer ? (
+            <View style={{ marginBottom: 16 }}>
+              <Typography size={12} style={{ marginBottom: 6, color: '#333', fontFamily: Font.Poppins_Regular }}>
+                Employer
+              </Typography>
+              <View style={{ backgroundColor: '#F9FAFB', borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, padding: 12 }}>
+                <Typography size={14} style={{ fontFamily: Font.Poppins_Medium, color: '#111827' }}>
+                  {selectedEmployer.label || selectedEmployer.employerName}
+                </Typography>
+              </View>
+            </View>
+          ) : null}
 
           <DropdownComponent
             title={
