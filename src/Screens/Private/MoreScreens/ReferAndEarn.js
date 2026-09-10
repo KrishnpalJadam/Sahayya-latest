@@ -78,10 +78,7 @@ const ReferAndEarn = ({ navigation }) => {
 
   const handleShare = async () => {
     const code = referralData?.referral_code || '';
-    const isStaff = referralData?.is_staff;
-    const message = isStaff
-      ? `Hey! I'm using Sahayya to find household jobs. Use my referral code: *${code}* and help me earn reward points for job credits!`
-      : `Hey! I'm using Sahayya to manage household staff. It's super easy to find staff, manage payments, and more.\n\nDownload the Sahayya app and use my referral code: *${code}* to get started!`;
+    const message = `Hey! 👋 I’m using Sahayya to find reliable household staff and jobs.\n\nDownload the Sahayya app using my referral code ${code} and get free credits in your Sahayya account to get started! 🎁\n\nGive it a try! 😊`;
     try {
       await Share.share({ message, title: 'Refer Sahayya' });
     } catch (error) {
