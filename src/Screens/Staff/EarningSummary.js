@@ -57,7 +57,7 @@ const EarningSummary = ({ route }) => {
   }, []);
 
   const fetchAttendanceSummary = useCallback((staffId) => {
-    const resolvedId = staffId || userDetail?.id || userDetail?.user_id || userDetail?.user_info?.id || summary2?.staff_id || summary2?.user_id;
+    const resolvedId = staffId || userDetail?.id || userDetail?.user_id || userDetail?.user_info?.id;
     if (!resolvedId) return;
     const now = new Date();
     const month = now.getMonth() + 1;
@@ -88,7 +88,7 @@ const EarningSummary = ({ route }) => {
       },
       () => {},
     );
-  }, [userDetail, summary2]);
+  }, [userDetail?.id, userDetail?.user_id]);
 
   const fetchAdvanceBalance = useCallback(() => {
     GET_WITH_TOKEN(
@@ -172,10 +172,12 @@ const EarningSummary = ({ route }) => {
         setIsLoading(false);
       },
     );
-  }, []);
+  }, [fetchAttendanceSummary]);
 
-  const fetchSummary = useCallback((resetRetries = true) => {
-    setIsLoading(true);
+  const fetchSummary = useCallback((resetRetries = true, silent = false) => {
+    if (!silent) {
+      setIsLoading(true);
+    }
     setErrorMessage('');
     if (resetRetries) {
       retryCountRef.current = 0;
@@ -229,15 +231,22 @@ const EarningSummary = ({ route }) => {
     }
   }, [jobID, loadEarnings]);
 
+  const hasLoadedRef = useRef(false);
+
   useEffect(() => {
     if (isFocused) {
-      fetchSummary();
+      if (!hasLoadedRef.current) {
+        hasLoadedRef.current = true;
+        fetchSummary(true, false);
+      } else {
+        fetchSummary(false, true);
+      }
       if (userDetail?.id) {
         fetchAttendanceSummary(userDetail.id);
       }
       fetchAdvanceBalance();
     }
-  }, [fetchAdvanceBalance, fetchAttendanceSummary, fetchSummary, isFocused, userDetail?.id]);
+  }, [isFocused]);
 
   const paymentHistory = summary2?.payment_history || [];
 
