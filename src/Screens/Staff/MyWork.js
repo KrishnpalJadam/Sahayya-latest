@@ -67,8 +67,11 @@ const MyWork = () => {
   const fetchEarningSummary = (jobId) => {
     const now = new Date();
     const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const url = jobId
+      ? `${EarningSummaryRoute}?job_id=${jobId}&month=${month}`
+      : `${EarningSummaryRoute}?month=${month}`;
     GET_WITH_TOKEN(
-      `${EarningSummaryRoute}?job_id=${jobId}&month=${month}`,
+      url,
       success => {
         const rawData = success?.data;
         const earningData = Array.isArray(rawData) ? rawData[0] : rawData;
@@ -87,6 +90,62 @@ const MyWork = () => {
       () => {},
       () => {},
     );
+  };
+
+  const getEarnedSalary = () => {
+    const monthlySalary = Number(
+      earningSummary?.salary_summary?.current_monthly_salary ||
+      userDetail?.user_work_info?.salary ||
+      activeJobApplication?.expected_salary ||
+      jobApplications?.[0]?.expected_salary ||
+      workData?.lastsalary?.amount ||
+      workData?.last_exp?.salary ||
+      0
+    );
+
+    if (!earningSummary) {
+      return monthlySalary;
+    }
+
+    const statusLabel = earningSummary?.payment_status || 'Pending';
+    const isPending = statusLabel?.toLowerCase() !== 'paid';
+
+    if (!isPending && Number(earningSummary?.total_payable_amount) > 0) {
+      return Math.round(Number(earningSummary.total_payable_amount));
+    }
+
+    const pfDeduction = Number(earningSummary?.deductions?.provident_fund?.amount || 0);
+    const taxDeduction = Number(earningSummary?.deductions?.income_tax?.amount || 0);
+    const bonusAmount = Number(earningSummary?.earnings_breakdown?.performance_bonus?.amount || 0);
+    const overtimeAmount = Number(earningSummary?.earnings_breakdown?.overtime_pay?.amount || 0);
+
+    const backendDaysWorked = earningSummary?.attendance_summary?.present_days !== undefined
+      ? Number(earningSummary.attendance_summary.present_days) + Number(earningSummary.attendance_summary.late_arrivals || 0)
+      : (attendanceStats?.totalWorked || 0);
+
+    const backendDaysInPeriod = Number(earningSummary?.attendance_summary?.days_in_period || 30);
+
+    let displayedBaseSalary = Number(earningSummary?.earnings_breakdown?.base_salary?.amount || 0);
+    if (isPending && monthlySalary > 0 && backendDaysInPeriod > 0) {
+      displayedBaseSalary = (monthlySalary / backendDaysInPeriod) * backendDaysWorked;
+    }
+
+    const totalDeductions = pfDeduction + taxDeduction;
+
+    const calculatedPayable = Math.max(0, displayedBaseSalary + bonusAmount + overtimeAmount - totalDeductions);
+
+    if (calculatedPayable > 0) {
+      return Math.round(calculatedPayable);
+    }
+
+    if (earningSummary?.total_earned !== undefined && earningSummary?.total_earned !== null) {
+      return Math.round(Number(earningSummary.total_earned));
+    }
+    if (earningSummary?.net_payable !== undefined && earningSummary?.net_payable !== null) {
+      return Math.round(Number(earningSummary.net_payable));
+    }
+
+    return Math.round(calculatedPayable);
   };
 
   const STATUS_COLORS = {
@@ -224,11 +283,9 @@ const MyWork = () => {
 
         if (empName) setEmployerName(empName);
 
-        // Fetch earning summary if we have a job ID
+        // Fetch earning summary
         const jobId = activeJob?.job_id || myWorkData?.job_id || myWorkData?.id;
-        if (jobId) {
-          fetchEarningSummary(jobId);
-        }
+        fetchEarningSummary(jobId || null);
 
         // If no work data found, try approved-job as fallback
         if (!myWorkData || (jobAppsArr.length === 0 && !directlyAdded)) {
@@ -371,15 +428,16 @@ const MyWork = () => {
               </Typography>
             </View>
             <Typography size={12} style={styles.label}>
-              {LocalizedStrings.staffSection?.MyWork?.current_monthly_salary ||
-                'Current Monthly Salary'}
+              {LocalizedStrings.staffSection?.MyWork?.earned_this_month ||
+                LocalizedStrings.staffSection?.MyWork?.current_monthly_salary ||
+                'Earned This Month'}
             </Typography>
             <Typography
               type={Font.Poppins_Bold}
               size={20}
               style={styles.valueBig}
             >
-              {"\u20B9"}{userDetail?.user_work_info?.salary || activeJobApplication?.expected_salary || jobApplications?.[0]?.expected_salary || workData?.lastsalary?.amount || workData?.last_exp?.salary || '0'}
+              {"\u20B9"}{getEarnedSalary()}
             </Typography>
 
             <TouchableOpacity
