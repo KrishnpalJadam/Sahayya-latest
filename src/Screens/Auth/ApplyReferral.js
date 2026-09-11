@@ -75,7 +75,8 @@ const ApplyReferral = ({navigation}) => {
             size={14}
             color="#8C8D8B"
             style={styles.subtitle}>
-            If someone referred you, enter their code below to get rewards.
+            If someone referred you, enter their code below to get free credits!
+            Both you and your referrer will be rewarded.
             This is completely optional.
           </Typography>
 
