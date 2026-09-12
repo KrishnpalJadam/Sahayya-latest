@@ -1,7 +1,6 @@
 import { StyleSheet, View, TouchableOpacity } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { OtpInput } from 'react-native-otp-entry';
-import { useDispatch } from 'react-redux';
 import CommanView from '../../../Component/CommanView';
 import Typography from '../../../Component/UI/Typography';
 import { Font } from '../../../Constants/Font';
@@ -10,7 +9,6 @@ import Button from '../../../Component/Button';
 import HeaderForUser from '../../../Component/HeaderForUser';
 import { POST_FORM_DATA } from '../../../Backend/Backend';
 import { AADHAR_SAVE, AADHAR_VERFIY } from '../../../Backend/api_routes';
-import { userDetails } from '../../../Redux/action';
 import LocalizedStrings from '../../../Constants/localization';
 
 const AadharOtp = ({ navigation, route }) => {
@@ -19,8 +17,8 @@ const AadharOtp = ({ navigation, route }) => {
   const [otpError, setOtpError] = useState('');
   const [loading, setLoading] = useState(false);
   const { mobile } = route?.params || {};
-  const dispatch = useDispatch();
   const last4 = mobile?.toString()?.slice(-4);
+
 
   useEffect(() => {
     let timer;
@@ -93,20 +91,13 @@ const AadharOtp = ({ navigation, route }) => {
       POST_FORM_DATA(
         AADHAR_VERFIY,
         data,
-        sucess => {
+        success => {
           try {
             setLoading(false);
-            const verifiedUser = sucess?.data?.user || sucess?.user || sucess?.data || null;
-            if (verifiedUser && typeof verifiedUser === 'object') {
-              dispatch(userDetails(verifiedUser));
-            }
-            setTimeout(() => {
-              try {
-                navigation?.navigate('StepFirst');
-              } catch (navErr) {
-                console.log('Navigation error after Aadhaar verify:', navErr);
-              }
-            }, 300);
+            // NOTE: Do NOT dispatch(userDetails()) here — it would overwrite the
+            // currently logged-in household user's Redux state with staff Aadhaar
+            // data, causing RootStack to re-evaluate initialRoute and crash the app.
+            navigation?.navigate('StepFirst');
           } catch (e) {
             setLoading(false);
             console.log('Aadhaar verify success handler error:', e);
