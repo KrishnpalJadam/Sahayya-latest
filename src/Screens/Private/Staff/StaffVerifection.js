@@ -322,9 +322,6 @@ const job_compensation_type = route?.params?.job_compensation_type || 'monthly';
         const verifiedUserWithPhone = verifiedUser
           ? { ...verifiedUser, phone_number: verifiedUser?.phone_number || success?.phone_number || null }
           : null;
-        if (verifiedUserWithPhone && typeof verifiedUserWithPhone === 'object') {
-          dispatch(userDetailsAction(verifiedUserWithPhone));
-        }
         const mergedUserData = buildSafeStaffPayload(userData, verifiedUserWithPhone, aadhaarDetails);
 
         const goToNewStaff = () => {
