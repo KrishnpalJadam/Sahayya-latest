@@ -1,4 +1,4 @@
-import {
+﻿import {
   CardStyleInterpolators,
   createStackNavigator,
 } from '@react-navigation/stack';
@@ -37,7 +37,6 @@ import AadharOtp from '../Screens/Private/Staff/AadharOtp';
 import { GET_WITH_TOKEN } from '../Backend/Backend';
 import { PROFILE } from '../Backend/api_routes';
 import { userDetails } from '../Redux/action';
-import { Alert } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 
 const commonOptions = {
@@ -66,7 +65,6 @@ const RootStack = () => {
     global.Profile();
   }, []);
 
-  // Check staff profile onboarding status & Aadhaar OTP verification
   const isAadhaarVerified =
     userDetail?.aadhar__verify == 1 ||
     userDetail?.aadhar__verify === true ||
@@ -80,168 +78,54 @@ const RootStack = () => {
     (userDetail?.step && Number(userDetail?.step) >= 5) ||
     Boolean(userDetail?.user_work_info || userDetail?.work_info);
 
-  const initialRoute = isProfileComplete
-    ? 'TabNavigationForStaff'
-    : !isAadhaarVerified
-    ? 'Aadhaar'
-    : 'StepFirst';
+  // CRITICAL FIX: Lock initialRouteName in a ref computed ONCE on mount.
+  // Previously initialRoute was a plain variable — every Redux dispatch
+  // (e.g. global.Profile() after Aadhaar OTP verify) changed its value,
+  // React re-rendered Stack.Navigator with new initialRouteName,
+  // the navigator remounted mid-navigation and crashed the app.
+  const initialRouteRef = useRef(null);
+  if (initialRouteRef.current === null) {
+    initialRouteRef.current = isProfileComplete
+      ? 'TabNavigationForStaff'
+      : !isAadhaarVerified
+      ? 'Aadhaar'
+      : 'StepFirst';
+  }
 
   return (
     <Stack.Navigator
-      screenOptions={{
-        headerShown: false,
-      }}
-      initialRouteName={initialRoute}
+      screenOptions={{ headerShown: false }}
+      initialRouteName={initialRouteRef.current}
     >
-      <Stack.Screen
-        name="TabNavigationForStaff"
-        component={TabNavigationForStaff}
-        options={{ ...commonOptions }}
-      />
-      <Stack.Screen
-        options={{ headerShown: false }}
-        name="Aadhaar"
-        component={Aadhaar}
-      />
-      <Stack.Screen
-        options={{ headerShown: false }}
-        name="AadharOtp"
-        component={AadharOtp}
-      />
-      <Stack.Screen
-        name="StepFirst"
-        component={StepFirst}
-        options={{ ...commonOptions }}
-      />
-
-      <Stack.Screen
-        name="QuitJob"
-        component={QuitJob}
-        options={{ ...commonOptions }}
-      />
-
-      <Stack.Screen
-        name="ApplyLeave"
-        component={ApplyLeave}
-        options={{ ...commonOptions }}
-      />
-
-      <Stack.Screen
-        name="ActiveJob"
-        component={JobListing}
-        options={{ ...commonOptions }}
-      />
-
-      <Stack.Screen
-        name="JobDetails"
-        component={JobDetails}
-        options={{ ...commonOptions }}
-      />
-      <Stack.Screen
-        name="Notifications"
-        component={Notifications}
-        options={{ ...commonOptions }}
-      />
-      <Stack.Screen
-        name="EditProfile"
-        component={EditProfile}
-        options={{ ...commonOptions }}
-      />
-      <Stack.Screen
-        name="StaffProfileMain"
-        component={StaffProfileMain}
-        options={{ ...commonOptions }}
-      />
-      <Stack.Screen
-        name="JobListing"
-        component={JobListing}
-        options={{ ...commonOptions }}
-      />
-      <Stack.Screen
-        name="MemberShip"
-        component={MemberShip}
-        options={{ ...commonOptions }}
-      />
-      <Stack.Screen
-        name="Policy"
-        component={PolicyScreen}
-        options={{ ...commonOptions }}
-      />
-      <Stack.Screen
-        name="EarningSummary"
-        component={EarningSummary}
-        options={{ ...commonOptions }}
-      />
-      <Stack.Screen
-        name="StaffAdvanceView"
-        component={StaffAdvanceView}
-        options={{ ...commonOptions }}
-      />
-      <Stack.Screen
-        name="StaffPaymentHistory"
-        component={StaffPaymentHistory}
-        options={{ ...commonOptions }}
-      />
-      <Stack.Screen
-        name="HireMe"
-        component={HireMeScreen}
-        options={{ ...commonOptions }}
-      />
-      <Stack.Screen
-        name="StaffAttendance"
-        component={StaffAttendance}
-        options={{ ...commonOptions }}
-      />
-      <Stack.Screen
-        name="AIJobSearch"
-        component={AIJobSearch}
-        options={{ ...commonOptions }}
-      />
-      <Stack.Screen
-        name="AIJobResults"
-        component={AIJobResults}
-        options={{ ...commonOptions }}
-      />
-      <Stack.Screen
-        name="AppUpdate"
-        component={AppUpdate}
-        options={{ ...commonOptions }}
-      />
-      <Stack.Screen
-        name="ReferAndEarn"
-        component={ReferAndEarn}
-        options={{ ...commonOptions }}
-      />
-      <Stack.Screen
-        name="StaffWallet"
-        component={StaffWallet}
-        options={{ ...commonOptions }}
-      />
-      <Stack.Screen
-        name="BankAccounts"
-        component={BankAccounts}
-        options={{ ...commonOptions }}
-      />
-      <Stack.Screen
-        name="TicketList"
-        component={TicketList}
-        options={{ ...commonOptions }}
-      />
-      <Stack.Screen
-        name="CreateTicket"
-        component={CreateTicket}
-        options={{ ...commonOptions }}
-      />
-      <Stack.Screen
-        name="TicketDetail"
-        component={TicketDetail}
-        options={{ ...commonOptions }}
-      />
-      <Stack.Screen
-        name="TrainingVideos"
-        component={TrainingVideos}
-        options={{ ...commonOptions }}
-      />
+      <Stack.Screen name="TabNavigationForStaff" component={TabNavigationForStaff} options={{ ...commonOptions }} />
+      <Stack.Screen options={{ headerShown: false }} name="Aadhaar" component={Aadhaar} />
+      <Stack.Screen options={{ headerShown: false }} name="AadharOtp" component={AadharOtp} />
+      <Stack.Screen name="StepFirst" component={StepFirst} options={{ ...commonOptions }} />
+      <Stack.Screen name="QuitJob" component={QuitJob} options={{ ...commonOptions }} />
+      <Stack.Screen name="ApplyLeave" component={ApplyLeave} options={{ ...commonOptions }} />
+      <Stack.Screen name="ActiveJob" component={JobListing} options={{ ...commonOptions }} />
+      <Stack.Screen name="JobDetails" component={JobDetails} options={{ ...commonOptions }} />
+      <Stack.Screen name="Notifications" component={Notifications} options={{ ...commonOptions }} />
+      <Stack.Screen name="EditProfile" component={EditProfile} options={{ ...commonOptions }} />
+      <Stack.Screen name="StaffProfileMain" component={StaffProfileMain} options={{ ...commonOptions }} />
+      <Stack.Screen name="JobListing" component={JobListing} options={{ ...commonOptions }} />
+      <Stack.Screen name="MemberShip" component={MemberShip} options={{ ...commonOptions }} />
+      <Stack.Screen name="Policy" component={PolicyScreen} options={{ ...commonOptions }} />
+      <Stack.Screen name="EarningSummary" component={EarningSummary} options={{ ...commonOptions }} />
+      <Stack.Screen name="StaffAdvanceView" component={StaffAdvanceView} options={{ ...commonOptions }} />
+      <Stack.Screen name="StaffPaymentHistory" component={StaffPaymentHistory} options={{ ...commonOptions }} />
+      <Stack.Screen name="HireMe" component={HireMeScreen} options={{ ...commonOptions }} />
+      <Stack.Screen name="StaffAttendance" component={StaffAttendance} options={{ ...commonOptions }} />
+      <Stack.Screen name="AIJobSearch" component={AIJobSearch} options={{ ...commonOptions }} />
+      <Stack.Screen name="AIJobResults" component={AIJobResults} options={{ ...commonOptions }} />
+      <Stack.Screen name="AppUpdate" component={AppUpdate} options={{ ...commonOptions }} />
+      <Stack.Screen name="ReferAndEarn" component={ReferAndEarn} options={{ ...commonOptions }} />
+      <Stack.Screen name="StaffWallet" component={StaffWallet} options={{ ...commonOptions }} />
+      <Stack.Screen name="BankAccounts" component={BankAccounts} options={{ ...commonOptions }} />
+      <Stack.Screen name="TicketList" component={TicketList} options={{ ...commonOptions }} />
+      <Stack.Screen name="CreateTicket" component={CreateTicket} options={{ ...commonOptions }} />
+      <Stack.Screen name="TicketDetail" component={TicketDetail} options={{ ...commonOptions }} />
+      <Stack.Screen name="TrainingVideos" component={TrainingVideos} options={{ ...commonOptions }} />
     </Stack.Navigator>
   );
 };
