@@ -318,10 +318,14 @@ const job_compensation_type = route?.params?.job_compensation_type || 'monthly';
         }
         const verifiedUser = success?.data?.user || success?.user || success?.data || null;
         const aadhaarDetails = success?.aadhaar_details || success?.data?.aadhaar_details || success?.raw_data?.data || null;
-        if (verifiedUser && typeof verifiedUser === 'object') {
-          dispatch(userDetailsAction(verifiedUser));
+        // phone_number explicitly returned by backend (top-level) — inject into verifiedUser so buildSafeStaffPayload picks it up
+        const verifiedUserWithPhone = verifiedUser
+          ? { ...verifiedUser, phone_number: verifiedUser?.phone_number || success?.phone_number || null }
+          : null;
+        if (verifiedUserWithPhone && typeof verifiedUserWithPhone === 'object') {
+          dispatch(userDetailsAction(verifiedUserWithPhone));
         }
-        const mergedUserData = buildSafeStaffPayload(userData, verifiedUser, aadhaarDetails);
+        const mergedUserData = buildSafeStaffPayload(userData, verifiedUserWithPhone, aadhaarDetails);
 
         const goToNewStaff = () => {
           navigation.navigate('NewStaffFrom', {
