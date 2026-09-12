@@ -13,7 +13,7 @@ import { POST_FORM_DATA, POST_WITH_TOKEN } from '../../Backend/Backend';
 import { AADHAR_SAVE, DELETE_ACCOUNT, LOGOUT } from '../../Backend/api_routes';
 import SimpleToast from 'react-native-simple-toast';
 import LocalizedStrings from '../../Constants/localization';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { isAuth, userDetails } from '../../Redux/action';
 
 const Aadhaar = ({ navigation }) => {
@@ -21,6 +21,7 @@ const Aadhaar = ({ navigation }) => {
   const [error, setError] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const Dispatch = useDispatch();
+  const userDetail = useSelector(state => state?.userDetails);
 
   const SaveAddhar = () => {
     let error = {
@@ -44,7 +45,7 @@ const Aadhaar = ({ navigation }) => {
         sucess => {
           setIsLoading(false);
           SimpleToast.show(sucess?.message || 'OTP Sent', SimpleToast.LONG);
-          const userId = sucess?.data?.user_id || sucess?.data?.id;
+          const userId = sucess?.data?.user_id || sucess?.data?.id || userDetail?.id || userDetail?.user_id;
           navigation?.navigate('AadharOtp', { 
             mobile: mobile,
             user_id: userId,

@@ -317,7 +317,7 @@ const job_compensation_type = route?.params?.job_compensation_type || 'monthly';
           return;
         }
         const verifiedUser = success?.data?.user || success?.user || success?.data || null;
-        const aadhaarDetails = success?.aadhaar_details || success?.data?.aadhaar_details || success?.raw_data?.data || null;
+        const aadhaarDetails = success?.aadhaar_details || success?.data?.aadhaar_details || null;
         // phone_number explicitly returned by backend (top-level) — inject into verifiedUser so buildSafeStaffPayload picks it up
         const verifiedUserWithPhone = verifiedUser
           ? { ...verifiedUser, phone_number: verifiedUser?.phone_number || success?.phone_number || null }

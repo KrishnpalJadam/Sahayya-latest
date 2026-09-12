@@ -17,6 +17,7 @@ const AadharOtp = ({ navigation, route }) => {
   const [otp, setOtp] = useState('');
   const [resendTimer, setResendTimer] = useState(30); // 30 sec timer
   const [otpError, setOtpError] = useState('');
+  const [loading, setLoading] = useState(false);
   const { mobile } = route?.params || {};
   const dispatch = useDispatch();
   const last4 = mobile?.toString()?.slice(-4);
@@ -65,6 +66,8 @@ const AadharOtp = ({ navigation, route }) => {
 
   // Verify OTP function
   const handleVerify = () => {
+    if (loading) return;
+
     if (otp.length !== 6) {
       setOtpError(
         LocalizedStrings.AddStaff?.OTP_Placeholders ||
@@ -73,39 +76,71 @@ const AadharOtp = ({ navigation, route }) => {
       return;
     }
 
+    setLoading(true);
+    setOtpError('');
+
     let data = new FormData();
-    data?.append('otp', otp);
+    data?.append('otp', String(otp));
     if (route?.params?.aadhar_number) {
-      data?.append('aadhar_number', route?.params?.aadhar_number);
+      data?.append('aadhar_number', String(route.params.aadhar_number));
     }
     const userId = route?.params?.user_id;
     if (userId) {
-      data?.append('user_id', userId);
+      data?.append('user_id', String(userId));
     }
 
-    POST_FORM_DATA(
-      AADHAR_VERFIY,
-      data,
-      sucess => {
-        const verifiedUser = sucess?.data?.user || sucess?.user || sucess?.data || null;
-        if (verifiedUser && typeof verifiedUser === 'object') {
-          dispatch(userDetails(verifiedUser));
-        }
-        navigation?.navigate('StepFirst');
-      },
-      error => {
-        let errorMsg = 'Invalid OTP. Please try again.';
-        if (error?.data?.message) {
-          errorMsg = error.data.message;
-        } else if (error?.data?.error) {
-          errorMsg = error.data.error;
-        }
-        setOtpError(errorMsg);
-      },
-      fail => {
-        setOtpError('Network error. Please try again.');
-      },
-    );
+    try {
+      POST_FORM_DATA(
+        AADHAR_VERFIY,
+        data,
+        sucess => {
+          try {
+            setLoading(false);
+            const verifiedUser = sucess?.data?.user || sucess?.user || sucess?.data || null;
+            if (verifiedUser && typeof verifiedUser === 'object') {
+              dispatch(userDetails(verifiedUser));
+            }
+            setTimeout(() => {
+              try {
+                navigation?.navigate('StepFirst');
+              } catch (navErr) {
+                console.log('Navigation error after Aadhaar verify:', navErr);
+              }
+            }, 300);
+          } catch (e) {
+            setLoading(false);
+            console.log('Aadhaar verify success handler error:', e);
+            setOtpError('Something went wrong. Please try again.');
+          }
+        },
+        error => {
+          setLoading(false);
+          let errorMsg = 'Invalid OTP. Please try again.';
+          if (error?.data?.message) {
+            errorMsg = error.data.message;
+          } else if (error?.data?.error) {
+            errorMsg = error.data.error;
+          } else if (error?.data?.errors) {
+            const errs = error.data.errors;
+            errorMsg = Object.values(errs).flat().join('\n');
+          } else if (error?.message) {
+            errorMsg = error.message;
+          }
+          if (typeof errorMsg !== 'string') {
+            try { errorMsg = JSON.stringify(errorMsg); } catch (e) { errorMsg = 'An unknown error occurred'; }
+          }
+          setOtpError(errorMsg);
+        },
+        fail => {
+          setLoading(false);
+          setOtpError('Network error. Please try again.');
+        },
+      );
+    } catch (e) {
+      setLoading(false);
+      console.log('POST_FORM_DATA call error:', e);
+      setOtpError('Something went wrong. Please try again.');
+    }
   };
 
   return (
@@ -188,6 +223,8 @@ const AadharOtp = ({ navigation, route }) => {
             title={LocalizedStrings.AddStaff?.Verify_Add_Staff || 'Verify OTP & Continue'}
             onPress={handleVerify}
             style={{ marginTop: 10 }}
+            loader={loading}
+            disabled={loading}
           />
         </View>
       </View>
