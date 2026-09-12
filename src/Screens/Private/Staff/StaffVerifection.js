@@ -1,4 +1,4 @@
-import { StyleSheet, View, Image, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Image, TouchableOpacity, Platform } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import CommanView from '../../../Component/CommanView';
 import Typography from '../../../Component/UI/Typography';

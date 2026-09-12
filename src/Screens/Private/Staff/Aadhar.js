@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, Platform } from 'react-native';
 import React, { useState } from 'react';
 import CommanView from '../../../Component/CommanView';
 import Typography from '../../../Component/UI/Typography';
