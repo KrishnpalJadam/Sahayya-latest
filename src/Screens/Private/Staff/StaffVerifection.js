@@ -15,10 +15,34 @@ import { userDetails as userDetailsAction } from '../../../Redux/action';
 import { POST_FORM_DATA, POST_WITH_TOKEN } from '../../../Backend/Backend';
 import { AADHAR_SAVE, AADHAR_VERFIY, ApplicantsStatus } from '../../../Backend/api_routes';
 
+// Helper: returns true if string looks like a base64 data URI (not a URL)
+const isBase64DataUri = val =>
+  typeof val === 'string' && val.startsWith('data:');
+
+// Helper: remove base64 photo fields from an object to prevent Android
+// Binder transaction limit (1MB) crash when passing through navigation params.
+const stripBase64Fields = obj => {
+  if (!obj || typeof obj !== 'object') return obj;
+  const cleaned = {};
+  for (const key of Object.keys(obj)) {
+    const val = obj[key];
+    if (isBase64DataUri(val)) {
+      // Drop this field — it's a huge base64 string
+      continue;
+    }
+    cleaned[key] = val;
+  }
+  return cleaned;
+};
+
 const buildSafeStaffPayload = (baseUser = {}, verifiedUser = {}, aadhaarDetails = {}) => {
   const nextUser = verifiedUser && typeof verifiedUser === 'object' ? verifiedUser : {};
   const prevUser = baseUser && typeof baseUser === 'object' ? baseUser : {};
-  const aadharInfo = aadhaarDetails && typeof aadhaarDetails === 'object' ? aadhaarDetails : {};
+  // Strip any base64-encoded fields from aadhaarDetails (e.g. photo from Aadhaar API)
+  // to avoid exceeding Android's 1MB Binder transaction limit when navigating.
+  const aadharInfo = aadhaarDetails && typeof aadhaarDetails === 'object'
+    ? stripBase64Fields(aadhaarDetails)
+    : {};
 
   const rawPhone =
     nextUser?.phone_number ||
@@ -42,6 +66,10 @@ const buildSafeStaffPayload = (baseUser = {}, verifiedUser = {}, aadhaarDetails 
   if (cleanPhone.length > 10 && cleanPhone.startsWith('91')) {
     cleanPhone = cleanPhone.slice(2);
   }
+
+  // For image: only use if it's a real URL, never a base64 string
+  const rawImage = nextUser?.image || prevUser?.image || aadharInfo?.photo;
+  const safeImage = rawImage && !isBase64DataUri(rawImage) ? rawImage : null;
 
   return {
     id: nextUser?.id || prevUser?.id,
@@ -91,7 +119,7 @@ const buildSafeStaffPayload = (baseUser = {}, verifiedUser = {}, aadhaarDetails 
         : prevUser?.aadhar__verify !== undefined
           ? prevUser?.aadhar__verify
           : 1,
-    image: nextUser?.image || prevUser?.image || aadharInfo?.photo,
+    image: safeImage,
     upi_id: nextUser?.upi_id || prevUser?.upi_id,
     addresses:
       Array.isArray(nextUser?.addresses) && nextUser.addresses.length > 0
