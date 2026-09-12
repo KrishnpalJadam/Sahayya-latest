@@ -117,26 +117,27 @@ const StepFirst = () => {
         onStepPress={index => setActiveTab(index + 1)}
       />
       <View style={{ flex: 1 }}>
-        <View style={{ flex: 1, display: activeTab === 1 ? 'flex' : 'none' }}>
+        {activeTab === 1 && (
           <StepBasicInfoStaff ref={basicInfoRef} />
-        </View>
-        <View style={{ flex: 1, display: activeTab === 2 ? 'flex' : 'none' }}>
+        )}
+        {activeTab === 2 && (
           <KYCVerificationStaff
             ref={kycRef}
             userDetail={userDetail}
             prefillFromProfile={false}
           />
-        </View>
-        <View style={{ flex: 1, display: activeTab === 3 ? 'flex' : 'none' }}>
+        )}
+        {activeTab === 3 && (
           <StepLoactionStaff ref={locationRef} />
-        </View>
-        <View style={{ flex: 1, display: activeTab === 4 ? 'flex' : 'none' }}>
+        )}
+        {activeTab === 4 && (
           <StepWokInfo ref={workInfoRef} />
-        </View>
-        <View style={{ flex: 1, display: activeTab === 5 ? 'flex' : 'none' }}>
+        )}
+        {activeTab === 5 && (
           <UpdateProfile ref={lastWorkRef} />
-        </View>
+        )}
       </View>
+
       <View style={styles.bottomButtonsRow}>
         {activeTab === 5 ? (
           <TouchableOpacity
