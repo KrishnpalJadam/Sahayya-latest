@@ -1782,17 +1782,6 @@ const NewStaffForm = ({ navigation, route }) => {
             {LocalizedStrings.NewStaffForm.KYC_Documents}
           </Typography>
 
-          {/* Staff Photo - always uploadable */}
-          <View style={styles.uploadRowSingle}>
-            <UploadBox
-              title={LocalizedStrings.NewStaffForm.Staff_Photo}
-              icon={ImageConstant.NewCamera}
-              styles_container={styles.uploadBoxHalf}
-              onPress={() => handleImagePicker('staffPhoto')}
-              image={staffPhoto}
-            />
-          </View>
-
           {/* Police Clearance & Aadhaar - show read-only if staff already uploaded them */}
           {(!isPlaceholderImage(existingAadharFront) || !isPlaceholderImage(existingPoliceClearance)) ? (
             <>
