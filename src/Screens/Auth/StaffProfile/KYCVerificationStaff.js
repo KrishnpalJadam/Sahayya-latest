@@ -23,6 +23,8 @@ const KYCVerificationStaff = forwardRef(({ userDetail, prefillFromProfile = true
     aadhar_front: null,
     aadhar_back: null,
   });
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [currentImageType, setCurrentImageType] = useState(null);
 
   useEffect(() => {
     if (!prefillFromProfile) {
