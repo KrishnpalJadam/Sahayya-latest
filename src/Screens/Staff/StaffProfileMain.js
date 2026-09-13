@@ -109,7 +109,8 @@ const StaffProfileMain = ({ navigation }) => {
     const countryCode = userDetail?.country_code || '+91';
     const phoneNumber = userDetail?.phone_number || 'Not Found';
     const userPhone = phoneNumber !== 'Not Found' ? `${countryCode} ${phoneNumber}` : 'Not Found';
-    const userEmail = userDetail?.email || 'Not Found';
+    const rawEmail = userDetail?.email || '';
+    const userEmail = rawEmail.replace(/_deleted_\d+$/, '') || 'Not Found';
 
     // Date of Birth
     const userDOB = userDetail?.dob

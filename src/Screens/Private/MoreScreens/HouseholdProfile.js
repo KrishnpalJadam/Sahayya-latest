@@ -336,7 +336,8 @@ const HouseholdProfile = ({ navigation, route }) => {
       setDob('');
     }
     setPhoneNumber(profileData?.phone_number || '');
-    setEmail(profileData?.email || '');
+    const rawEmail = profileData?.email || '';
+    setEmail(rawEmail.replace(/_deleted_\d+$/, ''));
 
     // Gender
     const genderValue = profileData?.gender;

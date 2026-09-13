@@ -825,7 +825,7 @@ const HouseHoldStaffProfile = ({ navigation, route }) => {
           {!fromFindStaffAI && (
             <View style={styles.flexRow}>
               <Image source={ImageConstant.mail} style={styles.icon} />
-              <Typography style={styles.info}>{data?.email || 'Not Available'}</Typography>
+              <Typography style={styles.info}>{String(data?.email || '').replace(/_deleted_\d+$/, '') || 'Not Available'}</Typography>
             </View>
           )}
           {(!fromFindStaffAI || (!contactViewLoading && !contactViewLocked)) && (

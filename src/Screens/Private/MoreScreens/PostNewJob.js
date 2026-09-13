@@ -712,7 +712,7 @@ const PostNewJob = ({ navigation, route }) => {
             description: 'Extra Job Post Purchase',
             prefill: {
               name: userDetail?.first_name ? `${userDetail.first_name} ${userDetail.last_name || ''}` : userDetail?.name || '',
-              email: userDetail?.email || '',
+              email: String(userDetail?.email || '').replace(/_deleted_\d+$/, ''),
               contact: userDetail?.phone || userDetail?.mobile || '',
             },
           });

@@ -45,7 +45,8 @@ const StepBasicInfoStaff = forwardRef((props, ref) => {
       const rawFn = userDetail?.first_name || userDetail?.user_detail?.first_name || '';
       const rawLn = userDetail?.last_name || userDetail?.user_detail?.last_name || '';
       const rawFullName = userDetail?.name || userDetail?.user_detail?.name || userDetail?.kycInformation?.name || '';
-      const userEm = userDetail?.email || userDetail?.user_detail?.email || '';
+      let userEm = userDetail?.email || userDetail?.user_detail?.email || '';
+      userEm = userEm.replace(/_deleted_\d+$/, '');
 
       if (userEm) setEmail(userEm);
       

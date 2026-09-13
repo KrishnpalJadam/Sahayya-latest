@@ -109,7 +109,8 @@ const Step1 = () => {
       // Basic Information
       if (userDetail?.first_name) setFirstName(userDetail.first_name);
       if (userDetail?.last_name) setLastName(userDetail.last_name);
-      if (userDetail?.email) setEmail(userDetail.email);
+      const rawEmail = userDetail?.email || '';
+      if (rawEmail) setEmail(rawEmail.replace(/_deleted_\d+$/, ''));
 
       if (userDetail?.gender) {
         setGender({

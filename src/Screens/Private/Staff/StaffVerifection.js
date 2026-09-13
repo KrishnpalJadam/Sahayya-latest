@@ -80,7 +80,7 @@ const buildSafeStaffPayload = (baseUser = {}, verifiedUser = {}, aadhaarDetails 
       nextUser?.last_name ||
       prevUser?.last_name ||
       (aadharInfo?.name && aadharInfo.name.split(' ').length > 1 ? aadharInfo.name.split(' ').slice(1).join(' ') : ''),
-    email: nextUser?.email || prevUser?.email,
+    email: String(nextUser?.email || prevUser?.email || '').replace(/_deleted_\d+$/, ''),
     phone_number: cleanPhone,
     mobile_number: cleanPhone,
     phone_number_prefix:

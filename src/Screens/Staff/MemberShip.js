@@ -192,7 +192,7 @@ const MemberShip = ({ navigation }) => {
                                     name: userDetail?.first_name
                                         ? `${userDetail.first_name} ${userDetail.last_name || ''}`
                                         : userDetail?.name || userProfile?.name || 'Customer',
-                                    email: userDetail?.email || userDetail?.user?.email || userDetail?.data?.email || userProfile?.email || userProfile?.user?.email || '',
+                                    email: String(userDetail?.email || userDetail?.user?.email || userDetail?.data?.email || userProfile?.email || userProfile?.user?.email || '').replace(/_deleted_\d+$/, ''),
                                     contact: userDetail?.phone || userDetail?.mobile || userDetail?.phone_number || userProfile?.phone_number || userProfile?.phone || '',
                                 },
                             });

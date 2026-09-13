@@ -457,7 +457,7 @@ export default function ListingJob({ navigation, route }) {
                   </Typography>
                   {detailItem?.user?.email ? (
                     <Typography type={Font.Poppins_Regular} size={12} color="#888">
-                      {detailItem.user.email}
+                      {String(detailItem.user.email).replace(/_deleted_\d+$/, '')}
                     </Typography>
                   ) : null}
                   <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>

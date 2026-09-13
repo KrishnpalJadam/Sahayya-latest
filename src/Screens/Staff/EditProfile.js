@@ -291,7 +291,8 @@ const EditProfile = ({ navigation, route }) => {
       const countryCode = userDetail?.country_code || '+91';
       setPhoneNumber(`${countryCode} ${userDetail.phone_number}`);
     }
-    if (userDetail?.email) setEmail(userDetail.email);
+    const rawEmail = userDetail?.email || '';
+    if (rawEmail) setEmail(rawEmail.replace(/_deleted_\d+$/, ''));
 
     // Profile Image - skip default/placeholder images from backend
     if (userDetail?.image) {
