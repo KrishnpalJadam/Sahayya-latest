@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -32,7 +32,7 @@ class ErrorBoundary extends React.Component {
       const errMsg = this.state.error?.message || 'Unknown error';
       const stack = this.state.error?.stack || '';
       const componentStack = this.state.errorInfo?.componentStack || '';
-      const fullLog = ERROR: \n\nSTACK:\n\n\nCOMPONENT TREE:\n;
+      const fullLog = `ERROR: ${errMsg}\n\nSTACK:\n${stack}\n\nCOMPONENT TREE:\n${componentStack}`;
 
       return (
         <View style={styles.container}>
