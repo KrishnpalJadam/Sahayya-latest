@@ -202,8 +202,9 @@ const RecentSalaryList = ({ navigation }) => {
   }, [isFocused, fetchSalaryList]);
 
   const getStatusColor = status => {
-    if (status?.toLowerCase() === 'paid') return '#0A8F08';
-    if (status?.toLowerCase() === 'advance') return '#D98579';
+    const s = String(status || '').toLowerCase();
+    if (s === 'paid') return '#0A8F08';
+    if (s === 'advance') return '#D98579';
     return '#FF9800';
   };
 
@@ -215,12 +216,12 @@ const RecentSalaryList = ({ navigation }) => {
       return salaryRecords.filter(
         item => 
           item?.type === 'advance' || 
-          item?.status?.toLowerCase() === 'advance' || 
+          String(item?.status || '').toLowerCase() === 'advance' || 
           Number(item?.advance_payment) > 0,
       );
     }
     return salaryRecords.filter(
-      item => item?.status?.toLowerCase() === selectedStatus.toLowerCase() && item?.type !== 'advance',
+      item => String(item?.status || '').toLowerCase() === selectedStatus.toLowerCase() && item?.type !== 'advance',
     );
   }, [salaryRecords, selectedStatus]);
 
@@ -324,7 +325,7 @@ const RecentSalaryList = ({ navigation }) => {
       onPress={() => {
         setSelectedPayment(item);
         const salaryId = item?.id || item?.salary_id;
-        const status = (item?.status || '').toLowerCase();
+        const status = String(item?.status || '').toLowerCase();
         if (salaryId && status === 'paid') {
           fetchPayoutHistory(salaryId);
         }
@@ -513,7 +514,7 @@ const RecentSalaryList = ({ navigation }) => {
                 </Typography>
               </TouchableOpacity>
 
-              {selectedPayment?.status?.toLowerCase() === 'pending' && (
+              {String(selectedPayment?.status || '').toLowerCase() === 'pending' && (
                 <TouchableOpacity
                   style={styles.markPaidButton}
                   onPress={() => markAsPaid(selectedPayment?.id || selectedPayment?.payment_id)}
@@ -529,7 +530,7 @@ const RecentSalaryList = ({ navigation }) => {
                 </TouchableOpacity>
               )}
 
-              {selectedPayment?.status?.toLowerCase() === 'paid' && (
+              {String(selectedPayment?.status || '').toLowerCase() === 'paid' && (
                 <TouchableOpacity
                   style={[styles.markPaidButton, { backgroundColor: '#2196F3' }]}
                   onPress={() => {
