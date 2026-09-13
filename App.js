@@ -17,22 +17,6 @@ import { PermissionsAndroid, Platform, Linking, Alert } from 'react-native';
 import { navigationRef } from './src/Navigation/RootNavigation';
 import { fcmService } from './src/pushNotifacation/FMCService';
 import {localNotificationService} from './src/pushNotifacation/LocalNotificationService';
-import ErrorBoundary from './src/Component/ErrorBoundary/ErrorBoundary';
-
-const _globalHandler = global.ErrorUtils?.getGlobalHandler?.();
-if (global.ErrorUtils) {
-  global.ErrorUtils.setGlobalHandler((error, isFatal) => {
-    if (isFatal) {
-      Alert.alert(
-        '💥 Fatal Crash Detected',
-        `Error: ${error?.message}\n\n` +
-        `Stack:\n${String(error?.stack || '').slice(0, 500)}`,
-        [{ text: 'OK' }],
-      );
-    }
-    if (_globalHandler) _globalHandler(error, isFatal);
-  });
-}
 
 const App = () => {
   const [langCode, setLangCode] = useState('');
@@ -121,13 +105,11 @@ const App = () => {
   }
 
   return (
-    <ErrorBoundary>
-      <Provider store={store}>
-        <PersistGate loading={null} persistor={persistor}>
-          <MainNavigation />
-        </PersistGate>
-      </Provider>
-    </ErrorBoundary>
+    <Provider store={store}>
+      <PersistGate loading={null} persistor={persistor}>
+        <MainNavigation />
+      </PersistGate>
+    </Provider>
   );
 };
 

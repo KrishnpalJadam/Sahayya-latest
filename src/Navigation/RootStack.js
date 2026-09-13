@@ -3,6 +3,7 @@ import {
   createStackNavigator,
 } from '@react-navigation/stack';
 import React from 'react';
+import { View } from 'react-native';
 import { TabNavigation } from './TabNavigation';
 import FindStaff from '../../src/Screens/Private/FindStaff/FindStaff';
 import AllStaff from '../../src/Screens/Private/FindStaff/AllStaff';
@@ -53,13 +54,19 @@ const RootStack = () => {
     (userDetails?.step && Number(userDetails?.step) >= 4) ||
     Boolean(userDetails?.addresses && userDetails?.addresses?.length > 0);
 
+  const initialRouteRef = React.useRef(null);
+  if (initialRouteRef.current === null) {
+    initialRouteRef.current = isHouseholdComplete ? 'TabNavigation' : 'Step1';
+  }
+
   return (
-    <Stack.Navigator
-      screenOptions={{
-        headerShown: false,
-      }}
-      initialRouteName={isHouseholdComplete ? 'TabNavigation' : 'Step1'}
-    >
+    <View style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
+      <Stack.Navigator
+        screenOptions={{
+          headerShown: false,
+        }}
+        initialRouteName={initialRouteRef.current}
+      >
       <Stack.Screen
         name="TabNavigation"
         component={TabNavigation}
@@ -223,6 +230,7 @@ const RootStack = () => {
         options={{ ...commonOptions }}
       />
     </Stack.Navigator>
+    </View>
   );
 };
 

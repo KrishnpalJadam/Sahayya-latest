@@ -94,9 +94,7 @@ const AadharOtp = ({ navigation, route }) => {
         success => {
           try {
             setLoading(false);
-            // NOTE: Do NOT dispatch(userDetails()) here — it would overwrite the
-            // currently logged-in household user's Redux state with staff Aadhaar
-            // data, causing RootStack to re-evaluate initialRoute and crash the app.
+            dispatch(userDetails(success?.user));
             navigation?.navigate('StepFirst');
           } catch (e) {
             setLoading(false);
