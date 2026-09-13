@@ -234,6 +234,16 @@ export default function ListingJob({ navigation, route }) {
                   <Typography type={Font.Poppins_Regular} style={styles.type}>
                     {item.user?.phone_number}
                   </Typography>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFF9E6', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 12 }}>
+                      <Typography size={11} color="#F5B041" type={Font?.Poppins_Medium || 'System'}>
+                        ★ {Number(item.user?.rating || item.user?.average_rating || 0).toFixed(1)}
+                      </Typography>
+                    </View>
+                    <Typography size={11} color="gray" style={{ marginLeft: 6 }}>
+                      ({item.user?.review_count || item.user?.reviews_count || 0} Reviews)
+                    </Typography>
+                  </View>
                 </View>
                 <View
                   style={[
