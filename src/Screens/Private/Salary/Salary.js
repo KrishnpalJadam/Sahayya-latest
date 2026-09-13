@@ -182,7 +182,7 @@ const StaffManagement = ({ navigation, route }) => {
     const existing = listPastPayments?.find(payment => {
       const paymentMonth = moment(payment?.created_at).format('YYYY-MM');
       const isSameMonth = paymentMonth === currentMonth;
-      const isPaid = payment?.status?.toLowerCase() === 'paid';
+      const isPaid = String(payment?.status || '').toLowerCase() === 'paid';
       const isSameStaff = payment?.staff_id === selectedStaffId || payment?.staff_member?.id === selectedStaffId;
       return isSameMonth && isPaid && isSameStaff;
     });
@@ -192,7 +192,7 @@ const StaffManagement = ({ navigation, route }) => {
     const staffPayments = listPastPayments?.filter(payment => {
       const paymentMonth = moment(payment?.created_at).format('YYYY-MM');
       const isSameMonth = paymentMonth === currentMonth;
-      const isPaid = payment?.status?.toLowerCase() === 'paid';
+      const isPaid = String(payment?.status || '').toLowerCase() === 'paid';
       const isSameStaff = payment?.staff_id === selectedStaffId || payment?.staff_member?.id === selectedStaffId;
       return isSameMonth && isPaid && isSameStaff;
     });
@@ -299,7 +299,7 @@ const StaffManagement = ({ navigation, route }) => {
         let totalWorked = 0;
         if (Array.isArray(records)) {
           records.forEach(record => {
-            const status = record?.status?.toLowerCase();
+            const status = String(record?.status || '').toLowerCase();
             if (status === 'present' || status === 'late') {
               totalWorked++;
             }
@@ -655,7 +655,7 @@ const StaffManagement = ({ navigation, route }) => {
     const alreadyPaid = listPastPayments?.find(payment => {
       const paymentMonth = moment(payment?.created_at).format('YYYY-MM');
       const isSameMonth = paymentMonth === currentMonth;
-      const isPaid = payment?.status?.toLowerCase() === 'paid';
+      const isPaid = String(payment?.status || '').toLowerCase() === 'paid';
       const isSameStaff = payment?.staff_id === selectedStaffId || payment?.staff_member?.id === selectedStaffId;
       return isSameMonth && isPaid && isSameStaff;
     });
@@ -1707,7 +1707,7 @@ const StaffManagement = ({ navigation, route }) => {
                     <TouchableOpacity
                       key={itemId || index}
                       style={styles.paymentRow}
-                      activeOpacity={item.status?.toLowerCase() === 'pending' ? 0.6 : 1}
+                      activeOpacity={String(item.status || '').toLowerCase() === 'pending' ? 0.6 : 1}
                       onPress={() => {
                         // The whole row no longer triggers the alert. 
                         // The confirm button does.
@@ -1751,13 +1751,13 @@ const StaffManagement = ({ navigation, route }) => {
                             styles.paymentStatus,
                             {
                               color:
-                                item.status?.toLowerCase() === 'paid' ? 'green' : 'orange',
+                                String(item.status || '').toLowerCase() === 'paid' ? 'green' : 'orange',
                             },
                           ]}
                         >
                           {item.status}
                         </Typography>
-                        {item.status?.toLowerCase() === 'pending' && (
+                        {String(item.status || '').toLowerCase() === 'pending' && (
                           <TouchableOpacity
                             style={{ backgroundColor: '#D98579', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 4, marginTop: 4 }}
                             onPress={(e) => {
@@ -2490,3 +2490,4 @@ const styles = StyleSheet.create({
     backgroundColor: '#F9F9F9',
   },
 });
+
