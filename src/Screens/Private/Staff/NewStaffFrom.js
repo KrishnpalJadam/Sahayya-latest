@@ -1905,6 +1905,7 @@ const NewStaffForm = ({ navigation, route }) => {
           )}
           <View style={{ flex: currentStep > 0 ? 1.2 : 1, height: 48, justifyContent: 'center' }}>
             <Button
+              loader={loading}
               title={
                 currentStep < 2
                   ? LocalizedStrings.Auth?.next || 'Next'
