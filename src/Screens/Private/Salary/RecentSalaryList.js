@@ -530,7 +530,7 @@ const RecentSalaryList = ({ navigation }) => {
                 </TouchableOpacity>
               )}
 
-              {String(selectedPayment?.status || '').toLowerCase() === 'paid' && (
+              {/* {String(selectedPayment?.status || '').toLowerCase() === 'paid' && (
                 <TouchableOpacity
                   style={[styles.markPaidButton, { backgroundColor: '#2196F3' }]}
                   onPress={() => {
@@ -551,7 +551,7 @@ const RecentSalaryList = ({ navigation }) => {
                     {isSending ? 'Sending...' : 'Send to Bank (RazorpayX)'}
                   </Typography>
                 </TouchableOpacity>
-              )}
+              )} */}
 
               {payoutHistory && payoutHistory.length > 0 && (
                 <View style={{ marginTop: 12 }}>
