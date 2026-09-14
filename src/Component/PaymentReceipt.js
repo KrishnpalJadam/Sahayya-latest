@@ -55,11 +55,11 @@ const PaymentReceipt = ({ visible, onClose, paymentData, userDetails, employerNa
     sb?.absent_deduction ?? paymentData?.absent_deduction ?? 0,
   );
   const otherDeduction = Number(
-    sb?.other_deduction ?? sb?.deductions ?? paymentData?.deductions ?? paymentData?.deduction ?? 0,
+    sb?.other_deduction ?? sb?.deductions ?? paymentData?.deductions ?? paymentData?.deduction ?? 0
   );
 
   const totalDeductions = Number(
-    sb?.total_deductions ?? (pfDeduction + taxDeduction + advanceDeduction + absentDeduction + otherDeduction),
+    sb?.total_deductions ?? (pfDeduction + taxDeduction + advanceDeduction + absentDeduction + otherDeduction)
   );
 
   const staffName =
