@@ -173,9 +173,6 @@ const StaffManagement = ({ navigation, route }) => {
     const netSalary = Math.max(0, base + bonusAmount + overtimeAmount - pfVal - deductionVal);
     setTotalNet(netSalary);
     
-    // Auto-calculate custom amount whenever net salary components change
-    setCustomAmount(String(netSalary.toFixed(2)));
-    
     // Check if already paid to show UI warning
     const currentMonth = moment().format('YYYY-MM');
     const selectedStaffId = leaveType?.value;
@@ -198,11 +195,14 @@ const StaffManagement = ({ navigation, route }) => {
     });
     const paidSum = staffPayments?.reduce((sum, p) => sum + (Number(p.net_salary || p.amount) || 0), 0) || 0;
     setTotalPaidThisMonth(paidSum);
+    
+    const trueRemaining = Math.max(0, netSalary - paidSum);
+    setRemainingBalance(trueRemaining);
+    
+    // Auto-calculate custom amount to the remaining balance
+    setCustomAmount(String(trueRemaining > 0 ? trueRemaining.toFixed(2) : netSalary.toFixed(2)));
+    
   }, [overtime, baseSalary, bonus, pfDeduction, deduction, leaveType, listPastPayments]);
-
-  useEffect(() => {
-    setRemainingBalance(Math.max(0, getPayableAmount() - totalPaidThisMonth));
-  }, [customAmount, totalNet, totalPaidThisMonth]);
 
   // Reset custom amount when staff changes
   useEffect(() => {
@@ -649,25 +649,31 @@ const StaffManagement = ({ navigation, route }) => {
       return;
     }
 
-    // Check if salary was already paid this month for the selected staff
-    const currentMonth = moment().format('YYYY-MM');
-    const selectedStaffId = leaveType?.value;
-    const alreadyPaid = listPastPayments?.find(payment => {
-      const paymentMonth = moment(payment?.created_at).format('YYYY-MM');
-      const isSameMonth = paymentMonth === currentMonth;
-      const isPaid = String(payment?.status || '').toLowerCase() === 'paid';
-      const isSameStaff = payment?.staff_id === selectedStaffId || payment?.staff_member?.id === selectedStaffId;
-      return isSameMonth && isPaid && isSameStaff;
-    });
+    const amountToPay = getPayableAmount();
 
-    if (alreadyPaid) {
+    if (remainingBalance <= 0) {
       Alert.alert(
-        LocalizedStrings.SalaryManagement.already_paid_title || 'Salary Already Paid',
-        `Salary has already been marked as paid for ${moment().format('MMMM YYYY')}. Do you want to process another payment?`,
+        'Salary Fully Paid',
+        `The full salary has already been paid for ${moment().format('MMMM YYYY')}. Do you want to process an extra payment of ₹${amountToPay}?`,
         [
           { text: 'Cancel', onPress: () => setIsSubmitting(false), style: 'cancel' },
           { text: 'Process Anyway', onPress: () => {
-            // Re-check UPI if needed, or go straight to submit
+            if (selectedMethod === 'UPI') {
+              processUpiPayment();
+            } else {
+              submitSalaryPayment(null);
+            }
+          }}
+        ]
+      );
+      return;
+    } else if (amountToPay > remainingBalance) {
+      Alert.alert(
+        'Overpayment Warning',
+        `You are trying to pay ₹${amountToPay}, but the remaining balance for this month is only ₹${remainingBalance}. Do you want to proceed?`,
+        [
+          { text: 'Cancel', onPress: () => setIsSubmitting(false), style: 'cancel' },
+          { text: 'Process Anyway', onPress: () => {
             if (selectedMethod === 'UPI') {
               processUpiPayment();
             } else {
